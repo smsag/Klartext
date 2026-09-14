@@ -2794,10 +2794,24 @@ body.is-phone .menu-grabber {
   border-radius: 999px;
 }
 
+/* Mobile editing toolbar (the row above the keyboard). Until 1.5.1 the
+   theme painted the whole band in the secondary grey with a hairline on
+   top, which read as a second keyboard strip and buried the buttons in it.
+   The band now takes the page colour, Obsidian's own default, so it is
+   invisible on the page, and the button pills carry the theme's muted
+   surface — the same fill as code blocks and table headers — so they stand
+   on the page as controls. Obsidian's touch-background token, which the
+   pills use by default, is left to the pills' hover and press states. */
 body.is-mobile .mobile-toolbar,
 body.is-ios    .mobile-toolbar {
-  background-color: var(--background-secondary) !important;
-  border-top: 1px solid var(--border) !important;
+  background-color: var(--background-primary);
+  border-top: none;
+}
+body.is-mobile .mobile-toolbar-options-list,
+body.is-mobile .mobile-toolbar-floating-options,
+body.is-ios    .mobile-toolbar-options-list,
+body.is-ios    .mobile-toolbar-floating-options {
+  background-color: var(--surface-muted);
 }
 
 /* ------------------------------------------------------------------

@@ -136,6 +136,15 @@ the inline hanging indent and screenshots of the real editor can be read directl
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.
 
+What the repository holds, and why: `theme.css` and `manifest.json` are what
+Obsidian installs; the theme store also reads this README and the screenshots.
+`fonts/` is source, not shipped: the subsetted `.woff2` files that
+`fonts/embed.py` writes into `theme.css` as base64, the two licence texts, and
+`fonts/make-marks.py`, which builds the Klartext Marks faces. They stay in the
+repository so the embedded fonts can be rebuilt or re-subsetted without hunting
+for the originals. Nothing else belongs here; backups of earlier versions are
+git history, not files.
+
 ## Credits
 
 By [Steffen Seitz](https://smsag.de), under the [MIT License](LICENSE).

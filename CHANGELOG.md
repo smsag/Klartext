@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   largest single item (128 KB decoded, about 170 KB of base64) and serve
   only characters outside basic Latin; dropping them is the one cut worth
   weighing if the size ever matters.
+- **What ships is decided.** `theme.css`, `manifest.json`, the README and
+  the screenshots are what Obsidian and the theme store read. The `fonts/`
+  folder stays in the repository as source: the subsetted woff2 files,
+  the embed and marks scripts, the licence texts. The three 1.3.0 backup
+  files that sat beside the live theme are gone from the folder (moved to
+  the Trash rather than deleted, since 1.3.0 predates the git history,
+  which begins at 1.4.0). The README says what the repository holds.
 
 One change, made because the previous constructions had become a fight with
 the editor and were expected to break on the next Obsidian release: every

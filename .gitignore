@@ -1,4 +1,5 @@
-# Local backups kept beside the live theme; not part of the release
+# Ad-hoc backups made beside the live theme are never part of the release;
+# git history is the backup now.
 *.backup-*.css
 *.backup-*.json
 *.backup-*.md

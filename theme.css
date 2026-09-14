@@ -172,8 +172,7 @@ body.theme-dark {
 
 /* Mobile: restate the background tokens under Obsidian's mobile selectors so
    iOS takes the theme's page colour rather than its own */
-body.is-mobile.theme-light,
-body.is-ios.theme-light {
+body.is-mobile.theme-light {
   --background-primary:       var(--bg-primary);
   --background-secondary:     var(--bg-secondary);
   --background-secondary-alt: var(--bg-secondary-alt);
@@ -576,9 +575,7 @@ body.klartext-space-indent {
 .app-container::after  { font-family: 'Klartext Marks Quote', monospace; }
 
 body,
-body.is-mobile,
-body.is-ios,
-body.is-android {
+body.is-mobile {
   background-color: var(--background-primary) !important;
   font-family: var(--font-interface-theme);
   -webkit-font-smoothing: antialiased;
@@ -729,8 +726,6 @@ body.is-android {
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-scroller,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-content,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-line,
-.markdown-preview-view th,
-.markdown-preview-view td,
 .markdown-rendered th,
 .markdown-rendered td {
   line-height: var(--klartext-table-line-height);
@@ -1172,7 +1167,6 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
   margin: 0 auto;
 }
 
-.markdown-preview-view p,
 .markdown-rendered p {
   margin-bottom: var(--readability-p-spacing);
 }
@@ -1222,10 +1216,8 @@ pre code,
    ------------------------------------------------------------------ */
 body.klartext-dotted-bg pre,
 body.klartext-dotted-bg .markdown-preview-view pre,
-body.klartext-dotted-bg .markdown-preview-view th,
 body.klartext-dotted-bg .markdown-rendered th,
 body.klartext-dotted-bg .markdown-source-view.mod-cm6 th,
-body.klartext-dotted-bg .markdown-preview-view thead tr > *,
 body.klartext-dotted-bg .markdown-rendered thead tr > *,
 body.klartext-dotted-bg .markdown-source-view.mod-cm6 thead tr > *,
 body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
@@ -1314,7 +1306,6 @@ body {
 /* Language badge — Reading view. Obsidian shows no label here by default,
    so we synthesize one from the Prism `language-*` class on <pre>.
    Shared visual style (no content); the language rules below supply the text. */
-.markdown-preview-view pre[class*="language-"]::before,
 .markdown-rendered pre[class*="language-"]::before {
   position: absolute;
   top: var(--klartext-code-inset);
@@ -1334,7 +1325,6 @@ body {
 /* …and left of the button when the block carries one. Obsidian hides the
    button until hover on desktop but keeps it mounted, so the label holds one
    position instead of sliding sideways under the cursor. */
-.markdown-preview-view pre[class*="language-"]:has(> .copy-code-button)::before,
 .markdown-rendered pre[class*="language-"]:has(> .copy-code-button)::before {
   right: var(--klartext-code-label-x);
 }
@@ -1378,7 +1368,6 @@ pre.language-dataviewjs::before                                   { content: "da
    label is placed off the button's measured box instead.
      Sized down to one square of --klartext-code-btn with the glyph inside
    it, rather than Obsidian's text-button padding. */
-.markdown-preview-view pre .copy-code-button,
 .markdown-rendered pre .copy-code-button,
 .markdown-source-view.mod-cm6 .copy-code-button {
   top: var(--klartext-code-inset);
@@ -1404,7 +1393,6 @@ pre.language-dataviewjs::before                                   { content: "da
    which out-ranks the rule above (0,2,1) — the box collapsed to the glyph
    and the label's offset no longer matched it. Restated at equal
    specificity; theme.css loads later, so this wins the tie. */
-body.is-mobile .markdown-preview-view .copy-code-button,
 body.is-mobile .markdown-rendered .copy-code-button {
   width: var(--klartext-code-btn);
 }
@@ -1412,7 +1400,6 @@ body.is-mobile .markdown-rendered .copy-code-button {
 /* The Lucide glyph inside it. Obsidian sizes icons from --icon-size, which
    is set per context and is far larger than this button; pinned to the
    button's own box so the icon can never outgrow it. */
-.markdown-preview-view pre .copy-code-button .svg-icon,
 .markdown-rendered pre .copy-code-button .svg-icon,
 .markdown-source-view.mod-cm6 .copy-code-button .svg-icon {
   width: calc(var(--klartext-code-btn) * 0.62);
@@ -1430,14 +1417,12 @@ body.is-mobile .markdown-rendered .copy-code-button {
    elsewhere. Scoped to code blocks, so nothing else on the page moves. */
 .markdown-source-view.mod-cm6 .cm-preview-code-block,
 .markdown-source-view.mod-cm6 .code-block-flair,
-.markdown-preview-view pre,
 .markdown-rendered pre {
   --icon-size: calc(var(--klartext-code-btn) * 0.62);
   --icon-stroke: 2px;
 }
 .markdown-source-view.mod-cm6 .cm-preview-code-block svg.svg-icon,
 .markdown-source-view.mod-cm6 .code-block-flair svg.svg-icon,
-.markdown-preview-view pre svg.svg-icon,
 .markdown-rendered pre svg.svg-icon {
   width: calc(var(--klartext-code-btn) * 0.62);
   height: calc(var(--klartext-code-btn) * 0.62);
@@ -2038,7 +2023,6 @@ hr,
    ------------------------------------------------------------------ */
 /* Outer frame — separate borders so we can round the corners cleanly.
    overflow:hidden clips the header fill + cell borders to the radius. */
-.markdown-preview-view table,
 .markdown-rendered table,
 .markdown-source-view.mod-cm6 table {
   border-collapse: separate;
@@ -2052,8 +2036,6 @@ hr,
 }
 
 /* Full internal gridlines — right + bottom on every cell */
-.markdown-preview-view th,
-.markdown-preview-view td,
 .markdown-rendered th,
 .markdown-rendered td,
 .markdown-source-view.mod-cm6 th,
@@ -2083,34 +2065,31 @@ hr,
    Restated for both modes at (0,3,1), above the theme's own default and
    above Obsidian's, so the markup decides in either view. `start`/`end`
    rather than `left`/`right`, matching Obsidian and staying correct in RTL. */
-.markdown-preview-view th[align="left"],   .markdown-preview-view td[align="left"],
-.markdown-rendered th[align="left"],       .markdown-rendered td[align="left"],
+.markdown-rendered th[align="left"],
+.markdown-rendered td[align="left"],
 .markdown-source-view.mod-cm6 th[align="left"],
 .markdown-source-view.mod-cm6 td[align="left"] {
   text-align: start;
 }
-.markdown-preview-view th[align="center"], .markdown-preview-view td[align="center"],
-.markdown-rendered th[align="center"],     .markdown-rendered td[align="center"],
+.markdown-rendered th[align="center"],
+.markdown-rendered td[align="center"],
 .markdown-source-view.mod-cm6 th[align="center"],
 .markdown-source-view.mod-cm6 td[align="center"] {
   text-align: center;
 }
-.markdown-preview-view th[align="right"],  .markdown-preview-view td[align="right"],
-.markdown-rendered th[align="right"],      .markdown-rendered td[align="right"],
+.markdown-rendered th[align="right"],
+.markdown-rendered td[align="right"],
 .markdown-source-view.mod-cm6 th[align="right"],
 .markdown-source-view.mod-cm6 td[align="right"] {
   text-align: end;
 }
 
 /* Drop the redundant edge lines — the table's own border supplies them */
-.markdown-preview-view th:last-child,
-.markdown-preview-view td:last-child,
 .markdown-rendered th:last-child,
 .markdown-rendered td:last-child,
 .markdown-source-view.mod-cm6 th:last-child,
 .markdown-source-view.mod-cm6 td:last-child { border-right: none; }
 
-.markdown-preview-view tr:last-child td,
 .markdown-rendered tr:last-child td,
 .markdown-source-view.mod-cm6 tr:last-child td { border-bottom: none; }
 
@@ -2118,10 +2097,8 @@ hr,
    medium weight, no forced uppercase. `thead tr > *` catches the Live-Preview
    table editor's trailing empty header cells; :focus-within keeps the fill
    while a header cell is being edited (Obsidian otherwise paints it white). */
-.markdown-preview-view th,
 .markdown-rendered th,
 .markdown-source-view.mod-cm6 th,
-.markdown-preview-view thead tr > *,
 .markdown-rendered thead tr > *,
 .markdown-source-view.mod-cm6 thead tr > *,
 .markdown-source-view.mod-cm6 thead tr > *:focus,
@@ -2152,7 +2129,6 @@ hr,
    which out-ranked the `> *` form (0,2,2) and left every even column of a
    striped row unpainted in Reading view. Equal specificity here; theme.css
    loads later and wins. */
-.markdown-preview-view tbody tr:nth-child(even) > :is(td, th),
 .markdown-rendered tbody tr:nth-child(even) > :is(td, th),
 .markdown-source-view.mod-cm6 tbody tr:nth-child(even) > :is(td, th) {
   background-color: var(--table-stripe-bg);
@@ -2168,7 +2144,6 @@ hr,
    handles sit in the prefix column. The wrapper carries no inset in either
    mode — zeroing it is harmless and keeps reading view explicit. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-table-widget .table-wrapper,
-.markdown-preview-view .table-wrapper,
 .markdown-rendered .table-wrapper {
   padding-left: 0;
   margin-left: 0;
@@ -2192,13 +2167,10 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
 }
-.markdown-preview-view th,
 .markdown-rendered th,
-.markdown-preview-view td,
 .markdown-rendered td {
   min-width: var(--table-column-min-width);
 }
-.markdown-preview-view th,
 .markdown-rendered th {
   white-space: nowrap;
 }
@@ -2206,7 +2178,6 @@ body {
    pushing the table to the cap as one long line. Chrome and WebKit both
    use a cell's max-width when sizing the column (verified). Headers are
    labels: no maximum, no wrap. */
-.markdown-preview-view td,
 .markdown-rendered td {
   max-width: 45ch;
 }
@@ -2219,7 +2190,6 @@ body {
    proportion to their natural widths, so a glossary's term column grew to
    half the table and sat empty while the meanings wrapped. A table that
    is narrower than the column is a compact box on the text edge. */
-.markdown-preview-view table,
 .markdown-rendered table,
 .markdown-source-view.mod-cm6 table {
   width: max-content;
@@ -2571,8 +2541,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
    VIEW HEADER
    ------------------------------------------------------------------ */
 .view-header,
-body.is-mobile .view-header,
-body.is-ios .view-header {
+body.is-mobile .view-header {
   background-color: var(--background-primary);
   /* Border kept for stable layout, TRANSPARENT rather than page-coloured. A
      page-coloured border is only invisible while the header's own opaque
@@ -2661,9 +2630,7 @@ body.is-phone .view-header-title {
 /* ------------------------------------------------------------------
    MOBILE SPECIFIC
    ------------------------------------------------------------------ */
-body.is-mobile,
-body.is-ios,
-body.is-android {
+body.is-mobile {
   /* Prevent WebKit from auto-inflating font sizes in narrow viewports */
   -webkit-text-size-adjust: 100%;
 
@@ -2708,9 +2675,7 @@ body.is-android {
   --font-ui-large:   var(--klartext-ui-lg);
 }
 
-body.is-mobile .workspace-drawer,
-body.is-ios    .workspace-drawer,
-body.is-android .workspace-drawer {
+body.is-mobile .workspace-drawer {
   background-color: var(--background-secondary) !important;
 }
 
@@ -2806,15 +2771,12 @@ body.is-phone .menu-grabber {
    surface — the same fill as code blocks and table headers — so they stand
    on the page as controls. Obsidian's touch-background token, which the
    pills use by default, is left to the pills' hover and press states. */
-body.is-mobile .mobile-toolbar,
-body.is-ios    .mobile-toolbar {
+body.is-mobile .mobile-toolbar {
   background-color: var(--background-primary);
   border-top: none;
 }
 body.is-mobile .mobile-toolbar-options-list,
-body.is-mobile .mobile-toolbar-floating-options,
-body.is-ios    .mobile-toolbar-options-list,
-body.is-ios    .mobile-toolbar-floating-options {
+body.is-mobile .mobile-toolbar-floating-options {
   background-color: var(--surface-muted);
 }
 
@@ -3517,19 +3479,16 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
      + and − are one cell each in the embedded monospace face, so toggling
    the section cannot shift its title sideways. U+2212 MINUS, not a hyphen:
    a hyphen is the list dash, and reusing it here would blur the two. */
-.markdown-preview-view details > summary,
 .markdown-rendered details > summary,
 .markdown-source-view.mod-cm6 details > summary {
   list-style: none;
   cursor: var(--cursor);
 }
-.markdown-preview-view details > summary::-webkit-details-marker,
 .markdown-rendered details > summary::-webkit-details-marker,
 .markdown-source-view.mod-cm6 details > summary::-webkit-details-marker {
   display: none;
 }
 
-.markdown-preview-view details > summary::before,
 .markdown-rendered details > summary::before,
 .markdown-source-view.mod-cm6 details > summary::before {
   content: "+";
@@ -3547,13 +3506,11 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
   pointer-events: none;
 }
 
-.markdown-preview-view details[open] > summary::before,
 .markdown-rendered details[open] > summary::before,
 .markdown-source-view.mod-cm6 details[open] > summary::before {
   content: "\2212";   /* − MINUS */
 }
 
-.markdown-preview-view details > summary:hover::before,
 .markdown-rendered details > summary:hover::before,
 .markdown-source-view.mod-cm6 details > summary:hover::before {
   color: var(--text-subtle);
@@ -3743,7 +3700,6 @@ body {
   .print .markdown-preview-view {
     --table-column-min-width: 6ch;
   }
-  .print .markdown-preview-view table,
   .print .markdown-rendered table {
     width: auto;
     max-width: 100%;
@@ -3760,7 +3716,6 @@ body {
      reach that space, so borders carried by the cells stop with the last
      row that fits; the header row repeats on the next page and brings the
      top edge with it. On paper the corners are square. */
-  .print .markdown-preview-view table,
   .print .markdown-rendered table {
     border: none;
     border-radius: 0;
@@ -3785,7 +3740,6 @@ body {
      printed as designed. The dash is drawn on the item here too, in the
      same box the screen bullet uses, and the native marker is switched off
      for every list, which also keeps a task item to its checkbox. */
-  .print .markdown-preview-view ul,
   .print .markdown-rendered ul {
     list-style: none;
   }

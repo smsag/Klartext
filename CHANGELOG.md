@@ -121,6 +121,12 @@ size and the default two-cell column.
   natively (`caret-color`), not through CodeMirror's cursor layer, and the
   page-coloured patch the theme painted over the dot sat above it. The
   patch is gone with the rest of that construction.
+- **The fold chevron sat on a list item's number.** Obsidian anchors it just
+  before the item's own column, and its 0.4em put the glyph 6.4px out — but
+  a mark wider than the column overflows to the start, so a two-digit
+  number's digits began 3.2px inside the chevron. The clearance is two cells
+  now: one full cell past a two-digit number's overflow, two past a dash,
+  at every nesting level.
 - **The type tag of a callout whose source is showing** (`[!note]`) was
   underlined dotted like an external link, Obsidian tokenising it as a bare
   link. It is a mark: faint, upright, undecorated.

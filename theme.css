@@ -1094,12 +1094,22 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
   margin-top: 0;
 }
 
-/* Fold chevron on list lines. Obsidian anchors the collapse icon so that
-   its right edge sits about on the line start, where the mark now is; a
-   small margin moves it into the margin beside the mark, hover-only on
-   desktop as Obsidian has it. */
+/* Fold chevron on list lines. Obsidian anchors the collapse icon just before
+   the item's own column (its glyph's right edge lands at minus this margin,
+   measured from the column's start — nested items included, since Obsidian
+   places the indicator after the indent spans). Its own 0.4em put the glyph
+   6.4px before the column, which a MARK CAN REACH INTO: a mark wider than
+   the column overflows to the start, so a two-digit number's digits began
+   3.2px inside the chevron and the two collided (measured at a 16px body,
+   two-cell column).
+   Two cells of clearance instead: the chevron's glyph ends two cells before
+   the column, so it clears a two-digit number's overflow by a full cell and
+   a dash by two. Cells, not the column width, because what it has to clear
+   is the overflow, and that exists only while the column is too narrow for
+   the number. Three-digit numbers reach the glyph again at the two-cell
+   setting; at four cells they fit inside the column and cannot. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line .cm-fold-indicator .collapse-indicator {
-  margin-inline-end: 0.4em;
+  margin-inline-end: calc(2 * var(--klartext-cell));
 }
 
 /* Reading-view counterpart: a paragraph that introduces a list keeps one

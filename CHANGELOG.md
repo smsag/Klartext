@@ -223,8 +223,8 @@ size and the default two-cell column.
   edge, the first and last cells of every row the sides, the last row the
   bottom, and the table itself has no border and square corners. Borders
   stop with the last row that fits, and the repeated header row brings
-  the top edge onto the next page. Verified under emulated print media in
-  the running app; not yet seen on a re-exported PDF.
+  the top edge onto the next page. Confirmed on a third export of the same
+  note: every page foot clean.
 
 ### Removed
 - The inline-flex marker boxes, the `clip-path` on the number, the

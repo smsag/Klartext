@@ -123,11 +123,14 @@ rather than Obsidian's.
 
 ## Notes for anyone editing it
 
-`theme.css` is one file, sectioned by element with a comment block above each rule that
-explains why the value is what it is. Where a number was measured rather than chosen,
+The stylesheet is `src/theme.css`, one file sectioned by element with a comment block
+above each rule that explains why the value is what it is. The `theme.css` at the
+repository root is built from it by `python3 fonts/embed.py`, which appends the
+embedded fonts; it is the file Obsidian installs and must stay committed, but it is
+not the file to edit. Where a number was measured rather than chosen,
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
-system; `--ia-editor-font-size` is the alias every derived size chains from;
+system; `--klartext-font-size` is the body size every derived length chains from;
 `--klartext-col` is the marker column that holds every mark, on the text edge.
 
 Live Preview keeps a block's source marker in the editor as real text, and the theme
@@ -142,14 +145,20 @@ what keeps the caret visible and the layout the same in every state.
 Measured values were taken in the running Obsidian over Chromium's debugging port
 (`open -a Obsidian --args --remote-debugging-port=9222`), where the caret position,
 the inline hanging indent and screenshots of the real editor can be read directly.
+`tools/verify.mjs` uses the same port to check that a change alters nothing it
+should not: it opens `tools/check-note.md`, records the computed style of every
+element in Live Preview and Reading view, light and dark, with and without the
+mobile body classes, and diffs two such snapshots. The header of the script shows
+the sequence; a refactor is done when the diff is empty.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.
 
 What the repository holds, and why: `theme.css` and `manifest.json` are what
 Obsidian installs; the theme store also reads this README and the screenshots.
-`fonts/` is source, not shipped: the subsetted `.woff2` files that
-`fonts/embed.py` writes into `theme.css` as base64, the two licence texts, and
+`src/theme.css` is the stylesheet as written, without the fonts. `fonts/` is
+source, not shipped: the subsetted `.woff2` files that `fonts/embed.py` appends
+to `src/theme.css` as base64 to produce `theme.css`, the two licence texts, and
 `fonts/make-marks.py`, which builds the Klartext Marks faces. They stay in the
 repository so the embedded fonts can be rebuilt or re-subsetted without hunting
 for the originals. Nothing else belongs here; backups of earlier versions are

@@ -211,6 +211,7 @@ body.theme-dark {
      end of the marker stroke, where the pen set down */
   --klartext-highlight:         rgba(255, 200, 40, 0.30);
   --klartext-highlight-strong:  rgba(255, 200, 40, 0.38);
+  --klartext-code-tint:         rgba(0, 0, 0, 0.05);    /* inline code ON a highlight: a translucent fill, so the stroke runs under it */
   /* Panel shadow — modals, popovers, menus (dark palette: deeper) */
   --klartext-shadow-panel:      0 6px 24px rgba(0, 0, 0, 0.12);
 }
@@ -284,6 +285,7 @@ body.theme-dark {
   /* Highlight */
   --klartext-highlight:         rgba(255, 200, 40, 0.18);
   --klartext-highlight-strong:  rgba(255, 200, 40, 0.25);
+  --klartext-code-tint:         rgba(255, 255, 255, 0.06);
   --klartext-shadow-panel:   0 6px 24px rgba(0, 0, 0, 0.5);
 }
 }
@@ -3062,42 +3064,85 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
 /* ------------------------------------------------------------------
    HIGHLIGHT / MARK
    ------------------------------------------------------------------ */
-/* ==Highlight== as a marker stroke, not a form field. The stroke is a
-   gradient parallelogram: hard stops at a slight angle give slanted ends,
-   a short soft stop feathers them, and the tint is stronger where the pen
-   set down and lighter where it lifted. Vertical padding overshoots the
-   letters as a felt tip does — inline padding never moves the line — and
-   the negative side margins hand that overshoot to the slanted ends, so the
-   text keeps its place. box-decoration-break: clone gives every wrapped
-   line its own stroke with its own ends, as on paper. No radius, no
-   shadow, one hue; dark mode uses the palette's lower opacities. */
+/* ==Highlight== as a marker stroke, not a form field: ONE stroke from the
+   first character to the last. It lands with a slanted, feathered start
+   where the pen sets down, runs flat, and lifts off with a lighter,
+   feathered end — and nowhere else. Vertical padding overshoots the letters
+   as a felt tip does (inline padding never moves the line), and the side
+   margins hand that overshoot back at the two true ends, so the text keeps
+   its place. No radius, no shadow, one hue; dark mode uses the palette's
+   lower opacities.
+     Continuity is the point, and it has two halves.
+     • Across WRAPPED LINES: box-decoration-break: slice paints the stroke as
+       if the box were unbroken, so a wrapped highlight lands once, on its
+       first line, and lifts once, on its last; the lines between run flat
+       edge to edge. (1.3.0 cloned the ends onto every line, which turned one
+       thought into as many strokes as it had lines.)
+     • Across FORMATTING: Live Preview splits a highlight into one span per
+       formatting change — inline code, bold, a link, and the `==` marks
+       themselves while the line is edited — and each span used to be a
+       complete stroke, so the pen lifted and landed again around every piece
+       of code in a sentence. The stroke's four stops are custom properties;
+       a span that CONTINUES a highlight drops its landing and its start
+       padding, and a span that is FOLLOWED by more highlight drops its lift
+       and its end padding. Which spans those are is read off the siblings:
+       while the line is edited the spans are adjacent, and on an idle line
+       Obsidian keeps the hidden formatting between them as two widget
+       buffers around an empty span, so both patterns are matched. Reading
+       view renders the whole highlight as one <mark> with the formatting
+       nested inside it, so there the stroke is continuous by nature.
+     Inline code inside a highlight keeps a fill, but a translucent one, so
+   it sits ON the stroke instead of cutting a window into it. */
 mark,
 .markdown-preview-view mark,
 .cm-highlight {
+  --klartext-hl-s0: 0.2em;                              /* landing: transparent until here… */
+  --klartext-hl-s1: 0.7em;                              /* …strong from here: the pen lands over half a character */
+  --klartext-hl-c0: var(--klartext-highlight-strong);   /* the tint at the landing */
+  --klartext-hl-e1: 88%;                                /* lift: full tint until here… */
+  --klartext-hl-e0: calc(100% - 0.28em);                /* …transparent from here: it lifts off in a sixth */
+  --klartext-hl-stroke: linear-gradient(104deg,
+    transparent var(--klartext-hl-s0),
+    var(--klartext-hl-c0) var(--klartext-hl-s1),
+    var(--klartext-highlight) var(--klartext-hl-e1),
+    transparent var(--klartext-hl-e0));
   background-color: transparent !important;
-  background-image: linear-gradient(104deg,
-    transparent 0.2em,
-    var(--klartext-highlight-strong) 0.7em,    /* the pen lands over half a character */
-    var(--klartext-highlight) 88%,
-    transparent calc(100% - 0.28em));        /* and lifts off in a sixth */
+  background-image: var(--klartext-hl-stroke);
   color: inherit !important;
   border-radius: 0;
   box-shadow: none;
   padding: 0.14em 0.42em;
-  /* The side margins must cancel the side padding EXACTLY, or the stroke
-     pushes its neighbours along. At -0.18em against 0.42em of padding they
-     did not: each side kept 0.24em of real advance, so a highlight ending
-     mid-sentence opened a visible gap before the next character — most
-     obvious before a full stop, which ended up floating away from the word
-     it belongs to. Cancelled in full, the ends overshoot the text without
-     taking any width, which is what the note above always claimed.
-     The stroke itself is unchanged: its gradient stops are measured against
-     the padded box, which has not moved. Its first 0.2em and last 0.28em are
-     transparent, so the ink that now sits over a neighbouring character is a
-     fraction of a character wide and feathered — a felt tip, as intended. */
-  margin: 0 -0.42em;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+  margin: 0 -0.42em;   /* cancels the side padding exactly, so the ends overshoot the text without taking any width */
+  -webkit-box-decoration-break: slice;
+  box-decoration-break: slice;
+}
+
+/* A span that continues a highlight: no landing, no start padding. */
+.cm-highlight + .cm-highlight,
+.cm-highlight + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight {
+  --klartext-hl-s0: 0;
+  --klartext-hl-s1: 0;
+  --klartext-hl-c0: var(--klartext-highlight);
+  padding-inline-start: 0;
+  margin-inline-start: 0;
+}
+/* A span followed by more of the same highlight: no lift, no end padding. */
+.cm-highlight:has(+ .cm-highlight),
+.cm-highlight:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight) {
+  --klartext-hl-e1: 100%;
+  --klartext-hl-e0: 100%;
+  padding-inline-end: 0;
+  margin-inline-end: 0;
+}
+
+/* Inline code on the stroke: the translucent tint layered over it. */
+.cm-highlight.cm-inline-code:not(.cm-formatting) {
+  background-image: linear-gradient(var(--klartext-code-tint), var(--klartext-code-tint)), var(--klartext-hl-stroke);
+}
+mark code,
+.markdown-preview-view mark code {
+  background-color: transparent;
+  background-image: linear-gradient(var(--klartext-code-tint), var(--klartext-code-tint));
 }
 
 /* ------------------------------------------------------------------

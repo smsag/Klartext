@@ -34,6 +34,8 @@ one file and follow Obsidian's own light/dark setting.
   its parent's text starts. Only the heading badge hangs outside the text.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
+- **A highlight is a marker stroke.** It lands once, runs flat through wrapped lines
+  and through any code, bold or link inside it, and lifts once at the end.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit
   at 4px, each from its own named token so any family can be retuned alone. Callouts
   and highlights are deliberately square.

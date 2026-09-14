@@ -1,0 +1,8 @@
+# Local backups kept beside the live theme; not part of the release
+*.backup-*.css
+*.backup-*.json
+*.backup-*.md
+
+# macOS and iCloud housekeeping
+.DS_Store
+*.icloud

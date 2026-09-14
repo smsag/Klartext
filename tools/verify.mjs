@@ -8,7 +8,8 @@
 //   node tools/verify.mjs diff before after      → "NO DIFFERENCES" apart from the cursor-blink noise
 //   node tools/verify.mjs teardown
 // Take before and after in the same tab: CodeMirror renders only a viewport slice,
-// and a reopened note gives a different element count.
+// and a reopened note gives a different element count. A snapshot brings its tab
+// to the front for a few seconds and then returns to the tab that was active.
 //
 // Commands:
 //   node tools/verify.mjs setup <note.md>       create the check note and open it in a new tab
@@ -68,6 +69,12 @@ try {
       let leaf = null; app.workspace.iterateAllLeaves(l => { if (l.view?.file?.path === path) leaf = l; });
       if (!leaf) throw new Error('check note not open');
       const wait = ms => new Promise(r => setTimeout(r, ms));
+      // The leaf must be laid out: a background tab has no boxes and every
+      // computed length reads as auto. Reveal it for the snapshot and hand the
+      // previously active tab back afterwards.
+      const prevLeaf = app.workspace.activeLeaf;
+      app.workspace.revealLeaf(leaf); await wait(500);
+      if (!leaf.view.containerEl.getClientRects().length) throw new Error('check note leaf is hidden');
       const setMode = async mode => { const vs = leaf.getViewState(); vs.state = { ...vs.state, mode, source: false }; await leaf.setViewState(vs); await wait(700); };
       const SEP = '\\u001f';
       let names = null;
@@ -120,6 +127,7 @@ try {
       for (const c of ['is-mobile', 'is-phone', 'is-ios']) body.classList.remove(c);
       body.classList.toggle('theme-dark', origDark); body.classList.toggle('theme-light', !origDark);
       await setMode('source');
+      if (prevLeaf && prevLeaf !== leaf) { try { app.workspace.revealLeaf(prevLeaf); } catch (e) {} }
       window.__kxSnaps = window.__kxSnaps || {};
       window.__kxSnaps[${JSON.stringify(a1)}] = { names, snap };
       const n = Object.values(snap).reduce((a, s) => a + Object.values(s).reduce((b, l) => b + l.length, 0), 0);

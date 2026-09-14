@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **The palette declares Obsidian's tokens directly.** `--bg-primary`,
+  `--bg-secondary`, `--bg-secondary-alt`, `--text-primary` and
+  `--text-secondary` were exact aliases of `--background-primary`,
+  `--background-secondary`, `--background-secondary-alt`, `--text-normal`
+  and `--text-muted`, and every rule now reads those. `--border` stays a
+  theme token because Obsidian sets `--background-modifier-border` to
+  transparent inside a property's multi-select container, and the theme's
+  frame lines must not follow; Obsidian 1.13.7 redefines no other public
+  token contextually. A snippet that read the old names needs the new ones.
+- **Stylelint.** `.stylelintrc.json` checks for duplicate selectors,
+  duplicate and shorthand-overridden declarations and empty blocks; the
+  descending-specificity rule is off because restating a selector at
+  Obsidian's specificity, later in the cascade, is how this theme wins
+  ties. `.githooks/pre-commit` runs it on commits that touch the
+  stylesheet, after `git config core.hooksPath .githooks`. The two remaining
+  duplicate selector pairs are merged; the `body` token blocks that sit
+  beside the rules reading them, and the callout colour default, carry a
+  disable comment each.
+
 - **The stylesheet is authored in `src/theme.css`; `theme.css` is built.**
   `fonts/embed.py` now writes the root `theme.css` as the source file plus
   the generated `@font-face` block, so the file under review is the 180 KB
@@ -38,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   styles of the check note in the running Obsidian and diffs two snapshots.
 
 ### Removed
+- **The mobile restatement of the background tokens**, which without the
+  private layer would have pointed each token at itself. Obsidian 1.13.7
+  has no mobile rule that it countered.
 - **Tokens nothing reads.** `--font-size-base`, `--editor-font-size`,
   `--font-family-editor` and `--font-family-preview` are read by neither
   Obsidian 1.13.7 nor the theme; `--klartext-highlight-strong` was defined in

@@ -151,6 +151,13 @@ element in Live Preview and Reading view, light and dark, with and without the
 mobile body classes, and diffs two such snapshots. The header of the script shows
 the sequence; a refactor is done when the diff is empty.
 
+`.stylelintrc.json` catches duplicate selectors, duplicate or shorthand-overridden
+declarations and empty blocks (`npx stylelint src/theme.css`). Its
+descending-specificity rule is off on purpose: restating a selector at Obsidian's
+own specificity, later in the cascade, is how this theme wins ties.
+`git config core.hooksPath .githooks` runs the check before any commit that
+touches the stylesheet.
+
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.
 

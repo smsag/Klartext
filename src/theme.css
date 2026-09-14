@@ -116,15 +116,19 @@ settings:
    ------------------------------------------------------------------ */
 body.theme-light,
 body.theme-dark {
-  --bg-primary:            #ffffff;
-  --bg-secondary:          #f7f7f5;
-  --bg-secondary-alt:      #f0f0ed;
+  --background-primary:       #ffffff;
+  --background-secondary:     #f7f7f5;
+  --background-secondary-alt: #f0f0ed;
+  --background-primary-alt:   var(--background-secondary);
 
-  --text-primary:          #333333;   /* dark neutral grey, not black — still ~12.6:1 on white */
-  --text-secondary:        #575757;
+  --text-normal:           #333333;   /* dark neutral grey, not black — still ~12.6:1 on white */
+  --text-muted:            #575757;
   --text-subtle:           #757575;
   --text-faint:            #8f8f86;
 
+  /* --border stays a theme token rather than --background-modifier-border
+     itself: Obsidian sets that token to transparent inside a property's
+     multi-select container, and the theme's frame lines must not follow. */
   --border:                #e8e8e6;
   --border-subtle:         #f0f0ed;
 
@@ -135,16 +139,10 @@ body.theme-dark {
   --table-stripe-bg:       rgba(0,0,0,0.025);   /* zebra rows — a hair darker than the page */
   --klartext-dot-color:    rgba(0,0,0,0.05);   /* paper dot-grid — faint */
 
-  /* Obsidian background vars — reference private tokens to avoid duplication */
-  --background-primary:              var(--bg-primary);
-  --background-primary-alt:          var(--bg-secondary);
-  --background-secondary:            var(--bg-secondary);
-  --background-secondary-alt:        var(--bg-secondary-alt);
+  /* Obsidian's own tokens, pointed at the palette above */
   --background-modifier-border:      var(--border);
   --background-modifier-hover:       rgba(0,0,0,0.04);
   --background-modifier-active-hover:rgba(0,0,0,0.07);
-  --text-normal:                     var(--text-primary);
-  --text-muted:                      var(--text-secondary);
   --hr-color:                        var(--border);
   --table-border-color:              var(--border);
   --scrollbar-thumb-bg:              #d0d0ce;
@@ -169,25 +167,18 @@ body.theme-dark {
   --klartext-shadow-panel:      0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* Mobile: restate the background tokens under Obsidian's mobile selectors so
-   iOS takes the theme's page colour rather than its own */
-body.is-mobile.theme-light {
-  --background-primary:       var(--bg-primary);
-  --background-secondary:     var(--bg-secondary);
-  --background-secondary-alt: var(--bg-secondary-alt);
-}
-
 /* ------------------------------------------------------------------
    CSS VARIABLES — DARK MODE  (screen only — see the light block)
    ------------------------------------------------------------------ */
 @media screen {
 body.theme-dark {
-  --bg-primary:            #1a1a1a;
-  --bg-secondary:          #222222;
-  --bg-secondary-alt:      #2a2a2a;
+  --background-primary:       #1a1a1a;
+  --background-secondary:     #222222;
+  --background-secondary-alt: #2a2a2a;
+  --background-primary-alt:   var(--background-secondary);
 
-  --text-primary:          #d4d4d0;
-  --text-secondary:        #a6a6a0;
+  --text-normal:           #d4d4d0;
+  --text-muted:            #a6a6a0;
   --text-subtle:           #7d7d77;
   --text-faint:            #5e5e59;
 
@@ -201,15 +192,9 @@ body.theme-dark {
   --table-stripe-bg:       rgba(255,255,255,0.03);   /* zebra rows — a hair lighter than the page */
   --klartext-dot-color:    rgba(255,255,255,0.045);   /* paper dot-grid — faint */
 
-  --background-primary:              var(--bg-primary);
-  --background-primary-alt:          var(--bg-secondary);
-  --background-secondary:            var(--bg-secondary);
-  --background-secondary-alt:        var(--bg-secondary-alt);
   --background-modifier-border:      var(--border);
   --background-modifier-hover:       rgba(255,255,255,0.04);
   --background-modifier-active-hover:rgba(255,255,255,0.08);
-  --text-normal:                     var(--text-primary);
-  --text-muted:                      var(--text-secondary);
   --hr-color:                        var(--border);
   --table-border-color:              var(--border);
   --scrollbar-thumb-bg:              #333333;
@@ -435,7 +420,7 @@ body {
      from Obsidian's accent token, so it follows whatever accent is set
      rather than being a colour of its own. The .tag rule in the TAGS
      section keeps the interface font; the rest is these tokens. */
-  --tag-color:              var(--text-secondary);   /* one step down from the text; the subtle grey is unreadable inline */
+  --tag-color:              var(--text-muted);   /* one step down from the text; the subtle grey is unreadable inline */
   --tag-color-hover:        var(--interactive-accent);
   --tag-background:         hsla(var(--interactive-accent-hsl), 0.2);
   --tag-border-width:       0px;
@@ -516,9 +501,9 @@ body {
   --graph-node-focused:     var(--interactive-accent);
   --graph-line:             var(--border);
   --graph-node-unresolved:  var(--text-faint);
-  --graph-text:             var(--text-secondary);
+  --graph-text:             var(--text-muted);
   --graph-node-tag:         var(--text-subtle);
-  --graph-node-attachment:  var(--text-secondary);
+  --graph-node-attachment:  var(--text-muted);
 }
 
 /* Lists indented with spaces (Style Settings: klartext-space-indent). See
@@ -723,7 +708,7 @@ body.is-mobile {
 
 ::selection {
   background-color: var(--selection-bg) !important;   /* one token with .cm-selectionBackground */
-  color: var(--text-primary) !important;
+  color: var(--text-normal) !important;
 }
 
 /* …except the marks the theme deliberately renders INVISIBLE. The rule above
@@ -771,6 +756,7 @@ body.klartext-title-mono {
 body.klartext-title-sans {
   --inline-title-font: var(--font-interface-theme);
 }
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   /* The title IS the headline: the h1 treatment exactly, so the top of the
      page does not put its biggest type under a smaller name. Read from the
@@ -844,7 +830,7 @@ body {
 .markdown-preview-view div:has(+ div > :is(h1, h2, h3, h4, h5, h6)) > :is(p, ul, ol, blockquote, pre, table, .markdown-embed, .math-block, .mermaid) {
   margin-bottom: 0 !important;
 }
-.cm-header-6, .markdown-preview-view h6 { color: var(--text-secondary); }
+.cm-header-6, .markdown-preview-view h6 { color: var(--text-muted); }
 
 .cm-formatting-header {
   color: var(--text-faint);   /* source mode only — zero-width in Live Preview */
@@ -1226,6 +1212,7 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
    absolute offset in em resolves against the element's OWN font size, and
    the label is set at 0.72em while the button is not — em tokens would put
    the two on different scales and the gap between them would drift. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --klartext-code-btn:    calc(var(--klartext-font-size) * 1.3);   /* the button's box */
   --klartext-code-inset:  calc(var(--klartext-font-size) * 0.3);   /* corner to control */
@@ -1590,7 +1577,7 @@ blockquote,
      never seen. */
   margin: var(--readability-blockquote-spacing) 0 calc(var(--klartext-p-gap) * var(--klartext-blank-line)) var(--klartext-marker-axis) !important;
   padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text at the column's far edge, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: calc(1em * var(--klartext-quote-scale));
   font-style: italic;
   background: transparent;
@@ -1633,7 +1620,7 @@ blockquote,
    edge is the edge every other block uses. The inline hanging indent
    Obsidian writes is left alone: it equals the token's width. */
 .cm-quote {
-  color: var(--text-secondary) !important;
+  color: var(--text-muted) !important;
   font-style: italic;
   font-size: var(--klartext-quote-font-size);
 }
@@ -1792,6 +1779,7 @@ hr,
   padding-inline-end: var(--klartext-cell);
   margin-inline-start: calc(-1 * var(--klartext-col));
   justify-content: flex-end;
+  font-size: 0;   /* Obsidian's dot is em-sized; the dash below sets its own size */
 }
 .markdown-rendered {
   /* Obsidian draws this guide as the end border of a ZERO-width box (the
@@ -1915,14 +1903,11 @@ hr,
    dot. Obsidian draws the dot as an absolutely-positioned ::after box (sized
    by --list-bullet-size) plus a zero-width ::before. Hide the box explicitly
    — not by relying on font-size:0 collapsing an em-sized box — and draw the
-   dash via ::before. (Live Preview draws its dash from the marker token
-   instead; see LIVE PREVIEW MARKERS above.) To try another glyph, change
-   the content escape:
+   dash via ::before; the font-size: 0 is on the box rule above. (Live
+   Preview draws its dash from the marker token instead; see LIVE PREVIEW
+   MARKERS above.) To try another glyph, change the content escape:
      \2013 –  (en dash)   \2022 •  (dot)   \00B7 ·  (middot)
      \25E6 ◦  (hollow)    \203A ›  (angle)  \2192 →  (arrow) */
-.markdown-rendered .list-bullet {
-  font-size: 0;
-}
 .markdown-rendered .list-bullet::after {
   display: none;
 }
@@ -1985,6 +1970,8 @@ hr,
   border-collapse: separate;
   border-spacing: 0;
   margin-left: 0;   /* outer border sits on the shared text edge */
+  width: max-content;   /* natural width, scrolling past the column; see the note at the end of this section */
+  max-width: 200%;
   font-size: 0.9em;
   border: 1px solid var(--border);
   border-radius: var(--klartext-radius-block);
@@ -2063,7 +2050,7 @@ hr,
   border-bottom: 1px solid var(--border);   /* one step darker than the body gridlines; later than the cell rule, so it wins */
   font-family: var(--font-interface-theme);
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-normal);
 }
 
 /* Header cell content wrapper stays transparent — including while focused —
@@ -2113,6 +2100,7 @@ hr,
    table (frame, radius and stripes travel with the content, on the text
    edge). Live Preview: Obsidian's .cm-table-widget already scrolls.
    Scrollbars follow the global 5px styling and appear only on overflow. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --table-column-min-width: 11ch;
 }
@@ -2142,12 +2130,8 @@ body {
    (GitHub's model): a stretched table hands the spare width to columns in
    proportion to their natural widths, so a glossary's term column grew to
    half the table and sat empty while the meanings wrapped. A table that
-   is narrower than the column is a compact box on the text edge. */
-.markdown-rendered table,
-.markdown-source-view.mod-cm6 table {
-  width: max-content;
-  max-width: 200%;
-}
+   is narrower than the column is a compact box on the text edge. (width and
+   max-width sit on the table rule at the top of this section.) */
 
 /* ------------------------------------------------------------------
    TAGS
@@ -2220,7 +2204,7 @@ a.tag {
 .nav-folder-title {
   /* font-size and font-family inherited from .workspace-sidebar container */
   font-weight: 400;
-  color: var(--text-primary);
+  color: var(--text-normal);
   border-radius: var(--radius-m);
   padding: 5px 6px;
 }
@@ -2250,7 +2234,7 @@ a.tag {
 
 .nav-folder-title-content {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-normal);
 }
 
 /* ------------------------------------------------------------------
@@ -2294,7 +2278,7 @@ a.tag {
   font-family: var(--font-interface-theme);
   font-size: var(--klartext-ui-md);
   border-radius: var(--radius-m);
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .suggestion-item.is-selected {
@@ -2484,7 +2468,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 
 .metadata-property-key {
   /* font-family inherited from .metadata-container */
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: calc(var(--klartext-ui-font-size) * 0.92);
 }
 
@@ -2565,8 +2549,8 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
    COLOUR and size, not by transparency: the name takes the body text colour,
    the path one step down. Against the dark page that reads 11.7:1 and 7.1:1;
    the faint colour would measure 2.7:1. */
-.view-header-title      { font-weight: 500; font-size: var(--klartext-ui-md); color: var(--text-primary); }
-.view-header-breadcrumb { font-size: var(--klartext-ui-sm); color: var(--text-secondary) !important; }
+.view-header-title      { font-weight: 500; font-size: var(--klartext-ui-md); color: var(--text-normal); }
+.view-header-breadcrumb { font-size: var(--klartext-ui-sm); color: var(--text-muted) !important; }
 
 /* Obsidian dims the whole title area to 70% on phones, which on top of the
    colours above drops the path below every legibility floor (2.7:1 against
@@ -2868,6 +2852,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
      • types the theme doesn't know (custom types) take the quote grey, not
        Obsidian's saturated blue.
    ------------------------------------------------------------------ */
+/* stylelint-disable-next-line no-duplicate-selectors */
 .callout                                          { --callout-color: rgb(115 113 108); }   /* default: any unknown type */
 
 .callout[data-callout="note"],
@@ -3097,7 +3082,7 @@ mark code,
   margin-top: 3em;
   padding-top: 1em;
   font-size: 0.85em;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 /* Obsidian's footnote section starts with its own <hr>; the theme's border
@@ -3108,7 +3093,7 @@ mark code,
 
 .footnotes li {
   margin-bottom: 0.4em;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .footnote-ref,
@@ -3168,7 +3153,7 @@ a.footnote-ref {
 .canvas-node-label {
   font-family: var(--font-interface-theme) !important;
   font-size: var(--klartext-ui-sm) !important;
-  color: var(--text-secondary) !important;
+  color: var(--text-muted) !important;
 }
 
 
@@ -3244,7 +3229,7 @@ body.klartext-greyscale-diagrams .mermaid svg rect.note {
 
 /* subgraphs / clusters — one step lighter than nodes */
 body.klartext-greyscale-diagrams .mermaid svg .cluster rect {
-  fill: var(--bg-secondary) !important;
+  fill: var(--background-secondary) !important;
   stroke: var(--border) !important;
 }
 
@@ -3305,8 +3290,8 @@ body.klartext-greyscale-diagrams .mermaid svg .label {
 body.klartext-greyscale-diagrams .mermaid svg .cluster-label .nodeLabel,
 body.klartext-greyscale-diagrams .mermaid svg .cluster-label text,
 body.klartext-greyscale-diagrams .mermaid svg .cluster text {
-  color: var(--text-secondary) !important;
-  fill: var(--text-secondary) !important;
+  color: var(--text-muted) !important;
+  fill: var(--text-muted) !important;
 }
 
 /* Label size, fixed at 0.9 of the body font. Mermaid's default
@@ -3486,7 +3471,7 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
   font-family: var(--font-monospace-theme);
   font-style: normal;
   font-size: 1em;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 .cm-s-obsidian span.cm-math-2 {
   font-size: 1em;
@@ -3496,6 +3481,7 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
    (Obsidian paints search-result matches from --text-highlight-bg; the
    editor's find panel uses CodeMirror's .cm-searchMatch). The current
    match keeps Obsidian's accent ring. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --text-highlight-bg: var(--klartext-highlight);
 }
@@ -3520,7 +3506,7 @@ kbd,
   font-family: var(--font-interface-theme);
   font-size: 0.82em;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   background-color: var(--surface-muted);
   border: 1px solid var(--border);
   border-bottom-width: 2px;
@@ -3558,6 +3544,7 @@ sub { bottom: -0.25em; }
 
 /* Context menus: page colour, the theme's border, a soft shadow (deeper in
    dark mode), the UI font size; the radius comes from --radius-m. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --menu-background:     var(--background-primary);
   --menu-border-color:   var(--border);
@@ -3585,9 +3572,9 @@ body {
     --indentation-guide-color: transparent;
     --indentation-guide-color-active: transparent;
     --list-marker-color: var(--text-faint);     /* Obsidian's dark value would be faint-on-white */
-    --checkbox-color: var(--text-secondary);
-    --text-accent: var(--text-primary);
-    --text-accent-hover: var(--text-primary);
+    --checkbox-color: var(--text-muted);
+    --text-accent: var(--text-normal);
+    --text-accent-hover: var(--text-normal);
   }
 
   /* Page breaks: headings keep the next block, blocks are not split,

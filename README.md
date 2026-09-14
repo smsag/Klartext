@@ -94,7 +94,7 @@ All of these live in Settings → Style Settings → Klartext.
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
 | List Indent | the column | Indent step per nested list level; left alone it equals the marker column, so nested marks start on the parent's text edge |
-| Note Title Font | Body monospace | The note's own title above the text: the body face, or the interface face to match the headings below it |
+| Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |
 | Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it |
 | Spaces Per Level | 4 | Read only while the option above is on; match Editor → Tab indent size |
 | Paragraph Spacing | 1.4 | Gap between paragraphs as a multiple of the line height |

@@ -121,20 +121,30 @@ size and the default two-cell column.
   natively (`caret-color`), not through CodeMirror's cursor layer, and the
   page-coloured patch the theme painted over the dot sat above it. The
   patch is gone with the rest of that construction.
-- **The note title's face is a choice.** Obsidian ties the inline title to
-  the H1 tokens, so untouched it is a second headline in the interface face
-  at the full h1 size, right above the one the document may already carry;
-  the theme has always overridden that to a quieter name plate in the body
-  face. That stays the default, and **Note Title Font** (Style Settings) can
-  switch it to the interface face for anyone who wants the top of the page
-  in one family. Size and weight are unchanged either way, so the title
-  stays quieter than an H1.
-  The block is now set through Obsidian's own `--inline-title-*` tokens
-  instead of on the element, which drops three `!important` flags: Obsidian
-  applies all of them from `.inline-title:not([data-level])`, which
-  out-ranks a plain class — the same specificity gap that had been silently
-  swallowing the theme's letter-spacing, so the title now tracks at the
-  -0.02em it always meant to rather than Obsidian's -0.015em.
+- **The note title is the headline.** It takes the h1 size and weight, read
+  from the h1 tokens so the two can never drift, instead of the 1.75em at
+  weight 500 it had carried: a note that opens with an h1 was putting its
+  biggest type under a smaller name. Its FACE is a Style Settings choice,
+  **Note Title Font** — the body monospace by default, the interface face
+  for anyone who wants the top of the page in one family — and the hairline
+  rule under it stays, which is what still tells a title from a heading.
+  The block is set through Obsidian's own `--inline-title-*` tokens now
+  rather than on the element, which drops three `!important` flags:
+  Obsidian applies all of them from `.inline-title:not([data-level])`,
+  which out-ranks a plain class. That same specificity gap had been
+  silently swallowing the theme's letter-spacing, so the title now tracks
+  with its heading rather than at Obsidian's own value.
+- **Reading view leads a heading exactly as Live Preview does.** Measured
+  text box to text box at every level, the gap above a heading had been
+  20px (h6) to 46px (h1) wider in Reading view; it is now within 1px
+  everywhere, and the gap below within 1px as well. What the editor shows
+  around a heading is one blank source line and nothing else — the theme's
+  own `.HyperMD-header-N` margins never reach it, since Obsidian zeroes
+  every `.cm-content` child's margin with `!important` — so Reading view is
+  built to that: the heading owns the gap above it and the block before it
+  hands its bottom margin over, h1 listed apart because its tighter
+  line-height puts its text differently inside the box. The 1.4.0 note
+  claiming the two already matched within 0.2px did not hold.
 - **The list tree line assumed tab indentation.** Obsidian sets `tab-size`
   to a LENGTH on list lines, so a tab is exactly one List Indent wide;
   spaces render at their own width instead — four of them are 38.4px against

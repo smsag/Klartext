@@ -121,6 +121,20 @@ size and the default two-cell column.
   natively (`caret-color`), not through CodeMirror's cursor layer, and the
   page-coloured patch the theme painted over the dot sat above it. The
   patch is gone with the rest of that construction.
+- **The note title's face is a choice.** Obsidian ties the inline title to
+  the H1 tokens, so untouched it is a second headline in the interface face
+  at the full h1 size, right above the one the document may already carry;
+  the theme has always overridden that to a quieter name plate in the body
+  face. That stays the default, and **Note Title Font** (Style Settings) can
+  switch it to the interface face for anyone who wants the top of the page
+  in one family. Size and weight are unchanged either way, so the title
+  stays quieter than an H1.
+  The block is now set through Obsidian's own `--inline-title-*` tokens
+  instead of on the element, which drops three `!important` flags: Obsidian
+  applies all of them from `.inline-title:not([data-level])`, which
+  out-ranks a plain class — the same specificity gap that had been silently
+  swallowing the theme's letter-spacing, so the title now tracks at the
+  -0.02em it always meant to rather than Obsidian's -0.015em.
 - **The list tree line assumed tab indentation.** Obsidian sets `tab-size`
   to a LENGTH on list lines, so a tab is exactly one List Indent wide;
   spaces render at their own width instead — four of them are 38.4px against

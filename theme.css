@@ -126,6 +126,16 @@ settings:
     step: 0.25
     format: em
     variable: --list-indent
+  - id: klartext-title-font
+    title: Note Title Font
+    description: The note's own title, above the text. Monospace matches the body it sits on; the interface face matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
+    type: class-select
+    default: klartext-title-mono
+    options:
+      - label: Body monospace
+        value: klartext-title-mono
+      - label: Interface sans
+        value: klartext-title-sans
   - id: klartext-space-indent
     title: Lists Indented With Spaces
     description: Turn this on if Obsidian's Editor → "Indent using tabs" is OFF. A tab is rendered at exactly the List Indent above, spaces at their own width, so the two are not the same distance — and a stylesheet cannot see which one a vault types. Only the list tree line depends on knowing; everything else follows Obsidian either way
@@ -834,15 +844,39 @@ body.is-android {
 /* ------------------------------------------------------------------
    INLINE TITLE
    ------------------------------------------------------------------ */
-.inline-title {
-  font-family: var(--font-text-theme) !important;
-  font-size: 1.75em !important;
-  font-weight: 500 !important;
+/* The note's own title. Obsidian ties it to the H1 tokens by default, so
+   untouched it would be a second headline in the interface face at the full
+   h1 size, directly above the one the document may already carry. Klartext
+   keeps it quieter: body size and a hairline rule, a name plate rather than
+   a headline, with the face a Style Settings choice (klartext-title-font) —
+   monospace by default, the interface face for anyone who wants the top of
+   the page to read as one typographic family.
+     Set through Obsidian's own --inline-title-* tokens rather than on the
+   element. Obsidian applies every one of them from
+   `.inline-title:not([data-level])`, which out-ranks a plain `.inline-title`
+   rule — which is why this block used to carry three !important flags, and
+   why its letter-spacing (0,1,0) silently never applied at all. The tokens
+   need no flags and survive a change of selector; the letter-spacing is
+   restated at Obsidian's own specificity, theme.css loading later. */
+body,
+body.klartext-title-mono {
+  --inline-title-font: var(--font-text-theme);
+}
+body.klartext-title-sans {
+  --inline-title-font: var(--font-interface-theme);
+}
+body {
+  --inline-title-size: 1.75em;
+  --inline-title-weight: 500;
+  --inline-title-color: var(--text-normal);
+  --inline-title-margin-bottom: 1.5em;
+}
+.inline-title:not([data-level]) {
   letter-spacing: -0.02em;
-  color: var(--text-normal);
+}
+.inline-title {
   padding-bottom: 0.25em;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 1.5em;
 }
 
 /* ------------------------------------------------------------------

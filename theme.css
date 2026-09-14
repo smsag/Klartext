@@ -2,6 +2,10 @@
    Klartext — Obsidian Theme
    Inspired by iA Writer · JetBrains Mono + Fira Sans
    Supports: Light & Dark · Desktop & Mobile · Style Settings
+
+   The stylesheet is authored in src/theme.css. The theme.css at the
+   repository root is BUILT from it by fonts/embed.py, which appends the
+   embedded fonts; edit src/theme.css and run the script.
    ================================================================== */
 
 /* @settings
@@ -93,14 +97,14 @@ settings:
    WHY BASE64: Obsidian injects theme.css into a <style> tag, so a relative
    url('fonts/…') resolves against app://obsidian.md — NOT the theme folder —
    and can never find a local file. The only way to ship fonts inside a theme
-   is to embed them as data URIs. The @font-face rules therefore live in the
-   generated "EMBEDDED FONTS" section at the END of this file (so the readable
-   CSS stays readable). Each face is split into latin / latin-ext with
-   unicode-range, mirroring Google's subsetting.
+   is to embed them as data URIs. The @font-face rules are therefore appended
+   to the built theme.css by fonts/embed.py as a generated "EMBEDDED FONTS"
+   section (so this file stays readable). Each face is split into latin /
+   latin-ext with unicode-range, mirroring Google's subsetting.
 
    To refresh the fonts: put new .woff2 subsets in ./fonts, then run
        python3 fonts/embed.py
-   and replace the EMBEDDED FONTS section with its output. */
+   which rebuilds theme.css. */
 
 /* ------------------------------------------------------------------
    CSS VARIABLES — LIGHT MODE

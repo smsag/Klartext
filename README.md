@@ -123,8 +123,11 @@ rather than Obsidian's.
 
 ## Notes for anyone editing it
 
-`theme.css` is one file, sectioned by element with a comment block above each rule that
-explains why the value is what it is. Where a number was measured rather than chosen,
+The stylesheet is `src/theme.css`, one file sectioned by element with a comment block
+above each rule that explains why the value is what it is. The `theme.css` at the
+repository root is built from it by `python3 fonts/embed.py`, which appends the
+embedded fonts; it is the file Obsidian installs and must stay committed, but it is
+not the file to edit. Where a number was measured rather than chosen,
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
 system; `--ia-editor-font-size` is the alias every derived size chains from;
@@ -148,8 +151,9 @@ records the mechanism behind each change, not just the outcome.
 
 What the repository holds, and why: `theme.css` and `manifest.json` are what
 Obsidian installs; the theme store also reads this README and the screenshots.
-`fonts/` is source, not shipped: the subsetted `.woff2` files that
-`fonts/embed.py` writes into `theme.css` as base64, the two licence texts, and
+`src/theme.css` is the stylesheet as written, without the fonts. `fonts/` is
+source, not shipped: the subsetted `.woff2` files that `fonts/embed.py` appends
+to `src/theme.css` as base64 to produce `theme.css`, the two licence texts, and
 `fonts/make-marks.py`, which builds the Klartext Marks faces. They stay in the
 repository so the embedded fonts can be rebuilt or re-subsetted without hunting
 for the originals. Nothing else belongs here; backups of earlier versions are

@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""Emit the embedded @font-face block for theme.css.
+"""Build theme.css: the readable stylesheet in src/theme.css followed by the
+embedded @font-face block.
 
 Obsidian injects theme.css into a <style> tag, so relative url() paths do NOT
 resolve against the theme folder — local font files can't be referenced by
 path. The only way to ship fonts inside a theme is to embed them as base64
 data URIs. This script generates that block from the .woff2 files in this
 folder (latin + latin-ext subsets, matching the unicode-range split Google
-Fonts uses).
+Fonts uses) and appends it to src/theme.css.
 
 Usage (from the theme folder):
-    python3 fonts/embed.py > /tmp/fonts.css
-then paste the output over the "EMBEDDED FONTS" section at the end of theme.css.
+    python3 fonts/embed.py            # writes theme.css
+    python3 fonts/embed.py --fonts    # prints only the @font-face block
 """
 import base64
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
+ROOT = HERE.parent
 
 LATIN = ("U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, "
          "U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, "
@@ -67,4 +70,10 @@ out.append(face("Klartext Marks", "normal", "400", "KlartextMarks.woff2",
 # …and the variant for a callout's header token, which blanks only the ">".
 out.append(face("Klartext Marks Quote", "normal", "400", "KlartextMarksQuote.woff2", "U+003E"))
 
-print("".join(out), end="")
+fonts_css = "".join(out)
+if "--fonts" in sys.argv[1:]:
+    print(fonts_css, end="")
+else:
+    src = (ROOT / "src" / "theme.css").read_text()
+    (ROOT / "theme.css").write_text(src + fonts_css)
+    print(f"theme.css: {len(src)} bytes of stylesheet + {len(fonts_css)} bytes of fonts")

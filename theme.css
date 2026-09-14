@@ -495,13 +495,15 @@ body {
 
   --caret-color:            var(--interactive-accent);
 
-  /* LINKS — no underline. Obsidian draws link underlines through these body
+  /* LINKS — Obsidian's own underline, switched off here so the theme can
+     draw its own. Obsidian draws link underlines through these body
      variables (verified in 1.13.7 app.css: a / a:hover / .external-link /
      .markdown-rendered .internal-link use text-decoration-line: var(…)), and
      its own selectors out-rank the theme's plain `a` rule — so the variables
-     are the hook, not text-decoration. Links stay distinguishable by colour;
-     the theme's own hover cue (colour + hairline) is unchanged. Unresolved
-     links keep Obsidian's dimmed colour instead of an underline. */
+     are the hook, not text-decoration. Setting them to `none` clears the
+     field for the rule the BOLD, ITALIC, LINKS section draws instead: solid
+     under a link that stays in the vault, dotted under one that leaves it.
+     Unresolved links keep Obsidian's dimmed colour and no rule at all. */
   --link-decoration:                 none;
   --link-decoration-hover:           none;
   --link-external-decoration:        none;
@@ -1549,14 +1551,12 @@ body.is-mobile .markdown-rendered .copy-code-button {
   color: var(--text-faint) !important;
 }
 
-/* Air inside the fence. Obsidian gives these lines a padding-inline-start
-   and nothing vertical, so the opening ``` sat directly on the border the
-   theme draws above it. Padded on the delimiter lines rather than on
-   .HyperMD-codeblock, so it lands once at each end instead of on every line
-   of code. Both ends get the same amount: the top is what reads as wrong,
-   but padding only the top would leave the block visibly lopsided.
-   Derived from the editor font so it tracks the text size. No !important
-   needed — Obsidian sets no vertical padding here to compete with. */
+/* The two ends of the fence. The side borders run down every code line
+   (above); these close the box, top and bottom, and carry the block radius
+   on the corners that actually have one. !important because Obsidian paints
+   the codeblock lines from its own rules at a higher specificity. The air
+   inside those ends is a separate rule, further down — it has to carry a
+   longer selector than these do, for the reason given there. */
 .HyperMD-codeblock-begin {
   border-top: 1px dashed var(--code-border) !important;
   border-radius: var(--klartext-radius-block) var(--klartext-radius-block) 0 0 !important;
@@ -1567,7 +1567,7 @@ body.is-mobile .markdown-rendered .copy-code-button {
   border-radius: 0 0 var(--klartext-radius-block) var(--klartext-radius-block) !important;
 }
 
-/* …and air inside it. Obsidian gives code lines a padding-inline-start and
+/* Air inside the fence. Obsidian gives code lines a padding-inline-start and
    nothing vertical, so the opening ``` sat directly on the border drawn
    above it. Padded on the two delimiter lines rather than on
    .HyperMD-codeblock, so it lands once at each end instead of on every line
@@ -3114,12 +3114,17 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
 /* ------------------------------------------------------------------
    EMBEDS / TRANSCLUSIONS
    ------------------------------------------------------------------ */
+/* The box, and its one inset. Obsidian pads the embedded note's preview by
+   --embed-padding (24px on the start side, for its accent-bar model); on top
+   of this box's own 1em that put embedded text 40px in. Zeroed, so the box
+   padding below is the only inset there is. */
 .markdown-embed {
   border: 1px solid var(--border);
   border-radius: var(--klartext-radius-block);
   background-color: var(--background-secondary);
   padding: 0.75em 1em;
   margin: var(--klartext-block-gap) 0;
+  --embed-padding: 0;
 }
 
 .markdown-embed-content {
@@ -3127,15 +3132,10 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
   max-height: 800px;
   overflow-y: auto;
 }
-/* Obsidian pads the embedded note's preview by --embed-padding (24px on the
-   start side, for its accent-bar model); on top of this box's own 1em that
-   put embedded text 40px in. Zeroed, so the box padding is the only inset.
-   The first block inside an embed drops its top margin (a heading carried
+
+/* The first block inside an embed drops its top margin: a heading carried
    its full blank-line margin, opening the box with 60px of air against 11px
-   at the bottom); Obsidian already zeroes the last block's bottom margin. */
-.markdown-embed {
-  --embed-padding: 0;
-}
+   at the bottom. Obsidian already zeroes the last block's bottom margin. */
 .markdown-embed .markdown-preview-sizer > div:first-child > :first-child {
   margin-top: 0;
 }

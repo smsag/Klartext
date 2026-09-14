@@ -5,6 +5,49 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **The stylesheet is authored in `src/theme.css`; `theme.css` is built.**
+  `fonts/embed.py` now writes the root `theme.css` as the source file plus
+  the generated `@font-face` block, so the file under review is the 180 KB
+  of stylesheet rather than 570 KB with fonts inside. `--fonts` prints only
+  the font block, as the script did before. Obsidian still installs the root
+  `theme.css`, which stays committed; the built file changed only in its
+  banner, verified byte for byte before the banner was added.
+- **Selectors that restated a class Obsidian always pairs are gone.** Every
+  Reading-view element that carries `.markdown-preview-view` also carries
+  `.markdown-rendered`, and `.is-ios` / `.is-android` never appear on `body`
+  without `.is-mobile`. Where a rule listed both forms, the narrower one is
+  dropped: same specificity, same cascade position, same elements matched.
+  52 selectors; rules that listed only one form are untouched.
+- **`--ia-editor-font-size` is now `--klartext-font-size`.** The `--ia-`
+  prefix was a fossil of the iA Writer inspiration. `--ia-line-height` and
+  `--klartext-col-cells` were pure aliases of `--klartext-line-height` and
+  `--klartext-marker-column` and are replaced by them. Style Settings ids and
+  the variables named after them are unchanged. A snippet that read the old
+  names needs the new ones.
+- **Comments say why a value is what it is, not how it got there.**
+  Sentences that narrated earlier versions, releases and failed attempts
+  are cut or rewritten as the constraint they illustrated; every measurement
+  stays. Two comments that had drifted from the code are corrected.
+
+### Removed
+- **Tokens nothing reads.** `--font-size-base`, `--editor-font-size`,
+  `--font-family-editor` and `--font-family-preview` are read by neither
+  Obsidian 1.13.7 nor the theme; `--klartext-highlight-strong` was defined in
+  both palettes and never read once the stroke moved to the `-hl-ink` pair;
+  `--canvas-dot-color` is not an Obsidian token. The table's `width: 100%`
+  was overridden by `width: max-content` in the same section. The two print
+  rules on the table are one.
+
+### Verification
+- Every step was checked in the running Obsidian 1.13.7 over the debugging
+  port: the computed styles of a check note in Live Preview and Reading
+  view, light and dark, with and without the mobile body classes, are
+  identical before and after each commit. The comment pass is additionally
+  proven by stripping comments from both versions and comparing.
+
 ## [1.5.2] — 2026-09-14
 
 ### Changed

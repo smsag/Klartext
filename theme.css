@@ -3632,10 +3632,6 @@ body {
   .print .markdown-preview-view {
     --table-column-min-width: 6ch;
   }
-  .print .markdown-rendered table {
-    width: auto;
-    max-width: 100%;
-  }
   .print .markdown-rendered .el-table {
     overflow: visible;
   }
@@ -3649,6 +3645,8 @@ body {
      row that fits; the header row repeats on the next page and brings the
      top edge with it. On paper the corners are square. */
   .print .markdown-rendered table {
+    width: auto;
+    max-width: 100%;
     border: none;
     border-radius: 0;
   }

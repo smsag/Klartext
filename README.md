@@ -86,6 +86,7 @@ All of these live in Settings → Style Settings → Klartext.
 | UI Font Size | 13px | Sidebars, panels and plugin text on desktop |
 | Mobile UI Font Size | 14px | The same, on phone and tablet. Obsidian resets its interface scale on mobile, so it needs its own control |
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size |
+| Readable Line Width | 680px | Width of the text column. Read only while Appearance → "Readable line length" is on; with it off the column spans the pane |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
 | Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |
@@ -106,7 +107,6 @@ body {
   --klartext-p-gap: 1.2;         /* paragraph gap, × line height */
   --klartext-diagram-font-scale: 1;
   --klartext-tab-size: 2;        /* spaces per level, with Lists Indented With Spaces on */
-  --file-line-width: 760px;      /* text column, read only while Appearance → Readable line length is on */
 }
 ```
 

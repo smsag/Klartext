@@ -23,14 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Diagram Font Scale is fixed at 0.9. Every token remains in the file and
   the README lists the snippet for each, so nothing is lost for anyone who
   wants the old value. Thirteen settings remain.
-- **Two more, the same day:** Editor Background and Readable Line Width.
-  The page is pure white; the warm off-white variant and its rebalanced
-  surface and border tokens are gone from the file. The width slider fed
-  Obsidian's `--file-line-width`, which Obsidian reads only while its own
-  Appearance → Readable line length switch is on — with the switch off the
-  column spans the pane and the slider appeared dead. The token stays at
-  680px for vaults with the switch on, and the README snippet covers other
-  widths. Eleven settings remain.
+- **Editor Background**, the same day. The page is pure white; the warm
+  off-white variant and its rebalanced surface and border tokens are gone
+  from the file. Twelve settings remain. Readable Line Width was removed
+  for an hour on the belief that it did nothing: it feeds Obsidian's
+  `--file-line-width`, which Obsidian reads only while its own Appearance →
+  Readable line length switch is on, and with the switch off the column
+  spans the pane. It is back, and its description now says so.
 
 ### Fixed
 - **Line Height slider wrote a variable the theme did not read** in a vault

@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are cut or rewritten as the constraint they illustrated; every measurement
   stays. Two comments that had drifted from the code are corrected.
 
+### Added
+- **`tools/verify.mjs` and `tools/check-note.md`.** The on-device check
+  described under Verification, as a script: it snapshots the computed
+  styles of the check note in the running Obsidian and diffs two snapshots.
+
 ### Removed
 - **Tokens nothing reads.** `--font-size-base`, `--editor-font-size`,
   `--font-family-editor` and `--font-family-preview` are read by neither

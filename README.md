@@ -145,6 +145,11 @@ what keeps the caret visible and the layout the same in every state.
 Measured values were taken in the running Obsidian over Chromium's debugging port
 (`open -a Obsidian --args --remote-debugging-port=9222`), where the caret position,
 the inline hanging indent and screenshots of the real editor can be read directly.
+`tools/verify.mjs` uses the same port to check that a change alters nothing it
+should not: it opens `tools/check-note.md`, records the computed style of every
+element in Live Preview and Reading view, light and dark, with and without the
+mobile body classes, and diffs two such snapshots. The header of the script shows
+the sequence; a refactor is done when the diff is empty.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.

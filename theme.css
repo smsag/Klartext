@@ -756,6 +756,7 @@ body.klartext-title-mono {
 body.klartext-title-sans {
   --inline-title-font: var(--font-interface-theme);
 }
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   /* The title IS the headline: the h1 treatment exactly, so the top of the
      page does not put its biggest type under a smaller name. Read from the
@@ -1211,6 +1212,7 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
    absolute offset in em resolves against the element's OWN font size, and
    the label is set at 0.72em while the button is not — em tokens would put
    the two on different scales and the gap between them would drift. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --klartext-code-btn:    calc(var(--klartext-font-size) * 1.3);   /* the button's box */
   --klartext-code-inset:  calc(var(--klartext-font-size) * 0.3);   /* corner to control */
@@ -1777,6 +1779,7 @@ hr,
   padding-inline-end: var(--klartext-cell);
   margin-inline-start: calc(-1 * var(--klartext-col));
   justify-content: flex-end;
+  font-size: 0;   /* Obsidian's dot is em-sized; the dash below sets its own size */
 }
 .markdown-rendered {
   /* Obsidian draws this guide as the end border of a ZERO-width box (the
@@ -1900,14 +1903,11 @@ hr,
    dot. Obsidian draws the dot as an absolutely-positioned ::after box (sized
    by --list-bullet-size) plus a zero-width ::before. Hide the box explicitly
    — not by relying on font-size:0 collapsing an em-sized box — and draw the
-   dash via ::before. (Live Preview draws its dash from the marker token
-   instead; see LIVE PREVIEW MARKERS above.) To try another glyph, change
-   the content escape:
+   dash via ::before; the font-size: 0 is on the box rule above. (Live
+   Preview draws its dash from the marker token instead; see LIVE PREVIEW
+   MARKERS above.) To try another glyph, change the content escape:
      \2013 –  (en dash)   \2022 •  (dot)   \00B7 ·  (middot)
      \25E6 ◦  (hollow)    \203A ›  (angle)  \2192 →  (arrow) */
-.markdown-rendered .list-bullet {
-  font-size: 0;
-}
 .markdown-rendered .list-bullet::after {
   display: none;
 }
@@ -1970,6 +1970,8 @@ hr,
   border-collapse: separate;
   border-spacing: 0;
   margin-left: 0;   /* outer border sits on the shared text edge */
+  width: max-content;   /* natural width, scrolling past the column; see the note at the end of this section */
+  max-width: 200%;
   font-size: 0.9em;
   border: 1px solid var(--border);
   border-radius: var(--klartext-radius-block);
@@ -2098,6 +2100,7 @@ hr,
    table (frame, radius and stripes travel with the content, on the text
    edge). Live Preview: Obsidian's .cm-table-widget already scrolls.
    Scrollbars follow the global 5px styling and appear only on overflow. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --table-column-min-width: 11ch;
 }
@@ -2127,12 +2130,8 @@ body {
    (GitHub's model): a stretched table hands the spare width to columns in
    proportion to their natural widths, so a glossary's term column grew to
    half the table and sat empty while the meanings wrapped. A table that
-   is narrower than the column is a compact box on the text edge. */
-.markdown-rendered table,
-.markdown-source-view.mod-cm6 table {
-  width: max-content;
-  max-width: 200%;
-}
+   is narrower than the column is a compact box on the text edge. (width and
+   max-width sit on the table rule at the top of this section.) */
 
 /* ------------------------------------------------------------------
    TAGS
@@ -2853,6 +2852,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
      • types the theme doesn't know (custom types) take the quote grey, not
        Obsidian's saturated blue.
    ------------------------------------------------------------------ */
+/* stylelint-disable-next-line no-duplicate-selectors */
 .callout                                          { --callout-color: rgb(115 113 108); }   /* default: any unknown type */
 
 .callout[data-callout="note"],
@@ -3481,6 +3481,7 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
    (Obsidian paints search-result matches from --text-highlight-bg; the
    editor's find panel uses CodeMirror's .cm-searchMatch). The current
    match keeps Obsidian's accent ring. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --text-highlight-bg: var(--klartext-highlight);
 }
@@ -3543,6 +3544,7 @@ sub { bottom: -0.25em; }
 
 /* Context menus: page colour, the theme's border, a soft shadow (deeper in
    dark mode), the UI font size; the radius comes from --radius-m. */
+/* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --menu-background:     var(--background-primary);
   --menu-border-color:   var(--border);

@@ -3826,6 +3826,32 @@ body {
     overflow: visible;
   }
 
+  /* The frame is drawn on the cells, not on the table. Chromium extends a
+     table that runs onto the next page down to the bottom edge of the page
+     it leaves, and paints the table's own side borders along that empty
+     stretch — an empty framed row at the foot of the page, seen on four
+     pages of a 78-page export, with or without any break rule. Rows never
+     reach that space, so borders carried by the cells stop with the last
+     row that fits; the header row repeats on the next page and brings the
+     top edge with it. On paper the corners are square. */
+  .print .markdown-preview-view table,
+  .print .markdown-rendered table {
+    border: none;
+    border-radius: 0;
+  }
+  .print .markdown-rendered th {
+    border-top: 1px solid var(--border);
+  }
+  .print .markdown-rendered :is(th, td):first-child {
+    border-left: 1px solid var(--border);
+  }
+  .print .markdown-rendered :is(th, td):last-child {
+    border-right: 1px solid var(--border);
+  }
+  .print .markdown-rendered tbody tr:last-child > td {
+    border-bottom: 1px solid var(--border);
+  }
+
   /* Lists on paper. Obsidian's export renders with its list-bullet option
      switched off, so the .list-bullet span the screen draws the dash in
      does not exist there: bulleted items printed the browser's own disc,

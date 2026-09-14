@@ -213,7 +213,18 @@ size and the default two-cell column.
   print media: the dash in the faint colour, task items keeping only their
   checkbox, bulleted and numbered text on one edge one column in, the wide
   table inside its wrapper, `break-inside` auto on the table and avoid on
-  its rows. Not yet seen on a re-exported PDF.
+  its rows. All three confirmed on a second export of the same note. That
+  export showed one more thing: wherever a table ran onto the next page,
+  an empty framed row was left at the foot of the page it left. Chromium
+  extends a fragmented table's box to the page edge and paints the table's
+  own side borders along it, with or without any break rule (tested in a
+  headless Chromium against six variants of the rules). So on paper the
+  frame is drawn on the cells instead: the header cells carry the top
+  edge, the first and last cells of every row the sides, the last row the
+  bottom, and the table itself has no border and square corners. Borders
+  stop with the last row that fits, and the repeated header row brings
+  the top edge onto the next page. Verified under emulated print media in
+  the running app; not yet seen on a re-exported PDF.
 
 ### Removed
 - The inline-flex marker boxes, the `clip-path` on the number, the

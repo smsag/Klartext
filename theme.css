@@ -3777,13 +3777,21 @@ body {
   /* Page breaks: headings keep the next block, blocks are not split,
      paragraphs leave at least two lines on either side of a break.
      Obsidian wraps each block in div.el-*, so the wrappers carry the
-     rule as well as the elements. */
+     rule as well as the elements.
+       A TABLE is not in the list, on purpose: a table longer than the
+     space left on a page cannot avoid breaking anyway, so the rule only
+     moved it whole to the next page and left the rest of the current one
+     blank — a two-page table once left 60% of a page empty before it. Its
+     ROWS are kept whole instead, and Chromium repeats the header row on
+     every page a table runs onto, so a break between rows costs nothing.
+     Code blocks stay in the list: a fence kept whole is worth the gap it
+     can leave, and a fence taller than a page breaks regardless. */
   .print .markdown-preview-view :is(h1, h2, h3, h4, h5, h6),
   .print .markdown-preview-view [class^="el-h"]:not(.el-hr) {
     break-after: avoid;
     break-inside: avoid;
   }
-  .print .markdown-preview-view :is(pre, table, tr, blockquote, figure, img, .callout,
+  .print .markdown-preview-view :is(pre, tr, blockquote, figure, img, .callout,
                                     .mermaid, .math-block, .markdown-embed, .footnotes) {
     break-inside: avoid;
   }
@@ -3800,13 +3808,45 @@ body {
   .print .markdown-preview-view :is(pre, .callout, table) {
     box-shadow: none !important;
   }
-  /* No sideways scrolling on paper: back to Obsidian's column minimum and
-     a visible wrapper, so a wide table wraps its cells instead. */
+  /* No sideways scrolling on paper. On screen a wide table may grow to
+     twice the column and scrolls inside its wrapper; on paper the same
+     width was simply cut off at the right edge of the page — a two-column
+     glossary lost the ends of its second column. So a table takes the page
+     width at most, its columns fall back to Obsidian's minimum, and its
+     cells wrap; the wrapper is visible rather than scrolling. */
   .print .markdown-preview-view {
     --table-column-min-width: 6ch;
   }
+  .print .markdown-preview-view table,
+  .print .markdown-rendered table {
+    width: auto;
+    max-width: 100%;
+  }
   .print .markdown-rendered .el-table {
     overflow: visible;
+  }
+
+  /* Lists on paper. Obsidian's export renders with its list-bullet option
+     switched off, so the .list-bullet span the screen draws the dash in
+     does not exist there: bulleted items printed the browser's own disc,
+     in the text colour, while numbered items — drawn on the item itself —
+     printed as designed. The dash is drawn on the item here too, in the
+     same box the screen bullet uses, and the native marker is switched off
+     for every list, which also keeps a task item to its checkbox. */
+  .print .markdown-preview-view ul,
+  .print .markdown-rendered ul {
+    list-style: none;
+  }
+  .print .markdown-rendered ul > li:not(.task-list-item)::before {
+    content: "\2013";
+    display: flex;
+    justify-content: flex-end;
+    float: inline-start;
+    box-sizing: border-box;
+    width: var(--klartext-col);
+    padding-inline-end: var(--klartext-cell);
+    margin-inline-start: calc(-1 * var(--klartext-col));
+    color: var(--text-faint);
   }
 
   /* Links: plain text colour, a quiet underline; the colour carried no

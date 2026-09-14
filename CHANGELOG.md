@@ -192,6 +192,29 @@ size and the default two-cell column.
   underlined dotted like an external link, Obsidian tokenising it as a bare
   link. It is a mark: faint, upright, undecorated.
 
+- **PDF export, three defects found in a 65-page export of a real note.**
+  A table wider than the column was cut off at the right edge of the page:
+  on screen it may grow to twice the column and scroll inside its wrapper,
+  and the print block made the wrapper visible without capping the table,
+  so the paper simply lost the ends of the second column. Tables now take
+  the page width at most and their cells wrap. Bulleted items printed the
+  browser's own disc in the text colour: Obsidian's export renders with
+  its list-bullet option off, so the `.list-bullet` span the screen draws
+  the dash in does not exist on paper, and only numbered items — drawn on
+  the item itself — printed as designed. The dash is now drawn on the item
+  for print, in the same column, and the native marker is off for every
+  list. And a two-page table was pushed whole onto a fresh page, leaving
+  60% of the page before it blank, because `table` sat in the
+  `break-inside: avoid` list; a table taller than the space left cannot
+  avoid breaking anyway, so the rule only moved the gap. `table` is out of
+  that list, rows stay in it, and Chromium repeats the header row on every
+  page. Code blocks stay in the list on purpose: a fence kept whole is
+  worth the gap it can leave. Verified in the running app under emulated
+  print media: the dash in the faint colour, task items keeping only their
+  checkbox, bulleted and numbered text on one edge one column in, the wide
+  table inside its wrapper, `break-inside` auto on the table and avoid on
+  its rows. Not yet seen on a re-exported PDF.
+
 ### Removed
 - The inline-flex marker boxes, the `clip-path` on the number, the
   page-coloured patch and the raw-state rules that went with them; the

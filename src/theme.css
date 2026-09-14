@@ -155,10 +155,8 @@ body.theme-dark {
   --focus-ring:            rgba(0, 0, 0, 0.18);
   --surface-muted:         #f2f2ee;
 
-  /* Highlight (the dark palette lowers the opacity); -strong is the wet
-     end of the marker stroke, where the pen set down */
+  /* Highlight tint for search matches (the dark palette lowers the opacity) */
   --klartext-highlight:         rgba(255, 200, 40, 0.30);
-  --klartext-highlight-strong:  rgba(255, 200, 40, 0.38);
   --klartext-code-tint:         rgba(0, 0, 0, 0.05);    /* inline code ON a highlight: a translucent fill, so the stroke runs under it */
   /* The stroke's ink as OPAQUE colours (the two tints above composited on
      white) plus the blend mode that makes overlapping strokes paint as one:
@@ -222,7 +220,6 @@ body.theme-dark {
 
   /* Highlight */
   --klartext-highlight:         rgba(255, 200, 40, 0.18);
-  --klartext-highlight-strong:  rgba(255, 200, 40, 0.25);
   --klartext-code-tint:         rgba(255, 255, 255, 0.06);
   --klartext-hl-ink:            #43391d;   /* the dark tints composited on #1a1a1a */
   --klartext-hl-ink-strong:     #53461e;
@@ -235,14 +232,13 @@ body.theme-dark {
    TYPOGRAPHY VARIABLES
    ------------------------------------------------------------------ */
 body {
-  /* Alias Obsidian's native font-text-size so our rules chain from it.
-     The native Appearance slider writes --font-text-size directly.      */
-  --ia-editor-font-size:    var(--font-text-size, 14px);   /* Appearance slider wins; 14px fallback */
+  /* The body size every derived length chains from. Obsidian's Appearance →
+     Font size slider writes --font-text-size; mobile re-points this alias at
+     its own setting (see MOBILE SPECIFIC). */
+  --klartext-font-size:     var(--font-text-size, 14px);   /* Appearance slider wins; 14px fallback */
   /* Body leading — modest air for a monospace face. The Style Settings
-     slider writes --klartext-line-height; --ia-line-height is the alias the
-     rest of the file chains from. */
+     slider writes this token. */
   --klartext-line-height:   1.6;
-  --ia-line-height:         var(--klartext-line-height);
   --klartext-table-line-height: 1.4;   /* ONE value for static AND edited table cells */
 
   /* Paragraph rhythm (see VERTICAL RHYTHM section). Text width is deliberately
@@ -254,7 +250,7 @@ body {
      to an absolute length so the svg root and its labels can share it
      without compounding. */
   --klartext-diagram-font-scale: 0.9;
-  --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
+  --klartext-diagram-font-size:  calc(var(--klartext-font-size) * var(--klartext-diagram-font-scale));
   /* The text column when Obsidian's Appearance → Readable line length is on;
      with it off the column spans the pane and this is never read. Style
      Settings writes a slider's value to a variable named after the setting's
@@ -272,8 +268,8 @@ body {
   --p-spacing:              1.2em;
   /* Match the Live-Edit paragraph gap (a blank line scaled by --klartext-p-gap)
      so paragraph spacing doesn't jump when switching to Read mode. */
-  --readability-p-spacing:  calc(var(--ia-line-height) * var(--klartext-p-gap) * 1em);
-  --klartext-blank-line:    calc(var(--ia-line-height) * var(--ia-editor-font-size));   /* one Live-Preview blank line, as a length */
+  --readability-p-spacing:  calc(var(--klartext-line-height) * var(--klartext-p-gap) * 1em);
+  --klartext-blank-line:    calc(var(--klartext-line-height) * var(--klartext-font-size));   /* one Live-Preview blank line, as a length */
   /* THE MARKER COLUMN. It starts ON the text edge — the mark is part of the
      text flow, and only the #ₙ heading badge hangs outside it — and is a
      whole number of character cells of the monospace body wide (Style
@@ -294,9 +290,8 @@ body {
      hanging indent from that same caret (see LISTS), puts wrapped lines on
      the same edge by construction. */
   --klartext-marker-column: 2;        /* Style Settings → Marker Column writes this (named after the setting id) */
-  --klartext-col-cells:     var(--klartext-marker-column);
-  --klartext-col:           calc(var(--ia-editor-font-size) * 0.6 * var(--klartext-col-cells));
-  --klartext-cell:          calc(var(--ia-editor-font-size) * 0.6);   /* one character cell of the body face */
+  --klartext-col:           calc(var(--klartext-font-size) * 0.6 * var(--klartext-marker-column));
+  --klartext-cell:          calc(var(--klartext-font-size) * 0.6);   /* one character cell of the body face */
   /* ONE INDENT LEVEL, as it is actually rendered. Obsidian sets `tab-size`
      to a LENGTH on list lines, so a tab is exactly --list-indent wide;
      spaces cannot be, so a space-indented level renders at its own width
@@ -317,7 +312,7 @@ body {
   --klartext-mark-font-quote: 'Klartext Marks Quote', var(--font-monospace-theme);   /* blanks only the ">": for a callout header's combined token */
   /* The narrow column (2ch = 1.2em) is what the mobile page padding and the
      <details> mark still use: what "- " measures in the body. */
-  --klartext-marker-width:  calc(var(--ia-editor-font-size) * 1.2);
+  --klartext-marker-width:  calc(var(--klartext-font-size) * 1.2);
   /* Obsidian pads the editor's list-marker span by --list-indent-editing
      (0.75em by default), which put the dash ~10px in and list text ~25px in
      while Reading view has no such inset. Zeroed: the dash sits on the text
@@ -327,14 +322,14 @@ body {
      box filled the marker column and the text sat 2.6px from it; at 0.8 the
      gap is a third of the column, like dash → text. Scoped to notes below
      (.markdown-source-view / .markdown-rendered), not to settings toggles. */
-  --klartext-checkbox-size: calc(var(--ia-editor-font-size) * 0.8);
+  --klartext-checkbox-size: calc(var(--klartext-font-size) * 0.8);
   /* The marker AXIS: the centre of the column's last mark cell (the one
      before the gap), where the dash, the last digit and the checkbox sit —
      half a cell in at two cells, one and a half cells in at four. Everything
      that is a vertical line in the column sits on it — indentation guides,
      the list tree line, the quote bar and the callout rule — so they read
      as one axis with the marks. */
-  --klartext-marker-axis:   round(calc(var(--ia-editor-font-size) * 0.6 * (var(--klartext-col-cells) - 1.5)), 1px);   /* whole pixels: a fractional axis let a border and a positioned bar snap to different device pixels */
+  --klartext-marker-axis:   round(calc(var(--klartext-font-size) * 0.6 * (var(--klartext-marker-column) - 1.5)), 1px);   /* whole pixels: a fractional axis let a border and a positioned bar snap to different device pixels */
   /* Obsidian's 0.85em put the guide right of the dash, detached from the
      marker it continues; the tree line and the Reading guide derive from it.
      Obsidian draws the guide as the END border of a 1px box that starts at
@@ -368,7 +363,7 @@ body {
   /* Live Preview: width of the prefix column reserved on the left of EVERY
      block (lines and widgets), which the #ₙ heading marker hangs into. Fixed
      (editor-font based, not heading-em) so every level lines up. */
-  --klartext-heading-prefix: calc(var(--ia-editor-font-size) * 2.6);
+  --klartext-heading-prefix: calc(var(--klartext-font-size) * 2.6);
 
   /* HEADING SIZES FOR LIVE PREVIEW — Obsidian's native hook. Verified in
      Obsidian 1.13.7 app.css: the size is applied to the heading LINE
@@ -395,7 +390,7 @@ body {
      wraps the `>` in its own mark inside the quote token) can't compound a
      relative 0.93em into 0.86em — the marker came out smaller than the
      callout header's and its 1em box shifted with it. */
-  --klartext-quote-font-size: calc(var(--ia-editor-font-size) * var(--klartext-quote-scale));
+  --klartext-quote-font-size: calc(var(--klartext-font-size) * var(--klartext-quote-scale));
 
   /* Obsidian draws its own Live-Preview blockquote bar from these — pin them
      to the same token so the quote bar isn't thicker than the callout. */
@@ -406,12 +401,7 @@ body {
   --font-interface-theme:   'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-monospace-theme:   'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
 
-  /* Wire to Obsidian editor font vars */
-  --font-size-base:         var(--ia-editor-font-size);
-  --editor-font-size:       var(--ia-editor-font-size);
-  --line-height-normal:     var(--ia-line-height);
-  --font-family-editor:     var(--font-text-theme);
-  --font-family-preview:    var(--font-text-theme);
+  --line-height-normal:     var(--klartext-line-height);   /* Obsidian's own leading token */
 
   --caret-color:            var(--interactive-accent);
 
@@ -467,7 +457,7 @@ body {
      and plugin (including Pythia) that reads these tokens follows.
      Until 1.5.0 this was a Style Settings slider, capped at 16px; on a
      high-resolution display that cap was the ceiling of legibility.       */
-  --klartext-ui-font-size:  calc(var(--ia-editor-font-size) * 0.8125);  /* 13px at the 16px default */
+  --klartext-ui-font-size:  calc(var(--klartext-font-size) * 0.8125);  /* 13px at the 16px default */
   --klartext-ui-xs:         calc(var(--klartext-ui-font-size) * 0.88);  /* ~11px  */
   --klartext-ui-sm:         calc(var(--klartext-ui-font-size) * 0.96);  /* ~12px  */
   --klartext-ui-md:         calc(var(--klartext-ui-font-size) * 1.04);  /* ~13px  */
@@ -669,8 +659,8 @@ body.is-mobile {
 .markdown-source-view {
   background-color: var(--background-primary);
   font-family: var(--font-text-theme) !important;
-  font-size: var(--ia-editor-font-size);
-  line-height: var(--ia-line-height) !important;
+  font-size: var(--klartext-font-size);
+  line-height: var(--klartext-line-height) !important;
   color: var(--text-normal);
 }
 
@@ -854,14 +844,14 @@ body {
 .markdown-preview-view h1,
 .markdown-preview-view.markdown-rendered div + div > h1,
 .markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h1 {
-  margin-top: calc(var(--klartext-blank-line) + var(--ia-editor-font-size) * 0.125);
+  margin-top: calc(var(--klartext-blank-line) + var(--klartext-font-size) * 0.125);
   margin-bottom: var(--klartext-blank-line);
 }
 .markdown-preview-view :is(h2, h3, h4, h5, h6),
 .markdown-preview-view.markdown-rendered div + div > :is(h2, h3, h4, h5, h6),
 .markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + :is(h2, h3, h4, h5, h6) {
   margin-top: var(--klartext-blank-line);
-  margin-bottom: calc(var(--klartext-blank-line) + var(--ia-editor-font-size) * 0.12);
+  margin-bottom: calc(var(--klartext-blank-line) + var(--klartext-font-size) * 0.12);
 }
 /* The block before a heading hands the gap to the heading, so one rule owns
    it. Without this the paragraph's own bottom margin wins the collapse. */
@@ -946,7 +936,7 @@ body {
   text-align: right;                                         /* marker against the text */
   vertical-align: baseline;                                  /* on the headline's baseline */
   font-family: var(--font-monospace-theme);
-  font-size: var(--ia-editor-font-size);                     /* body-text size, not heading size */
+  font-size: var(--klartext-font-size);                     /* body-text size, not heading size */
   font-weight: 400;
   letter-spacing: 0;
   color: var(--text-subtle);
@@ -965,7 +955,7 @@ body {
       the marker's width (2ch at body size) plus its gap, so it sits beyond
       the marker, still inside the column, still hover-only. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"] .cm-fold-indicator .collapse-indicator {
-  margin-inline-end: calc(var(--ia-editor-font-size) * 1.2 + 0.5em);
+  margin-inline-end: calc(var(--klartext-font-size) * 1.2 + 0.5em);
 }
 
 /* 4b) Mobile: a small SYMMETRIC column instead of the 2.6em strip. On a
@@ -993,7 +983,7 @@ body.is-mobile .markdown-reading-view > .markdown-preview-view {   /* the note i
   padding-right: calc(var(--file-margins-x) + var(--klartext-marker-width));
 }
 body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]::before {
-  padding-right: calc(var(--ia-editor-font-size) * 0.4);
+  padding-right: calc(var(--klartext-font-size) * 0.4);
 }
 body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"] .cm-fold-indicator .collapse-indicator {
   margin-inline-end: 0;
@@ -1036,7 +1026,7 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
        read a span's text, so that variant cannot be told from bare hashes.
        It degrades to the later jump rather than misfiring. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
-  font-size: var(--ia-editor-font-size);
+  font-size: var(--klartext-font-size);
   font-weight: 400;
   margin-top: 0;
   margin-bottom: 0;
@@ -1079,7 +1069,7 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
        margin: the blank line is the separation there.
    ------------------------------------------------------------------ */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):not([class*="HyperMD-codeblock"]):not([class*="HyperMD-frontmatter"]) {
-  line-height: calc(var(--ia-line-height) * var(--klartext-p-gap));
+  line-height: calc(var(--klartext-line-height) * var(--klartext-p-gap));
 }
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header"] + .cm-line:has(> br:only-child),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line[class*="HyperMD-header"]),
@@ -1087,7 +1077,7 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-list-line),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-hr + .cm-line:has(> br:only-child),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-hr) {
-  line-height: var(--ia-line-height);
+  line-height: var(--klartext-line-height);
 }
 
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1 {
@@ -1156,8 +1146,8 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
 .markdown-preview-view {
   background-color: var(--background-primary);
   font-family: var(--font-text-theme);
-  font-size: var(--ia-editor-font-size);
-  line-height: var(--ia-line-height);
+  font-size: var(--klartext-font-size);
+  line-height: var(--klartext-line-height);
   color: var(--text-normal);
 }
 
@@ -1264,9 +1254,9 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
    the label is set at 0.72em while the button is not — em tokens would put
    the two on different scales and the gap between them would drift. */
 body {
-  --klartext-code-btn:    calc(var(--ia-editor-font-size) * 1.3);   /* the button's box */
-  --klartext-code-inset:  calc(var(--ia-editor-font-size) * 0.3);   /* corner to control */
-  --klartext-code-gap:    calc(var(--ia-editor-font-size) * 0.45);  /* button to label */
+  --klartext-code-btn:    calc(var(--klartext-font-size) * 1.3);   /* the button's box */
+  --klartext-code-inset:  calc(var(--klartext-font-size) * 0.3);   /* corner to control */
+  --klartext-code-gap:    calc(var(--klartext-font-size) * 0.45);  /* button to label */
   /* Where the label sits when a copy button shares the corner with it. */
   --klartext-code-label-x: calc(var(--klartext-code-inset) + var(--klartext-code-btn) + var(--klartext-code-gap));
 }
@@ -1492,10 +1482,10 @@ body.is-mobile .markdown-rendered .copy-code-button {
    a short selector here does nothing at all. Derived from the editor font,
    so it tracks the text size. */
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock-begin {
-  padding-top: calc(var(--ia-editor-font-size) * 0.35);
+  padding-top: calc(var(--klartext-font-size) * 0.35);
 }
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock-end {
-  padding-bottom: calc(var(--ia-editor-font-size) * 0.35);
+  padding-bottom: calc(var(--klartext-font-size) * 0.35);
 }
 
 /* Syntax tokens — CM6 (live preview & editor) */
@@ -1971,7 +1961,7 @@ hr,
 }
 .markdown-rendered .list-bullet::before {
   content: "\2013";
-  font-size: var(--ia-editor-font-size);
+  font-size: var(--klartext-font-size);
   color: var(--text-faint);
 }
 
@@ -2006,7 +1996,7 @@ hr,
   display: block;
   width: 1px;
   inset-inline-start: calc(var(--klartext-tree-col) * var(--klartext-indent-unit) + var(--indentation-guide-editing-indent));
-  top: calc(var(--list-spacing, 0px) + var(--ia-line-height) * 1em);   /* below the first line box: a clear gap under the dash */
+  top: calc(var(--list-spacing, 0px) + var(--klartext-line-height) * 1em);   /* below the first line box: a clear gap under the dash */
   bottom: 0;
   border-inline-end: var(--indentation-guide-width) solid var(--indentation-guide-color);
   pointer-events: none;
@@ -2027,7 +2017,6 @@ hr,
 .markdown-source-view.mod-cm6 table {
   border-collapse: separate;
   border-spacing: 0;
-  width: 100%;
   margin-left: 0;   /* outer border sits on the shared text edge */
   font-size: 0.9em;
   border: 1px solid var(--border);
@@ -2149,8 +2138,8 @@ hr,
   margin-left: 0;
 }
 
-/* Wide tables scroll sideways instead of being squeezed. A table is
-   width:100% (above); CSS tables still grow past that when the columns'
+/* Wide tables scroll sideways instead of being squeezed. A table takes its
+   natural width (below) and grows past the column when the columns'
    minimum widths do not fit, so the lever is the per-column minimum:
    Obsidian's token, 6ch by default, raised to 11ch (border-box, so ~9
    characters of content beside the cell padding) so numbers, dates and
@@ -2571,7 +2560,7 @@ body .workspace-leaf-content[data-type="markdown"] .view-content::before {
   top: 0;
   left: 0;
   right: 6px;                                   /* spare the 5px scrollbar */
-  height: calc(var(--ia-editor-font-size) * 2.2);
+  height: calc(var(--klartext-font-size) * 2.2);
   background: linear-gradient(to bottom,
               var(--background-primary) 0%,
               var(--background-primary) 12%,    /* solid seam against the header */
@@ -2649,7 +2638,7 @@ body.is-mobile {
      slider defaults to, so the two can never disagree.
      `body.is-mobile` (0,1,1) out-ranks the `body` block where the alias is
      defined from --font-text-size. */
-  --ia-editor-font-size: var(--klartext-mobile-font-size, 14px);
+  --klartext-font-size: var(--klartext-mobile-font-size, 14px);
 
   /* INTERFACE TEXT SIZE — the same story one level up, and the reason the
      phone's chrome ran larger than the theme intended. Klartext wires
@@ -2668,7 +2657,7 @@ body.is-mobile {
      14 at the defaults): touch targets want chrome at prose size, where the
      desktop sits at 13/16. One control per device, the interface derived,
      and neither device ever sees the other's number. */
-  --klartext-ui-font-size: var(--ia-editor-font-size);
+  --klartext-ui-font-size: var(--klartext-font-size);
   --font-ui-smaller: var(--klartext-ui-xs);
   --font-ui-small:   var(--klartext-ui-font-size);
   --font-ui-medium:  var(--klartext-ui-md);
@@ -3204,10 +3193,6 @@ a.footnote-ref {
    ------------------------------------------------------------------ */
 .canvas-wrapper {
   background-color: var(--background-secondary) !important;
-}
-
-.canvas-background {
-  --canvas-dot-color: var(--border);
 }
 
 .canvas-node {

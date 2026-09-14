@@ -130,7 +130,7 @@ embedded fonts; it is the file Obsidian installs and must stay committed, but it
 not the file to edit. Where a number was measured rather than chosen,
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
-system; `--ia-editor-font-size` is the alias every derived size chains from;
+system; `--klartext-font-size` is the body size every derived length chains from;
 `--klartext-col` is the marker column that holds every mark, on the text edge.
 
 Live Preview keeps a block's source marker in the editor as real text, and the theme

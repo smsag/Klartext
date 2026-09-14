@@ -72,6 +72,30 @@ size and the default two-cell column.
   stroke instead of cutting a window into it. Reading view renders the whole
   highlight as one element with the formatting nested inside, so there every
   line lands and lifts and no seam exists.
+- **The `!important` audit the 1.3.0 pass could not finish.** That pass
+  measured note content in a harness and left 112 flags on interface
+  selectors "awaiting an in-app pass". This is that pass, run in the
+  running Obsidian over the debugging port, in two halves. First a cascade
+  analysis: for every flagged declaration, every rule in every loaded
+  stylesheet — Obsidian's, every plugin's, the theme's own — that sets the
+  same property on a matching element, with hover and focus states folded
+  in, and a verdict of whether any of them would beat the theme's rule
+  without the flag. Then the empirical half: the flags the analysis called
+  redundant were stripped, the theme reloaded, and the computed value of
+  every one of them re-read on every matching element, in Live Preview
+  with a kitchen-sink note and the cursor inside a callout, with the
+  command palette open, and in Reading view: 4,320 values, identical.
+  The analysis has one blind spot the diff exposed: Obsidian sets some
+  paddings and margins through logical properties, which the CSSOM lists
+  under different longhand names, so four rules it had called safe moved
+  when stripped and keep their flags. Result: 66 written declarations lose
+  the flag, 221 down to 155. Of those that stay, 53 have a named competitor
+  that would win without it, 62 sit on states no script could produce here
+  — hover popovers, canvas, the nested table-cell editor, the phone, the
+  settings modal, which will not open while the window is unfocused — and
+  five are the diff's catches and one selector the mapper could not match.
+  Snippets and plugins can now override that much more of the theme
+  without needing a flag of their own.
 - **The quote mark is never shown.** The bar is the mark in every state,
   including the line being edited, where the theme used to step the bar
   back and show the `>`. Nested quotes show one bar per level, drawn from

@@ -702,20 +702,20 @@ body.is-android {
 .workspace-sidebar .workspace-leaf-content,
 .nav-folder,
 .nav-files-container {
-  background-color: var(--background-secondary) !important;
+  background-color: var(--background-secondary);
   font-family: var(--font-interface-theme);
   font-size: var(--klartext-ui-font-size);
 }
 
 /* Borders between sidebar and editor */
-.workspace-split.mod-left-split  { border-right: 1px solid var(--border) !important; }
-.workspace-split.mod-right-split { border-left:  1px solid var(--border) !important; }
+.workspace-split.mod-left-split  { border-right: 1px solid var(--border); }
+.workspace-split.mod-right-split { border-left:  1px solid var(--border); }
 
 /* Tab bar */
 .workspace-tab-header-container {
-  background-color: var(--background-secondary) !important;
+  background-color: var(--background-secondary);
   /* Border kept for stable layout but colored to match the bar so it's unseen */
-  border-bottom: 1px solid var(--background-secondary) !important;
+  border-bottom: 1px solid var(--background-secondary);
 }
 
 .workspace-tab-header.is-active {
@@ -742,11 +742,11 @@ body.is-android {
 .cm-scroller,
 .cm-content,
 .markdown-source-view {
-  background-color: var(--background-primary) !important;
+  background-color: var(--background-primary);
   font-family: var(--font-text-theme) !important;
-  font-size: var(--ia-editor-font-size) !important;
+  font-size: var(--ia-editor-font-size);
   line-height: var(--ia-line-height) !important;
-  color: var(--text-normal) !important;
+  color: var(--text-normal);
 }
 
 /* NESTED editors — editing a table cell in Live Preview mounts a second
@@ -835,7 +835,7 @@ body.is-android {
    BLOCKQUOTE), so both out-rank the bare `::selection` above. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-header::selection,
 .hmd-inactive-line .cm-formatting-quote::selection {
-  color: transparent !important;
+  color: transparent;
 }
 
 /* Focused line highlight — subtle */
@@ -1113,8 +1113,8 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
        read a span's text, so that variant cannot be told from bare hashes.
        It degrades to the later jump rather than misfiring. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
-  font-size: var(--ia-editor-font-size) !important;
-  font-weight: 400 !important;
+  font-size: var(--ia-editor-font-size);
+  font-weight: 400;
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -1231,11 +1231,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
 
 .markdown-reading-view,
 .markdown-preview-view {
-  background-color: var(--background-primary) !important;
-  font-family: var(--font-text-theme) !important;
-  font-size: var(--ia-editor-font-size) !important;
-  line-height: var(--ia-line-height) !important;
-  color: var(--text-normal) !important;
+  background-color: var(--background-primary);
+  font-family: var(--font-text-theme);
+  font-size: var(--ia-editor-font-size);
+  line-height: var(--ia-line-height);
+  color: var(--text-normal);
 }
 
 /* Respect Obsidian's "Readable line length" toggle */
@@ -1314,14 +1314,14 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
 }
 
 .notice {
-  background: var(--background-secondary) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-m) !important;
-  box-shadow: none !important;
-  color: var(--text-normal) !important;
-  font-family: var(--font-interface-theme) !important;
-  font-size: var(--font-ui-small) !important;
-  padding: 0.6em 0.9em !important;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  box-shadow: none;
+  color: var(--text-normal);
+  font-family: var(--font-interface-theme);
+  font-size: var(--font-ui-small);
+  padding: 0.6em 0.9em;
 }
 
 .notice-close {
@@ -1616,7 +1616,7 @@ body.is-mobile .markdown-rendered .copy-code-button {
 /* ------------------------------------------------------------------
    BOLD, ITALIC, LINKS
    ------------------------------------------------------------------ */
-strong, .cm-strong { font-weight: 700; color: var(--text-normal) !important; }   /* real 700 — JetBrains Mono is embedded as a 400–700 variable face */
+strong, .cm-strong { font-weight: 700; color: var(--text-normal); }   /* real 700 — JetBrains Mono is embedded as a 400–700 variable face */
 /* …except inside a done or cancelled task, where the whole item is struck
    and greyed: bold keeps its weight but takes the item's colour. */
 .task-list-item.is-checked strong,
@@ -1625,7 +1625,7 @@ strong, .cm-strong { font-weight: 700; color: var(--text-normal) !important; }  
 .HyperMD-task-line[data-task="X"] .cm-strong,
 .HyperMD-task-line[data-task="-"] .cm-strong { color: inherit !important; }
 em,     .cm-em     { font-style: italic; color: var(--text-normal); }
-del,    .cm-strikethrough { text-decoration: line-through; color: var(--text-subtle) !important; }
+del,    .cm-strikethrough { text-decoration: line-through; color: var(--text-subtle); }
 
 a,
 .cm-link,
@@ -1690,7 +1690,7 @@ a.external-link {
 a:focus-visible,
 .cm-link:focus-visible,
 .internal-link:focus-visible {
-  outline: 2px solid var(--focus-ring) !important;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--klartext-radius-flat);
 }
@@ -2213,7 +2213,7 @@ hr,
 .markdown-source-view.mod-cm6 thead tr > * .table-cell-wrapper:focus,
 .markdown-source-view.mod-cm6 thead th .table-cell-wrapper,
 .markdown-source-view.mod-cm6 thead th .table-cell-wrapper:focus {
-  background: transparent !important;
+  background: transparent;
 }
 
 /* Zebra striping — every 2nd BODY row gets a whisper of grey, in both modes.
@@ -2242,7 +2242,7 @@ hr,
 .markdown-source-view.mod-cm6.is-live-preview .cm-table-widget .table-wrapper,
 .markdown-preview-view .table-wrapper,
 .markdown-rendered .table-wrapper {
-  padding-left: 0 !important;
+  padding-left: 0;
   margin-left: 0;
 }
 
@@ -2340,16 +2340,16 @@ a.tag {
 .embedded-backlinks .nav-header,
 .embedded-backlinks .search-result-container,
 .embedded-backlinks .search-results-children {
-  background-color: var(--background-primary) !important;
-  min-height: unset !important;
+  background-color: var(--background-primary);
+  min-height: unset;
 }
 
 /* Set size once on container; reset children so they inherit cleanly */
 .embedded-backlinks {
   border-top: 1px solid var(--border);
   margin-top: 2em;
-  font-size: 0.75em !important;
-  font-family: var(--font-interface-theme) !important;
+  font-size: 0.75em;
+  font-family: var(--font-interface-theme);
 }
 
 .embedded-backlinks .backlink-pane,
@@ -2388,7 +2388,7 @@ a.tag {
 .nav-folder-title:focus-visible,
 .workspace-tab-header:focus-visible,
 .clickable-icon:focus-visible {
-  outline: 2px solid var(--focus-ring) !important;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -2421,10 +2421,10 @@ a.tag {
    ------------------------------------------------------------------ */
 .modal,
 .prompt {
-  background-color: var(--background-primary) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--klartext-radius-panel) !important;
-  box-shadow: var(--klartext-shadow-panel) !important;
+  background-color: var(--background-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--klartext-radius-panel);
+  box-shadow: var(--klartext-shadow-panel);
 }
 
 .prompt-input {
@@ -2436,7 +2436,7 @@ a.tag {
 }
 
 .prompt-results {
-  background-color: var(--background-primary) !important;
+  background-color: var(--background-primary);
 }
 
 .suggestion-item {
@@ -2448,7 +2448,7 @@ a.tag {
 
 .suggestion-item.is-selected {
   background-color: var(--background-modifier-hover) !important;
-  color: var(--text-normal) !important;
+  color: var(--text-normal);
 }
 
 .suggestion-item:hover {
@@ -2497,7 +2497,7 @@ button:not(.mod-cta):focus-visible {
 }
 
 .clickable-icon {
-  border: none !important;
+  border: none;
   box-shadow: none !important;
 }
 
@@ -2575,27 +2575,27 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
    STATUS BAR
    ------------------------------------------------------------------ */
 .status-bar {
-  background-color: var(--background-secondary) !important;
-  border-top: 1px solid var(--border) !important;
-  font-family: var(--font-interface-theme) !important;
-  font-size: var(--klartext-ui-xs) !important;
-  color: var(--text-subtle) !important;
+  background-color: var(--background-secondary);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-interface-theme);
+  font-size: var(--klartext-ui-xs);
+  color: var(--text-subtle);
 }
 
 /* ------------------------------------------------------------------
    FRONTMATTER / PROPERTIES
    ------------------------------------------------------------------ */
 .metadata-container {
-  background-color: var(--background-secondary) !important;
-  border: none !important;
+  background-color: var(--background-secondary);
+  border: none;
   /* A filled block in the note body, like code, tables and embeds — so it
      takes the block radius they share rather than the square 0 it had. That
      value equals the chip radius the property rows inside it now use, so
      box and rows agree. */
-  border-radius: var(--klartext-radius-block) !important;
+  border-radius: var(--klartext-radius-block);
   margin-bottom: 1.5em;
-  font-family: var(--font-interface-theme) !important;
-  font-size: var(--klartext-ui-font-size) !important;
+  font-family: var(--font-interface-theme);
+  font-size: var(--klartext-ui-font-size);
 }
 
 /* Property rows carry Obsidian's 6px corner at rest, on hover and on focus —
@@ -2635,8 +2635,8 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 
 .metadata-property-key {
   /* font-family inherited from .metadata-container */
-  color: var(--text-secondary) !important;
-  font-size: calc(var(--klartext-ui-font-size) * 0.92) !important;
+  color: var(--text-secondary);
+  font-size: calc(var(--klartext-ui-font-size) * 0.92);
 }
 
 /* ------------------------------------------------------------------
@@ -2718,7 +2718,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
    the path one step down. Against the dark page that reads 11.7:1 and 7.1:1,
    where the faint colour this used to carry measured 2.7:1. */
 .view-header-title      { font-weight: 500; font-size: var(--klartext-ui-md); color: var(--text-primary); }
-.view-header-breadcrumb { font-size: var(--klartext-ui-sm) !important; color: var(--text-secondary) !important; }
+.view-header-breadcrumb { font-size: var(--klartext-ui-sm); color: var(--text-secondary) !important; }
 
 /* Obsidian dims the whole title area to 70% on phones, which stacked on top
    of the colours above and dropped the path below every legibility floor
@@ -2926,10 +2926,10 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
 .callout:hover,
 .markdown-source-view .callout:hover,
 .markdown-preview-view .callout:hover {
-  border: none !important;
-  border-left: var(--klartext-rule-width) solid var(--callout-color) !important;
-  box-shadow: none !important;
-  outline: none !important;
+  border: none;
+  border-left: var(--klartext-rule-width) solid var(--callout-color);
+  box-shadow: none;
+  outline: none;
 }
 
 /* Live Preview wraps the rendered callout in .cm-embed-block, which draws
@@ -2939,10 +2939,10 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
 .cm-embed-block.cm-callout:hover,
 .markdown-source-view.mod-cm6 .cm-callout,
 .markdown-source-view.mod-cm6 .cm-callout:hover {
-  border: none !important;
+  border: none;
   box-shadow: none !important;
-  outline: none !important;
-  padding: 0 !important;
+  outline: none;
+  padding: 0;
 }
 
 .callout-title {
@@ -3148,15 +3148,15 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
 
 .markdown-embed-link:hover {
   opacity: 1;
-  color: var(--interactive-accent) !important;
-  border-bottom: none !important;
+  color: var(--interactive-accent);
+  border-bottom: none;
 }
 
 .embed-title {
-  font-family: var(--font-interface-theme) !important;
-  font-size: var(--klartext-ui-sm) !important;
+  font-family: var(--font-interface-theme);
+  font-size: var(--klartext-ui-sm);
   font-weight: 500;
-  color: var(--text-subtle) !important;
+  color: var(--text-subtle);
   margin-bottom: 0.5em;
 }
 

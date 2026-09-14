@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Interface text size derives from the body size; one anchor per
+  device.** On the desktop the sidebars, panels and plugin text follow
+  Appearance → Font size at 13/16, the ratio the theme was designed at, so
+  enlarging the prose for a high-resolution display enlarges the interface
+  with it. On the phone they follow Mobile Body Text Size one to one, as the
+  defaults already were (14 and 14). The UI Font Size and Mobile UI Font
+  Size sliders are gone: the desktop one was capped at 16px, which on a
+  high-resolution display was the ceiling of legibility, and both were a
+  second control beside the one that already sizes the device. Nothing
+  changes at the defaults (16px prose still gives a 13px interface). A
+  snippet on `--klartext-ui-font-size` sets the interface outright for
+  anyone who wants large prose with a compact interface. Ten settings.
+
 ### Removed
 - **Six Style Settings options**, after a review of all nineteen with the
   aim of keeping only what answers a preference people hold or something
@@ -30,14 +44,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--file-line-width`, which Obsidian reads only while its own Appearance →
   Readable line length switch is on, and with the switch off the column
   spans the pane. It is back, and its description now says so.
+- **UI Font Size and Mobile UI Font Size**, see Changed above.
 
 ### Fixed
-- **Line Height slider wrote a variable the theme did not read** in a vault
-  where Style Settings had emitted its CSS before the token was renamed to
-  `--ia-line-height`: the emitted `--klartext-line-height` reached nothing,
-  and the plugin only re-emits when a setting changes. The slider now writes
-  `--klartext-line-height`, the theme's own name, and `--ia-line-height` is
-  an alias of it, so both the stale emission and every future one land.
+- **Three Style Settings controls never reached the theme: Line Height,
+  Readable Line Width and Marker Column.** Style Settings writes a
+  control's value to a CSS variable named after the setting's id, and
+  nothing else — the `variable:` key the schema carried is not part of the
+  plugin and was ignored. So Line Height wrote `--klartext-line-height`
+  while the theme read `--ia-line-height`, Readable Line Width wrote
+  `--klartext-line-width` while Obsidian reads `--file-line-width`, and
+  Marker Column wrote `--klartext-marker-column` while the theme read
+  `--klartext-col-cells`. The controls whose id happened to equal the
+  token (mobile body size, and the sliders since removed) worked, which is
+  why the mismatch went unnoticed. The theme now declares each of the
+  three id-named variables with its default and aliases its own token to
+  it, so the plugin's value lands and every stored setting keeps working
+  under its old id. The `variable:` keys are gone from the schema. Each
+  verified in the running app: the editor's line height follows the
+  slider, the text column takes the slider's width while Obsidian's
+  Readable line length is on, and the marker column changes to four cells.
+  (An earlier note in this entry blamed a stale emission for Line Height;
+  the cause was this.)
 
 ## [1.5.0] — 2026-09-14
 

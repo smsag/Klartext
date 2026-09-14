@@ -39,10 +39,13 @@ one file and follow Obsidian's own light/dark setting.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit
   at 4px, each from its own named token so any family can be retuned alone. Callouts
   and highlights are deliberately square.
-- **Separate text size per platform.** Obsidian's font-size slider lives in the vault
-  and therefore syncs to every device, which makes one value serve a desktop display
-  and a phone. Klartext takes the phone off that slider, so the two can be set
-  independently.
+- **One text size per device, the interface derived.** Obsidian's font-size slider
+  lives in the vault and therefore syncs to every device, which makes one value
+  serve a desktop display and a phone. Klartext takes the phone off that slider, so
+  the two can be set independently. Sidebars, panels and plugin text are not a
+  third control: on the desktop they follow Appearance → Font size at thirteen
+  sixteenths, on the phone they follow Mobile Body Text Size one to one. Enlarge
+  the prose for a high-resolution display and the interface comes with it.
 - **Vertical rhythm on purpose.** Paragraph gaps, heading margins and blank lines are
   derived from the body line height rather than left to defaults, and Reading view is
   matched to Live Preview so switching modes does not shift the text.
@@ -83,9 +86,7 @@ All of these live in Settings → Style Settings → Klartext.
 | Hide View Header | on | Lifts the note header out of the layout; hover the top edge to bring it back. Desktop only |
 | Center Mermaid Diagrams | on | Centres rendered diagrams in the text column |
 | Greyscale Mermaid Diagrams | on | Renders diagrams in the theme's greys instead of Mermaid's colours |
-| UI Font Size | 13px | Sidebars, panels and plugin text on desktop |
-| Mobile UI Font Size | 14px | The same, on phone and tablet. Obsidian resets its interface scale on mobile, so it needs its own control |
-| Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size |
+| Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size. The phone's interface text follows it one to one |
 | Readable Line Width | 680px | Width of the text column. Read only while Appearance → "Readable line length" is on; with it off the column spans the pane |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
@@ -96,7 +97,8 @@ After editing `theme.css` by hand, Style Settings keeps its cached parse until i
 re-reads the file. Switching theme away and back, or restarting Obsidian, refreshes it.
 
 A few things are deliberately not settings. The page is white. Nested lists step in by exactly one
-marker column, so nested marks land on the parent's text edge; the paragraph gap
+marker column, so nested marks land on the parent's text edge; the interface
+size follows the body size (a snippet can set `--klartext-ui-font-size` outright); the paragraph gap
 is what keeps Live Preview and Reading view in step; Mermaid labels sit at 0.9 of
 the body size; diagrams are centred; the scroll edge under the header is soft.
 Each still has a token, so a CSS snippet can change it:

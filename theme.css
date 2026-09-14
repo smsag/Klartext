@@ -29,36 +29,15 @@ settings:
     description: Renders Mermaid diagrams in the theme's greys instead of Mermaid's default colours
     type: class-toggle
     default: true
-  - id: klartext-ui-font-size
-    title: UI Font Size
-    description: Controls sidebar, panels, and plugin text (e.g. Pythia)
-    type: variable-number-slider
-    default: 13
-    min: 10
-    max: 16
-    step: 0.5
-    format: px
-    variable: --klartext-ui-font-size
-  - id: klartext-mobile-ui-font-size
-    title: Mobile UI Font Size
-    description: Sidebars, menus, panels and plugin text on phone and tablet, in px. Obsidian resets its own interface scale to a 16px base on mobile, which overrides UI Font Size above, so mobile needs its own control
-    type: variable-number-slider
-    default: 14
-    min: 11
-    max: 18
-    step: 0.5
-    format: px
-    variable: --klartext-mobile-ui-font-size
   - id: klartext-mobile-font-size
     title: Mobile Body Text Size
-    description: Body text on phone and tablet, in px. Independent of Appearance → Font size, which then governs desktop alone — one vault setting cannot suit a wide desktop display and a phone at once
+    description: Body text on phone and tablet, in px. Independent of Appearance → Font size, which then governs desktop alone — one vault setting cannot suit a wide desktop display and a phone at once. The phone's interface text follows this value one to one; on the desktop the interface follows Appearance → Font size at thirteen sixteenths
     type: variable-number-slider
     default: 14
     min: 12
     max: 22
     step: 0.5
     format: px
-    variable: --klartext-mobile-font-size
   - id: klartext-line-width
     title: Readable Line Width
     description: Width of the text column, in px. Read only while Obsidian's Appearance → "Readable line length" is on; with that switch off the column spans the pane and this slider does nothing
@@ -68,7 +47,6 @@ settings:
     max: 1200
     step: 20
     format: px
-    variable: --file-line-width
   - id: klartext-line-height
     title: Line Height
     type: variable-number-slider
@@ -76,7 +54,6 @@ settings:
     min: 1.3
     max: 2.5
     step: 0.1
-    variable: --klartext-line-height
   - id: klartext-marker-column
     title: Marker Column
     description: Width of the column that holds list marks, checkboxes and quote bars, at the text edge. Two characters puts a dash or a single digit flush with the text edge and lets numbers from 10 hang their first digits into the margin; four characters keeps three digits inside the column, right-aligned, so a single digit sits two cells in
@@ -87,7 +64,6 @@ settings:
         value: '2'
       - label: Four characters
         value: '4'
-    variable: --klartext-col-cells
   - id: klartext-title-font
     title: Note Title Font
     description: The note's own title, above the text. Monospace matches the body it sits on; the interface face matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
@@ -276,7 +252,13 @@ body {
      without compounding. */
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
-  --file-line-width:        680px;    /* the text column when Obsidian's Appearance → Readable line length is on; with it off the column spans the pane and this is never read. Style Settings slider */
+  /* The text column when Obsidian's Appearance → Readable line length is on;
+     with it off the column spans the pane and this is never read. Style
+     Settings writes a slider's value to a variable named after the setting's
+     id — a `variable:` key in the schema is not part of the plugin — so the
+     slider lands on --klartext-line-width and Obsidian's token aliases it. */
+  --klartext-line-width:    680px;
+  --file-line-width:        var(--klartext-line-width);
   --list-indent:            var(--klartext-col);   /* nesting step per list level = the marker column, so a nested mark starts on its parent's text edge; deliberately not a setting — a fixed value would stop following the column */
   /* --p-spacing is an Obsidian token. Reading-view paragraphs take their
      margin-top from it, and lists their block margins. (The heading→text gap
@@ -308,7 +290,8 @@ body {
      marker sits where the text begins, and Obsidian, measuring each line's
      hanging indent from that same caret (see LISTS), puts wrapped lines on
      the same edge by construction. */
-  --klartext-col-cells:     2;
+  --klartext-marker-column: 2;        /* Style Settings → Marker Column writes this (named after the setting id) */
+  --klartext-col-cells:     var(--klartext-marker-column);
   --klartext-col:           calc(var(--ia-editor-font-size) * 0.6 * var(--klartext-col-cells));
   --klartext-cell:          calc(var(--ia-editor-font-size) * 0.6);   /* one character cell of the body face */
   /* ONE INDENT LEVEL, as it is actually rendered. Obsidian sets `tab-size`
@@ -471,10 +454,17 @@ body {
   --tag-padding-x:          0.45em;
   --tag-padding-y:          0.1em;
 
-  /* ── UI size scale — all derived from --klartext-ui-font-size ──────────
-     Changing the Style Settings slider updates every sidebar, panel, and
-     plugin (including Pythia) that uses these tokens.                    */
-  --klartext-ui-font-size:  13px;                                       /* base   */
+  /* ── UI size scale — one anchor per device, the interface derived ─────
+     The base is not a setting. It follows the body size at 13/16, the ratio
+     the theme was designed at (13px interface beside 16px prose), so the one
+     control a user already has — Appearance → Font size — sizes the sidebars,
+     panels and plugin text with the editor. A display where 16px prose is
+     small gets a larger interface the moment the prose is enlarged, and the
+     phone, which pins its own body size, is untouched. Every sidebar, panel
+     and plugin (including Pythia) that reads these tokens follows.
+     Until 1.5.0 this was a Style Settings slider, capped at 16px; on a
+     high-resolution display that cap was the ceiling of legibility.       */
+  --klartext-ui-font-size:  calc(var(--ia-editor-font-size) * 0.8125);  /* 13px at the 16px default */
   --klartext-ui-xs:         calc(var(--klartext-ui-font-size) * 0.88);  /* ~11px  */
   --klartext-ui-sm:         calc(var(--klartext-ui-font-size) * 0.96);  /* ~12px  */
   --klartext-ui-md:         calc(var(--klartext-ui-font-size) * 1.04);  /* ~13px  */
@@ -2674,8 +2664,8 @@ body.is-android {
   -webkit-text-size-adjust: 100%;
 
   /* BODY TEXT SIZE — mobile takes its own, off Appearance → Font size.
-     That slider lives in appearance.json, which is inside the vault and
-     therefore syncs to every device, so ONE value had to serve both a wide
+     That slider is stored in the vault's app.json, which syncs to every
+     device, so ONE value had to serve both a wide
      desktop display and a phone. It cannot: sized for the desktop it is
      overbearing on the phone, sized for the phone it is small on the
      desktop. Unhooking mobile leaves the Appearance slider meaning "desktop"
@@ -2703,11 +2693,11 @@ body.is-android {
      into Obsidian's ladder, which has to be repeated because `.is-mobile`
      overwrote it — pointing it back at the theme's tokens rather than at
      numbers keeps one scale for both platforms.
-     Mobile gets its own control rather than inheriting the desktop number,
-     for the reason the body size does: a phone held at arm's length and a
-     wide desktop display do not want the same interface scale, and one vault
-     setting cannot serve both. */
-  --klartext-ui-font-size: var(--klartext-mobile-ui-font-size, 14px);
+     The phone's interface follows the phone's body size one to one (14 and
+     14 at the defaults): touch targets want chrome at prose size, where the
+     desktop sits at 13/16. One control per device, the interface derived,
+     and neither device ever sees the other's number. */
+  --klartext-ui-font-size: var(--ia-editor-font-size);
   --font-ui-smaller: var(--klartext-ui-xs);
   --font-ui-small:   var(--klartext-ui-font-size);
   --font-ui-medium:  var(--klartext-ui-md);

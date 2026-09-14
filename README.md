@@ -25,12 +25,13 @@ one file and follow Obsidian's own light/dark setting.
   box, a quote its bar. A collapsible section opens with `+` and closes with `−`. A
   code block's language is a lowercase word. None of these are images, so they scale
   with your text size and match the body face.
-- **One left edge.** Headings, prose, list items, tasks, quotes and callouts all
-  start their text on the same vertical line, and keep it there whether you are
-  reading the note, editing another line, or editing that very line. Every mark hangs
-  into a four-character column to the left of that edge, ending one cell before the
-  text, and never pushes it. Wrapped lines return to the edge. Nested items step in by
-  exactly one column, so a nested mark sits in the column its parent's text starts on.
+- **One left edge.** Headings and prose start on the paragraph edge, and every mark
+  sits right there, in the text flow: the dash, the number, the checkbox, the quote
+  bar. Their text starts one marker column further in — the same edge for lists,
+  tasks, quotes and callouts — and keeps it whether you are reading the note,
+  editing another line, or editing that very line. Wrapped lines return to that
+  edge. Nested items step in by exactly one column, so a nested mark starts where
+  its parent's text starts. Only the heading badge hangs outside the text.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit
@@ -89,7 +90,8 @@ All of these live in Settings → Style Settings → Klartext.
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size |
 | Readable Line Width | 680px | Feeds Obsidian's own readable-line-length setting |
 | Line Height | 1.6 | Body leading |
-| List Indent | 2.4em | Indent step per nested list level; 2.4em is the marker column, so nested marks start on the parent's text edge |
+| Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
+| List Indent | the column | Indent step per nested list level; left alone it equals the marker column, so nested marks start on the parent's text edge |
 | Paragraph Spacing | 1.4 | Gap between paragraphs as a multiple of the line height |
 
 After editing `theme.css` by hand, Style Settings keeps its cached parse until it
@@ -111,8 +113,7 @@ explains why the value is what it is. Where a number was measured rather than ch
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
 system; `--ia-editor-font-size` is the alias every derived size chains from;
-`--klartext-col` is the marker column every mark hangs into, to the left of the text
-edge.
+`--klartext-col` is the marker column that holds every mark, on the text edge.
 
 Live Preview keeps a block's source marker in the editor as real text, and the theme
 relies on that: Obsidian measures each line's hanging indent from the caret position at

@@ -9,49 +9,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 One change, made because the previous constructions had become a fight with
 the editor and were expected to break on the next Obsidian release: every
-block — paragraph, heading, bulleted, numbered, task, quote, callout — now
-starts its text on ONE edge, in Live Preview with the cursor on the line, in
-Live Preview with the cursor elsewhere, and in Reading view. The marks hang
-into a four-character column to the left of that edge, the way the `#ₙ`
-heading badge always has, and nothing shifts between those states. Every
-position below was measured in the running Obsidian 1.13.7 over Chromium's
-debugging port rather than in a reconstruction; the numbers are at the
-default 16px body size.
+mark — dash, number, checkbox, quote bar, callout rule — sits in the text
+flow on the prose edge, in a marker column of whole character cells, and
+every hanging block starts its text at that column's far edge, in Live
+Preview with the cursor on the line, in Live Preview with the cursor
+elsewhere, and in Reading view. Nothing shifts between those states. Only
+the `#ₙ` heading badge hangs outside the text. Every position below was
+measured in the running Obsidian 1.13.7 over Chromium's debugging port
+rather than in a reconstruction; the numbers are at the default 16px body
+size and the default two-cell column.
 
 ### Changed
-- **The marker column is four characters (2.4em) LEFT of the text edge.**
-  Room for a three-digit number plus one blank cell as the gap; every mark
-  is right-aligned against that gap cell, so the dash, the last digit and
-  the checkbox all end one cell before the text. List, quote and callout
-  text no longer hang in from the prose: they sit on the prose edge itself.
-  Measured: text at 0 from the line start for paragraphs, headings and every
-  block type, identical in both editing states and in Reading view; nested
-  items and nested quotes at 38.4px, one column in. A callout's title line
-  sits on the edge too — it used to land about a character right of the
-  body lines while the callout's source was showing. On desktop the column
-  hangs into the 2.6em prefix column Live Preview already reserves for the
-  heading badge; in Reading view and on the phone it hangs into Obsidian's
-  file margin, which is wide enough for two digits everywhere and for three
-  wherever the readable line width is on.
-- **The marker axis moves to the centre of the column's third cell**, one
-  and a half cells left of the text edge, the cell the marks occupy: the
-  quote bar, the callout rule, the indentation guides and the list tree
-  line all sit there. The heading badge's gap to its heading is now the
-  same one cell every other mark keeps, and the fold chevron of a list item
-  sits just beyond the column, where the heading chevron sits.
-- **List Indent defaults to 2.4em**, the column width, so a nested item's
-  text sits one column in and its mark ends one cell before it, in the
-  column the parent's text starts on. The Style Settings slider still
+- **The marker column, on the text edge, with its width as a setting.**
+  Style Settings → Marker Column: two characters (default) or four. The
+  column's last cell is always the blank gap, and every mark is
+  right-aligned against it, so the dash, the last digit and the checkbox all
+  end one cell before the text. At two cells a dash or a single digit is
+  flush with the prose edge and a number from 10 hangs its first digits into
+  the margin, as 1.4.0 did; at four cells three digits fit inside the column
+  and a single digit sits two cells in. Measured at two cells: list, task,
+  quote and callout text at 19.2px from the line start, identical in both
+  editing states and in Reading view; nested items and nested quotes at
+  38.4px; `10` and `100` hang one and two cells with their text still at
+  19.2px. At four cells the same lines measure 38.4px and 76.8px. A
+  callout's title line sits on the same edge as its body — it used to land
+  about a character to the right while the callout's source was showing.
+- **The marker axis is the centre of the column's last mark cell** — half
+  a cell in at two cells, one and a half at four — the cell the marks
+  occupy: the quote bar, the callout rule, the indentation guides and the
+  list tree line all sit there. The heading badge's gap to its heading is
+  now the same one cell every other mark keeps.
+- **List Indent defaults to the column width**, so a nested item's mark
+  starts where its parent's text starts. The Style Settings slider still
   governs it; a value already set in a vault is kept. A quote inside a quote
   steps in the same way in both modes, with a bar per level.
-- **Numbers are numbers.** `10  Text`, with neither the source's dot nor
-  the dash the theme drew after it, in both modes. The dot's cell is kept
-  blank as the gap, so "100" fills the three digit cells exactly. A
-  four-digit number widens its own item by one cell in Live Preview and
-  hangs its first digit into the margin in Reading view; nothing else moves.
-  Extra spaces after a marker cost nothing: they used to break the
-  numbered marker's geometry, because Obsidian's token includes every space
-  that follows the dot and the old clip assumed exactly one.
+- **Numbers are numbers.** `1 Text`, `10 Text`, with neither the source's
+  dot nor the dash the theme drew after it, in both modes; the dot's cell is
+  kept blank as the gap. Extra spaces after a marker cost nothing: they used
+  to break the numbered marker's geometry, because Obsidian's token includes
+  every space that follows the dot and the old clip assumed exactly one.
 - **One bullet mark for `-`, `*` and `+`, in every state.** The active line
   used to reveal the literal character while idle lines showed the dash.
   Reading view cannot tell the three apart either, so one dash for all.
@@ -76,12 +72,14 @@ default 16px body size.
   `unicode-range` is exactly those seven code points, so every other
   character falls through to JetBrains Mono, and its vertical metrics copy
   JetBrains Mono's so a line holding only a marker keeps its height. Every
-  marker token is then an inline-block one column wide, end-aligned and
-  pulled back by its own width, so it takes no net advance: its content
-  ends on the text edge, the caret at the end of the marker is drawn where
-  the text begins, and Obsidian, measuring the hanging indent there, finds
-  zero and writes none — wrapped lines sit on the edge without a second
-  rule. Nothing is clipped, boxed in flex or painted over. A callout's
+  marker token is then a box one column wide, end-aligned: its content ends
+  on the column's far edge, the caret at the end of the marker is drawn
+  where the text begins, and Obsidian, measuring the hanging indent there,
+  writes the column width — wrapped lines sit on the same edge without a
+  second rule. The number token is a flex box, so a number wider than the
+  column overflows at its start and hangs into the margin; the bullet token
+  is not, because flex layout would drop its whitespace-only trailing space
+  and with it the caret. Nothing is clipped or painted over. A callout's
   header line, which Obsidian tokenises as one span `> [!type] `, uses a
   second face that blanks only the `>`, so the tag and its trailing space
   keep their cells and the tag sits on the edge. Both faces are touched by
@@ -96,7 +94,8 @@ default 16px body size.
   render a whitespace-only text child at all — the trailing space of `- `
   had no box, CodeMirror's coordsAtPos returned null for the position after
   it, and neither the caret nor the hanging indent could be computed.
-  Measured before the fix: null; after: 0, on the text edge.
+  Measured before the fix: null; after: on the column's edge, where the
+  text begins.
 - **No caret on a fresh numbered item.** Obsidian draws the primary caret
   natively (`caret-color`), not through CodeMirror's cursor layer, and the
   page-coloured patch the theme painted over the dot sat above it. The
@@ -114,9 +113,7 @@ default 16px body size.
 ### Not verified
 - **Mobile.** The column and the axis are derived from the body size and
   apply on the phone unchanged, but nothing in this release was seen on a
-  phone. The marks hang into the mobile page padding plus Obsidian's file
-  margin (about 43px at the default sizes, against a 38px column), which is
-  what wants a look on the device.
+  phone.
 
 ## [1.4.0] — 2026-09-12
 

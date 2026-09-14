@@ -105,11 +105,22 @@ settings:
     max: 2.5
     step: 0.1
     variable: --ia-line-height
+  - id: klartext-marker-column
+    title: Marker Column
+    description: Width of the column that holds list marks, checkboxes and quote bars, at the text edge. Two characters puts a dash or a single digit flush with the text edge and lets numbers from 10 hang their first digits into the margin; four characters keeps three digits inside the column, right-aligned, so a single digit sits two cells in
+    type: variable-select
+    default: '2'
+    options:
+      - label: Two characters
+        value: '2'
+      - label: Four characters
+        value: '4'
+    variable: --klartext-col-cells
   - id: klartext-list-indent
     title: List Indent
-    description: Indent step per nested list level. 2.4em is the width of the marker column, so a nested item's marker starts where its parent's text starts (Obsidian default is 2em)
+    description: Indent step per nested list level. Left alone it equals the marker column, so a nested item's mark starts where its parent's text starts (Obsidian default is 2em)
     type: variable-number-slider
-    default: 2.4
+    default: 1.2
     min: 0.25
     max: 4
     step: 0.25
@@ -297,7 +308,7 @@ body {
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
   --file-line-width:        680px;
-  --list-indent:            2.4em;    /* nesting step per list level = the marker column, so a nested marker starts on its parent's text edge */
+  --list-indent:            var(--klartext-col);   /* nesting step per list level = the marker column, so a nested mark starts on its parent's text edge; the Style Settings slider overrides it */
   /* --p-spacing is an Obsidian token. Reading-view paragraphs take their
      margin-top from it, and lists their block margins. (The heading→text gap
      in Reading view is NOT this: heading margins in the HEADINGS section fold
@@ -309,24 +320,27 @@ body {
      so paragraph spacing doesn't jump when switching to Read mode. */
   --readability-p-spacing:  calc(var(--ia-line-height) * var(--klartext-p-gap) * 1em);
   --klartext-blank-line:    calc(var(--ia-line-height) * var(--ia-editor-font-size));   /* one Live-Preview blank line, as a length */
-  /* THE MARKER COLUMN. Four characters of the monospace body (4ch = 2.4em),
-     sitting to the LEFT of the text edge: room for a three-digit number,
-     then one blank cell as the gap before the text. Every hanging block —
-     bulleted, numbered, task, quote, callout — keeps its text on the SAME
-     edge as headings and prose, in both modes and in every editing state,
-     and its mark hangs back into the column the way the #ₙ heading badge
-     does, right-aligned against the gap cell: the dash, the last digit and
-     the checkbox all end one cell before the text.
+  /* THE MARKER COLUMN. It starts ON the text edge — the mark is part of the
+     text flow, and only the #ₙ heading badge hangs outside it — and is a
+     whole number of character cells of the monospace body wide (Style
+     Settings: Marker Column; two by default, four as an option). Its last
+     cell is always blank, the gap; every mark is right-aligned against that
+     gap cell, so the dash, the last digit and the checkbox all end one cell
+     before the text. At two cells a dash or a single digit is therefore
+     flush with the edge and "10" hangs its first digit into the margin; at
+     four cells three digits fit inside and a single digit sits two cells
+     in. Every hanging block — bulleted, numbered, task, quote, callout —
+     starts its text at the column's far edge, in both modes and in every
+     editing state, and nested items step by one column.
        In Live Preview the column is the marker token itself: an inline-block
-     one column wide, pulled back by its own width so it takes no net advance,
-     whose source characters stay in normal flow (hidden by the Klartext Marks
-     face, see EMBEDDED FONTS). The CARET at the end of the marker therefore
-     lands on the text edge. Obsidian measures each line's hanging indent from
-     that same caret position (see LISTS), finds zero, and writes none, so
-     wrapped lines sit on the text edge by construction. The column hangs
-     into the prefix column desktop Live Preview reserves (2.6em, wider than
-     2.4em) and into Obsidian's file margin elsewhere. */
-  --klartext-col:           calc(var(--ia-editor-font-size) * 2.4);
+     one column wide, end-aligned, whose source characters stay in normal
+     flow (hidden by the Klartext Marks face, see EMBEDDED FONTS). Its
+     content ends on the column's far edge, so the CARET at the end of the
+     marker sits where the text begins, and Obsidian, measuring each line's
+     hanging indent from that same caret (see LISTS), puts wrapped lines on
+     the same edge by construction. */
+  --klartext-col-cells:     2;
+  --klartext-col:           calc(var(--ia-editor-font-size) * 0.6 * var(--klartext-col-cells));
   --klartext-cell:          calc(var(--ia-editor-font-size) * 0.6);   /* one character cell of the body face */
   /* The font stack for a marker token: the companion face first, so its
      empty glyphs hide the source characters, JetBrains Mono for the digits. */
@@ -345,13 +359,13 @@ body {
      gap is a third of the column, like dash → text. Scoped to notes below
      (.markdown-source-view / .markdown-rendered), not to settings toggles. */
   --klartext-checkbox-size: calc(var(--ia-editor-font-size) * 0.8);
-  /* The marker AXIS: the centre of the column's third cell, i.e. one and a
-     half cells (0.9em) LEFT of the text edge, where the dash, the last digit
-     and the checkbox sit. Everything that is a vertical line in the margin
-     sits on it — indentation guides, the list tree line, the quote bar and
-     the callout rule — so they read as one axis with the marks. Negative,
-     because it is measured from the text edge outward. */
-  --klartext-marker-axis:   round(calc(var(--ia-editor-font-size) * -0.9), 1px);   /* whole pixels: a fractional axis let a border and a positioned bar snap to different device pixels */
+  /* The marker AXIS: the centre of the column's last mark cell (the one
+     before the gap), where the dash, the last digit and the checkbox sit —
+     half a cell in at two cells, one and a half cells in at four. Everything
+     that is a vertical line in the column sits on it — indentation guides,
+     the list tree line, the quote bar and the callout rule — so they read
+     as one axis with the marks. */
+  --klartext-marker-axis:   round(calc(var(--ia-editor-font-size) * 0.6 * (var(--klartext-col-cells) - 1.5)), 1px);   /* whole pixels: a fractional axis let a border and a positioned bar snap to different device pixels */
   /* Obsidian's 0.85em put the guide right of the dash, detached from the
      marker it continues; the tree line and the Reading guide derive from it.
      Obsidian draws the guide as the END border of a 1px box that starts at
@@ -1070,13 +1084,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
 }
 
 /* Fold chevron on list lines. Obsidian anchors the collapse icon so that
-   its right edge sits about on the line start, which is now where the
-   marker column ENDS: left alone it straddled the dash. Pushed out by the
-   column plus a small gap, it sits just beyond the column's outer edge —
-   the same place the heading chevron sits beyond the #ₙ badge, so the two
-   chevrons share one x. Hover-only on desktop, as Obsidian has it. */
+   its right edge sits about on the line start, where the mark now is; a
+   small margin moves it into the margin beside the mark, hover-only on
+   desktop as Obsidian has it. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line .cm-fold-indicator .collapse-indicator {
-  margin-inline-end: calc(var(--klartext-col) + 0.4em);
+  margin-inline-end: 0.4em;
 }
 
 /* Reading-view counterpart: a paragraph that introduces a list keeps one
@@ -1603,19 +1615,16 @@ blockquote,
      the paragraph's larger bottom margin still wins and the block gap is
      never seen. */
   margin: var(--readability-blockquote-spacing) 0 calc(var(--klartext-p-gap) * var(--klartext-blank-line)) var(--klartext-marker-axis) !important;
-  padding: 0 0 0 calc(-1 * var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text back on the prose edge, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
+  padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text at the column's far edge, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
   color: var(--text-secondary);
   font-size: calc(1em * var(--klartext-quote-scale));
   font-style: italic;
   background: transparent;
 }
-/* A quote inside a quote steps in by one column, as in the editor: its bar
-   on the axis of the second column, its text one column in. Without this
-   the inner margin pulled it back onto the outer bar. `!important` because
-   the rule above sets the margin shorthand that way; the nested quote keeps
-   the outer one's size rather than shrinking again. */
+/* A quote inside a quote steps in by one column through the same rule: its
+   bar on the axis of the next column, its text one column further in. It
+   keeps the outer quote's size rather than shrinking again. */
 .markdown-preview-view blockquote blockquote {
-  margin-inline-start: calc(var(--klartext-col) + var(--klartext-marker-axis)) !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   font-size: 1em;
@@ -1629,13 +1638,13 @@ blockquote,
    beside it; on the active line the token is one plain span. Both live
    inside .cm-formatting-quote, which is the element styled here, so the two
    states render identically and nothing moves when the cursor arrives.
-     • The token is padded by the column width, and its characters are set
-       in the Klartext Marks face, in which ">" and the space are empty
-       glyphs with zero advance. The token therefore measures exactly one
-       column, the caret at its end sits on the text edge, and Obsidian's
-       hanging indent — which it measures from that very caret position —
-       puts wrapped lines on the same edge. Nothing is clipped, boxed or
-       painted over, so the caret is drawn where the text will begin.
+     • The token is an inline-block one column wide, and its characters are
+       set in the Klartext Marks face, in which ">" and the space are empty
+       glyphs with zero advance. The caret at its end sits on the column's
+       far edge where the text begins, and Obsidian's hanging indent — which
+       it measures from that very caret position — puts wrapped lines on
+       the same edge. Nothing is clipped, boxed in flex or painted over, so
+       the caret is drawn.
      • The ">" is never shown. The bar is the mark, in every state, so the
        rule that stepped the bar back on the active line is gone.
      • Nested quotes: each "> " token is one column, so level-2 text sits
@@ -1672,27 +1681,23 @@ blockquote,
   white-space: pre;
   color: transparent !important;   /* also beats the theme's own .cm-quote colour; the glyphs are empty anyway */
 }
-/* The first level's token is pulled back by its own width, so level-1 text
-   sits on the prose edge; each deeper level's token keeps its advance, so
-   nested text steps in by one column per level. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-formatting-quote-1 {
-  margin-inline-start: calc(-1 * var(--klartext-col));
-}
 /* A callout's HEADER line while its source is showing. Obsidian tokenises
    "> [!type] " as ONE span carrying the quote-formatting classes plus
    .cm-hmd-callout, so the column box above would squeeze the tag into the
    margin over the title. Instead the token stays inline at its natural
    width, set in the Quote variant of the marks face (only the ">" is
-   blank; the spaces keep their cells), and is pulled back by exactly the
-   one cell the space after ">" occupies: the tag begins on the text edge,
-   its trailing space is the gap before the title, and the caret after
-   "> " sits on the edge, so the hanging indent stays zero. The tag itself
+   blank; the spaces keep their cells), and is padded by the column less
+   the one cell the space after ">" occupies: the tag begins on the text
+   edge, its trailing space is the gap before the title, and the caret
+   after "> " sits on the edge, so the hanging indent matches the body
+   lines. The tag itself
    is faint (see the rule for .cm-hmd-barelink below). */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-formatting-quote.cm-hmd-callout {
   display: inline;
   width: auto;
   min-width: 0;
-  margin-inline-start: -0.6em;   /* the space after ">", in the token's OWN size: quote lines run at the quote scale, so a body-size cell would pull it 0.7px too far */
+  margin-inline-start: 0;
+  padding-inline-start: calc(var(--klartext-col) - 0.6em);   /* the column less the space after ">", that space in the token's OWN size: quote lines run at the quote scale */
   text-align: start;
   font-family: var(--klartext-mark-font-quote);
   color: var(--text-faint) !important;
@@ -1765,24 +1770,23 @@ hr,
 /* ------------------------------------------------------------------
    LISTS
    ------------------------------------------------------------------ */
-/* READING VIEW — the marker column model (see --klartext-col). Item text
-   sits on the prose edge: no list padding, no item margin. Each mark is a
-   float pulled back one column (2.4 × body size = 4ch of the monospace
-   body, as a length so the font-size:0 bullet box can't collapse it) into
-   the file margin and END-aligned against the column's last cell, which
-   stays empty as the gap: dash, last digit and checkbox all end one cell
-   before the text. Nested items keep Obsidian's own --list-indent step,
-   which defaults to the same column, so a nested mark starts on its
-   parent's text edge. Obsidian's reading indentation guide hangs off the
-   nested list's edge by --indentation-guide-reading-indent; re-based so it
-   lands on the parent's marker axis, as in the editor. */
+/* READING VIEW — the marker column model (see --klartext-col). Every item
+   hangs exactly one column (as a length, so the font-size:0 bullet box
+   can't collapse it); each mark is a float pulled back into that column
+   and END-aligned against its last cell, which stays empty as the gap:
+   dash, last digit and checkbox all end one cell before the text. Nested
+   items keep Obsidian's own --list-indent step, which defaults to the same
+   column, so a nested mark starts on its parent's text edge. Obsidian's
+   reading indentation guide hangs off the nested list's edge by
+   --indentation-guide-reading-indent; re-based so it lands on the parent's
+   marker axis, as in the editor. */
 .markdown-preview-view ul,
 .markdown-preview-view ol {
   padding-left: 0;
 }
 .markdown-rendered ul > li,
 .markdown-rendered ol > li {
-  margin-inline-start: 0;
+  margin-inline-start: var(--klartext-col);
 }
 /* Numbering: the counter alone, no dot, no dash, right-aligned in the
    column. NOT done via ::marker content — WebKit (iOS/macOS Obsidian)
@@ -1853,10 +1857,10 @@ hr,
    So: keep the characters in normal flow with real metrics, turn the ones
    that must not show into empty zero-advance glyphs through the Klartext
    Marks face (see EMBEDDED FONTS), and make the token an inline-block one
-   column wide, end-aligned, pulled back by its own width. Its content ends
-   on the text edge, so the caret at the end of the marker is drawn exactly
-   where the text begins; Obsidian measures the hanging indent there, finds
-   zero and writes none, so wrapped lines sit on the text edge too. A real
+   column wide, end-aligned. Its content ends on the column's far edge, so
+   the caret at the end of the marker is drawn exactly where the text
+   begins; Obsidian measures the hanging indent there and writes the column
+   width, so wrapped lines sit on that edge too. A real
    text run inside the box keeps the caret measurable — what killed the
    caret before was the trailing space as a whitespace-only text node inside
    an inline-FLEX container, which flex layout does not render at all — and
@@ -1868,17 +1872,17 @@ hr,
    Reading view cannot tell them apart either.
      Numbered: the digits are visible and right-align on their own; the dot
    (or parenthesis) keeps one cell of advance but no ink, so "10." ends on
-   the text edge with its digits ending one cell earlier, and extra spaces
-   cost nothing.
+   the column's edge with its digits ending one cell earlier, and extra
+   spaces cost nothing. A number with more digits than the column has mark
+   cells hangs its first digits into the margin (see the flex note below).
      Task: Obsidian replaces "- [ ]" with a checkbox widget and leaves the
-   space after it as body text. The widget is three cells wide with the box
-   at its end, pulled back a full column; the space is the fourth cell. */
+   space after it as body text. The widget is the column less one cell,
+   with the box at its end; the space is the last cell. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul,
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
   display: inline-block;
   box-sizing: border-box;
-  min-width: var(--klartext-col);   /* a minimum, not a width: a four-digit number (five cells with its dot) widens the box and moves that item's text one cell rather than running into it */
-  margin-inline-start: calc(-1 * var(--klartext-col));
+  width: var(--klartext-col);
   padding-inline-start: 0;
   text-align: end;
   vertical-align: baseline;
@@ -1886,6 +1890,17 @@ hr,
   font-variant-numeric: tabular-nums;
   white-space: pre;
   color: var(--text-faint);
+}
+/* The number token is a FLEX box, end-justified: a number with more digits
+   than the column has mark cells then overflows at the start, hanging its
+   first digits into the margin, while its text stays on the shared edge.
+   An inline-block cannot do that (overflowing content aligns to the start
+   and runs into the text). Flex is safe here, unlike on the bullet token:
+   the number's text run is never whitespace-only, so it is always rendered
+   and the caret after it always has a box. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
+  display: inline-flex;
+  justify-content: flex-end;
 }
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul::before {
   content: "\2013";
@@ -1913,7 +1928,6 @@ hr,
   box-sizing: border-box;
   width: calc(var(--klartext-col) - var(--klartext-cell));
   margin: 0;
-  margin-inline-start: calc(-1 * var(--klartext-col));
   vertical-align: middle;
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label .task-list-item-checkbox {
@@ -2795,7 +2809,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
   border-radius: 0;
   background-color: transparent;
   box-shadow: none;
-  padding: 0 0 0 calc(-1 * var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text back on the prose edge, like quotes and list text */
+  padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text at the column's far edge, like quotes and list text */
   margin: var(--klartext-block-gap) 0 var(--klartext-block-gap) var(--klartext-marker-axis);   /* rule on the marker axis */
 }
 /* Live Preview: Obsidian zeroes every callout margin inside the editor

@@ -5,6 +5,33 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+- **Six Style Settings options**, after a review of all nineteen with the
+  aim of keeping only what answers a preference people hold or something
+  CSS cannot see. List Indent contradicted the column model: untouched it
+  followed the marker column, but Style Settings writes a slider's variable
+  only once it is touched, so the first touch pinned the indent to a fixed
+  em and the four-character column then broke the nesting alignment
+  silently. Translucent Diagram Boxes shipped off and experimental, a flag
+  patching a Mermaid routing defect rather than a choice. Spaces Per Level
+  was a second knob for a one-in-a-thousand case; the toggle stays and
+  assumes Obsidian's default of four, overridable by snippet. Soft Scroll
+  Edge and Paragraph Spacing were the theme's own polish and rhythm wearing
+  a switch: the scrim is always on now, the paragraph gap is fixed at 1.4.
+  Diagram Font Scale is fixed at 0.9. Every token remains in the file and
+  the README lists the snippet for each, so nothing is lost for anyone who
+  wants the old value. Thirteen settings remain.
+
+### Fixed
+- **Line Height slider wrote a variable the theme did not read** in a vault
+  where Style Settings had emitted its CSS before the token was renamed to
+  `--ia-line-height`: the emitted `--klartext-line-height` reached nothing,
+  and the plugin only re-emits when a setting changes. The slider now writes
+  `--klartext-line-height`, the theme's own name, and `--ia-line-height` is
+  an alias of it, so both the stale emission and every future one land.
+
 ## [1.5.0] — 2026-09-14
 
 ### Added

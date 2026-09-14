@@ -81,26 +81,35 @@ All of these live in Settings → Style Settings → Klartext.
 |---|---|---|
 | Editor Background | Pure White | Pure white, or a warm off-white with surfaces and borders rebalanced against it |
 | Dotted Code & Header Fill | on | A faint dot-grid texture on code blocks and table headers |
-| Soft Scroll Edge | on | Fades text out under the view header while scrolling instead of cutting it off |
 | Hide View Header | on | Lifts the note header out of the layout; hover the top edge to bring it back. Desktop only |
 | Center Mermaid Diagrams | on | Centres rendered diagrams in the text column |
 | Greyscale Mermaid Diagrams | on | Renders diagrams in the theme's greys instead of Mermaid's colours |
-| Translucent Diagram Boxes | off | Node fills at half opacity so edges routed behind a node stay visible |
-| Diagram Font Scale | 0.9 | Mermaid label size as a factor of the body font; boxes shrink to match |
 | UI Font Size | 13px | Sidebars, panels and plugin text on desktop |
 | Mobile UI Font Size | 14px | The same, on phone and tablet. Obsidian resets its interface scale on mobile, so it needs its own control |
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size |
 | Readable Line Width | 680px | Feeds Obsidian's own readable-line-length setting |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
-| List Indent | the column | Indent step per nested list level; left alone it equals the marker column, so nested marks start on the parent's text edge |
 | Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |
-| Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it |
-| Spaces Per Level | 4 | Read only while the option above is on; match Editor → Tab indent size |
-| Paragraph Spacing | 1.4 | Gap between paragraphs as a multiple of the line height |
+| Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it. Assumes four spaces per level |
 
 After editing `theme.css` by hand, Style Settings keeps its cached parse until it
 re-reads the file. Switching theme away and back, or restarting Obsidian, refreshes it.
+
+A few things are deliberately not settings. Nested lists step in by exactly one
+marker column, so nested marks land on the parent's text edge; the paragraph gap
+is what keeps Live Preview and Reading view in step; Mermaid labels sit at 0.9 of
+the body size; diagrams are centred; the scroll edge under the header is soft.
+Each still has a token, so a CSS snippet can change it:
+
+```css
+body {
+  --list-indent: 2em;            /* nesting step */
+  --klartext-p-gap: 1.2;         /* paragraph gap, × line height */
+  --klartext-diagram-font-scale: 1;
+  --klartext-tab-size: 2;        /* spaces per level, with Lists Indented With Spaces on */
+}
+```
 
 ## Mobile
 

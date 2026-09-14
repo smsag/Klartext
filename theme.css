@@ -24,11 +24,6 @@ settings:
     description: Gives code blocks and table headers a subtle dot-grid texture
     type: class-toggle
     default: true
-  - id: klartext-soft-scroll-edge
-    title: Soft Scroll Edge
-    description: Fades text out under the view header while scrolling instead of a hard cut-off
-    type: class-toggle
-    default: true
   - id: klartext-hide-view-header
     title: Hide View Header
     description: Hides the note header (breadcrumb, back/forward, actions); move the mouse to the top edge of the note to reveal it. Desktop only
@@ -44,20 +39,6 @@ settings:
     description: Renders Mermaid diagrams in the theme's greys instead of Mermaid's default colours
     type: class-toggle
     default: true
-  - id: klartext-translucent-diagram-boxes
-    title: Translucent Diagram Boxes
-    description: Draws Mermaid node boxes at half opacity so edges routed behind them stay visible (experimental)
-    type: class-toggle
-    default: false
-  - id: klartext-diagram-font-scale
-    title: Diagram Font Scale
-    description: Mermaid label size as a factor of the body font (0.9 = 10% smaller; boxes shrink to match)
-    type: variable-number-slider
-    default: 0.9
-    min: 0.6
-    max: 1.2
-    step: 0.05
-    variable: --klartext-diagram-font-scale
   - id: klartext-ui-font-size
     title: UI Font Size
     description: Controls sidebar, panels, and plugin text (e.g. Pythia)
@@ -104,7 +85,7 @@ settings:
     min: 1.3
     max: 2.5
     step: 0.1
-    variable: --ia-line-height
+    variable: --klartext-line-height
   - id: klartext-marker-column
     title: Marker Column
     description: Width of the column that holds list marks, checkboxes and quote bars, at the text edge. Two characters puts a dash or a single digit flush with the text edge and lets numbers from 10 hang their first digits into the margin; four characters keeps three digits inside the column, right-aligned, so a single digit sits two cells in
@@ -116,16 +97,6 @@ settings:
       - label: Four characters
         value: '4'
     variable: --klartext-col-cells
-  - id: klartext-list-indent
-    title: List Indent
-    description: Indent step per nested list level. Left alone it equals the marker column, so a nested item's mark starts where its parent's text starts (Obsidian default is 2em)
-    type: variable-number-slider
-    default: 1.2
-    min: 0.25
-    max: 4
-    step: 0.25
-    format: em
-    variable: --list-indent
   - id: klartext-title-font
     title: Note Title Font
     description: The note's own title, above the text. Monospace matches the body it sits on; the interface face matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
@@ -138,27 +109,9 @@ settings:
         value: klartext-title-sans
   - id: klartext-space-indent
     title: Lists Indented With Spaces
-    description: Turn this on if Obsidian's Editor → "Indent using tabs" is OFF. A tab is rendered at exactly the List Indent above, spaces at their own width, so the two are not the same distance — and a stylesheet cannot see which one a vault types. Only the list tree line depends on knowing; everything else follows Obsidian either way
+    description: Turn this on if Obsidian's Editor → "Indent using tabs" is OFF. A tab is rendered at exactly one marker column, spaces at their own width, so the two are not the same distance — and a stylesheet cannot see which one a vault types. Only the list tree line depends on knowing; everything else follows Obsidian either way. Assumes Obsidian's default of four spaces per level; another Tab indent size takes a one-line snippet on the --klartext-tab-size token, see the README
     type: class-toggle
     default: false
-  - id: klartext-tab-size
-    title: Spaces Per Level
-    description: Only read while "Lists Indented With Spaces" is on — how many spaces Obsidian inserts per level (Editor → Tab indent size)
-    type: variable-number-slider
-    default: 4
-    min: 2
-    max: 8
-    step: 1
-    variable: --klartext-tab-size
-  - id: klartext-p-gap
-    title: Paragraph Spacing
-    description: Gap between paragraphs as a multiple of the body line height
-    type: variable-number-slider
-    default: 1.4
-    min: 1
-    max: 2
-    step: 0.1
-    variable: --klartext-p-gap
 */
 
 /* ------------------------------------------------------------------
@@ -330,20 +283,25 @@ body {
   /* Alias Obsidian's native font-text-size so our rules chain from it.
      The native Appearance slider writes --font-text-size directly.      */
   --ia-editor-font-size:    var(--font-text-size, 14px);   /* Appearance slider wins; 14px fallback */
-  --ia-line-height:         1.6;      /* body leading — modest air for a monospace face */
+  /* Body leading — modest air for a monospace face. The Style Settings
+     slider writes --klartext-line-height; --ia-line-height is the alias the
+     rest of the file chains from. */
+  --klartext-line-height:   1.6;
+  --ia-line-height:         var(--klartext-line-height);
   --klartext-table-line-height: 1.4;   /* ONE value for static AND edited table cells */
 
   /* Paragraph rhythm (see VERTICAL RHYTHM section). Text width is deliberately
      NOT capped by the theme — it follows the pane; Obsidian's own "Readable
      line length" toggle remains available. */
-  --klartext-p-gap:         1.4;      /* paragraph gap as a multiple of the body line height */
+  --klartext-p-gap:         1.4;      /* paragraph gap as a multiple of the body line height; not a setting, so both modes keep one rhythm */
 
-  /* Mermaid label size: a factor of the body font, resolved to an absolute
-     length so the svg root and its labels can share it without compounding. */
+  /* Mermaid label size: a factor of the body font, fixed at 0.9, resolved
+     to an absolute length so the svg root and its labels can share it
+     without compounding. */
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
   --file-line-width:        680px;
-  --list-indent:            var(--klartext-col);   /* nesting step per list level = the marker column, so a nested mark starts on its parent's text edge; the Style Settings slider overrides it */
+  --list-indent:            var(--klartext-col);   /* nesting step per list level = the marker column, so a nested mark starts on its parent's text edge; deliberately not a setting — a fixed value would stop following the column */
   /* --p-spacing is an Obsidian token. Reading-view paragraphs take their
      margin-top from it, and lists their block margins. (The heading→text gap
      in Reading view is NOT this: heading margins in the HEADINGS section fold
@@ -389,7 +347,7 @@ body {
      The cell, not `ch`: `ch` would resolve against whatever font the
      element carries, and this token is read on `body`, where that is the
      interface face. */
-  --klartext-tab-size:      4;
+  --klartext-tab-size:      4;        /* spaces per level when Lists Indented With Spaces is on; Obsidian's default, overridable by snippet */
   --klartext-indent-unit:   var(--list-indent);
   /* The font stack for a marker token: the companion face first, so its
      empty glyphs hide the source characters, JetBrains Mono for the digits. */
@@ -2658,17 +2616,18 @@ body.is-ios .view-header {
   font-family: var(--font-interface-theme);
 }
 
-/* Soft scroll edge (Style Settings: klartext-soft-scroll-edge). The header's
-   own border is invisible; what still reads as a hard line is text being cut
-   off flush against the header while scrolling. A short gradient scrim just
-   below the header fades text out instead. An overlay, not a mask, so the
-   scrollbar is untouched and the colour follows the page token (correct on
-   the warm off-white option and in dark mode). Markdown views only; a note's
-   top padding means nothing is faded at scroll-top. */
-body.klartext-soft-scroll-edge .workspace-leaf-content[data-type="markdown"] .view-content {
+/* Soft scroll edge. The header's own border is invisible; what still reads
+   as a hard line is text being cut off flush against the header while
+   scrolling. A short gradient scrim just below the header fades text out
+   instead. An overlay, not a mask, so the scrollbar is untouched and the
+   colour follows the page token (correct on the warm off-white option and
+   in dark mode). Markdown views only; a note's top padding means nothing is
+   faded at scroll-top. Was a Style Settings toggle until 1.5.0; it is the
+   theme's own polish, not a preference, so it is always on. */
+body .workspace-leaf-content[data-type="markdown"] .view-content {
   position: relative;
 }
-body.klartext-soft-scroll-edge .workspace-leaf-content[data-type="markdown"] .view-content::before {
+body .workspace-leaf-content[data-type="markdown"] .view-content::before {
   content: "";
   position: absolute;
   top: 0;
@@ -2685,7 +2644,7 @@ body.klartext-soft-scroll-edge .workspace-leaf-content[data-type="markdown"] .vi
 /* With the header hidden, the content area carries an empty 40px band (see
    TOP PADDING); the scroll edge is that band's bottom, so the scrim moves
    down with it. */
-body.klartext-soft-scroll-edge.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content[data-type="markdown"] .view-content::before {
+body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content[data-type="markdown"] .view-content::before {
   top: var(--header-height);
 }
 
@@ -3406,21 +3365,6 @@ body.klartext-greyscale-diagrams .mermaid svg rect.note {
   stroke: var(--code-border) !important;
 }
 
-/* Translucent boxes (Style Settings: klartext-translucent-diagram-boxes, off
-   by default). Node fills at half opacity so an edge routed behind a node is
-   still visible. Only the fill: outlines, labels, clusters and edge-label
-   chips stay opaque. fill-opacity leaves the layout untouched. Works with or
-   without the greyscale option. */
-body.klartext-translucent-diagram-boxes .mermaid svg .node rect,
-body.klartext-translucent-diagram-boxes .mermaid svg .node circle,
-body.klartext-translucent-diagram-boxes .mermaid svg .node ellipse,
-body.klartext-translucent-diagram-boxes .mermaid svg .node polygon,
-body.klartext-translucent-diagram-boxes .mermaid svg .node path,
-body.klartext-translucent-diagram-boxes .mermaid svg rect.actor,
-body.klartext-translucent-diagram-boxes .mermaid svg rect.note {
-  fill-opacity: 0.5 !important;
-}
-
 /* subgraphs / clusters — one step lighter than nodes */
 body.klartext-greyscale-diagrams .mermaid svg .cluster rect {
   fill: var(--bg-secondary) !important;
@@ -3488,7 +3432,7 @@ body.klartext-greyscale-diagrams .mermaid svg .cluster text {
   fill: var(--text-secondary) !important;
 }
 
-/* Label size (Style Settings: klartext-diagram-font-scale). Mermaid's default
+/* Label size, fixed at 0.9 of the body font. Mermaid's default
    16px is larger than the body text; labels at a fraction of the body size read
    as a diagram, and because Mermaid sizes node boxes from the MEASURED label,
    the boxes tighten and the diagram gets more compact rather than just showing

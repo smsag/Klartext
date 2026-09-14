@@ -5,6 +5,102 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-09-14
+
+One change, made because the previous constructions had become a fight with
+the editor and were expected to break on the next Obsidian release: every
+hanging block — bulleted, numbered, task, quote, callout — now starts its
+text on ONE edge, a four-character marker column in from the paragraph
+edge, in Live Preview with the cursor on the line, in Live Preview with the
+cursor elsewhere, and in Reading view. Nothing shifts between those states.
+Every position below was measured in the running Obsidian 1.13.7 over
+Chromium's debugging port rather than in a reconstruction; the numbers are
+at the default 16px body size.
+
+### Changed
+- **The marker column is four characters (2.4em), text on its far edge.**
+  Room for a three-digit number plus one blank cell as the gap; every mark
+  is right-aligned against that gap cell, so the dash, the last digit and
+  the checkbox all end one cell before the text. Measured: text at 38.4px
+  from the line start for every block type, identical in both editing
+  states and in Reading view; nested items at 76.8px. Callout and quote
+  text sit on the same edge as list text, and a callout's title line sits
+  on it too — it used to land about a character right of the body lines
+  while the callout's source was showing.
+- **The marker axis moves to the centre of the column's third cell**
+  (1.5em), the cell the marks occupy: the quote bar, the callout rule, the
+  indentation guides and the list tree line all sit there.
+- **List Indent defaults to 2.4em**, the column width, so a nested item's
+  marker starts exactly where its parent's text starts. The Style Settings
+  slider still governs it; a value already set in a vault is kept.
+- **Numbers are numbers.** `10  Text`, with neither the source's dot nor
+  the dash the theme drew after it, in both modes. The dot's cell is kept
+  blank as the gap, so "100" fills the three digit cells exactly. A
+  four-digit number widens its own item by one cell in Live Preview and
+  hangs its first digit into the margin in Reading view; nothing else moves.
+  Extra spaces after a marker cost nothing: they used to break the
+  numbered marker's geometry, because Obsidian's token includes every space
+  that follows the dot and the old clip assumed exactly one.
+- **One bullet mark for `-`, `*` and `+`, in every state.** The active line
+  used to reveal the literal character while idle lines showed the dash.
+  Reading view cannot tell the three apart either, so one dash for all.
+- **The quote mark is never shown.** The bar is the mark in every state,
+  including the line being edited, where the theme used to step the bar
+  back and show the `>`. Nested quotes show one bar per level, drawn from
+  the line rather than from the tokens, on the axis of each level's own
+  column, whether or not the line is being edited.
+- **How, and why it holds.** Two facts of Obsidian 1.13.7, both read from
+  its code and confirmed by measurement, decide the construction. First,
+  the rendered number and bullet marks are withheld while the selection
+  touches the marker token, END INCLUDED — so a fresh item, cursor right
+  after `1. `, is always in its plain state. Second, the per-line hanging
+  indent (the inline `text-indent` / `padding-inline-start`) is the caret
+  coordinate at the end of the marker text, floored to a pixel. So the
+  theme now styles the token's CONTAINER, which is present in both states,
+  keeps the source characters in normal flow with real metrics, and hides
+  the ones that must not show with a font rather than with CSS: a
+  400-byte companion face, Klartext Marks, embedded beside the others,
+  whose glyphs for the space, `-`, `*`, `+` and `>` are empty with zero
+  advance and whose `.` and `)` are empty with one cell of advance. Its
+  `unicode-range` is exactly those seven code points, so every other
+  character falls through to JetBrains Mono, and its vertical metrics copy
+  JetBrains Mono's so a line holding only a marker keeps its height. The
+  bullet and quote tokens are then padded by the column; the number token
+  is an inline-block of the column's width with end alignment. The caret
+  at the end of every marker lands on the text edge, and because Obsidian
+  measures the hanging indent from that same caret, wrapped lines follow
+  without a second rule. Nothing is clipped, boxed in flex or painted over.
+  Source: `fonts/make-marks.py`; `fonts/embed.py` embeds the result.
+
+### Fixed
+- **No caret on a fresh bulleted item** (pressing Enter in a list gave a
+  new `- ` line with no cursor). The 1.4.0 change that pinned the bullet
+  token to one column made it an inline-flex box, and flex layout does not
+  render a whitespace-only text child at all — the trailing space of `- `
+  had no box, CodeMirror's coordsAtPos returned null for the position after
+  it, and neither the caret nor the hanging indent could be computed.
+  Measured before the fix: null; after: 38.4px.
+- **No caret on a fresh numbered item.** Obsidian draws the primary caret
+  natively (`caret-color`), not through CodeMirror's cursor layer, and the
+  page-coloured patch the theme painted over the dot sat above it. The
+  patch is gone with the rest of that construction.
+- **The type tag of a callout whose source is showing** (`[!note]`) was
+  underlined dotted like an external link, Obsidian tokenising it as a bare
+  link. It is a mark: faint, upright, undecorated.
+
+### Removed
+- The inline-flex marker boxes, the `clip-path` on the number, the
+  page-coloured patch and the raw-state rules that went with them; the
+  quote line's forced padding and its `text-indent: 0`; the rule for a
+  `.cm-hmd-callout` header token, which the 1.13.7 Live Preview markup
+  does not produce (the header is the quote token followed by link tokens).
+
+### Not verified
+- **Mobile.** The column and the axis are derived from the body size and
+  apply on the phone unchanged, but nothing in this release was seen on a
+  phone. The symmetric mobile page padding still uses the narrow 1.2em
+  column for the heading badges and is untouched.
+
 ## [1.4.0] — 2026-09-12
 
 A pass driven by use on both platforms at once. Three themes run through it:

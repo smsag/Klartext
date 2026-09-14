@@ -59,4 +59,10 @@ for family, style, weight, latin_file, ext_file in FACES:
     out.append(face(family, style, weight, latin_file, LATIN))
     out.append(face(family, style, weight, ext_file, LATIN_EXT))
 
+# The marker companion face (built by make-marks.py): empty glyphs for the
+# characters of a Live Preview block marker. Its unicode-range is exactly
+# those code points, so it never touches anything else.
+out.append(face("Klartext Marks", "normal", "400", "KlartextMarks.woff2",
+                "U+0020, U+0029-002B, U+002D-002E, U+003E"))
+
 print("".join(out), end="")

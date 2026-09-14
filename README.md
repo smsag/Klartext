@@ -20,13 +20,18 @@ one file and follow Obsidian's own light/dark setting.
 ## What it does differently
 
 - **Marks instead of icons.** A heading carries its level as a small `#₁`…`#₆` badge
-  hung in the margin. A list item takes a dash, an ordered item a number and a dash.
-  A collapsible section opens with `+` and closes with `−`. A code block's language is
-  a lowercase word. None of these are images, so they scale with your text size and
-  match the body face.
-- **One left edge.** A reserved column on the left holds every marker, and each one
-  hangs back into it with zero net width. Heading text, list text, quote text and
-  prose all start on the same vertical line.
+  hung in the margin. A list item takes a dash, whichever of `-`, `*` or `+` was
+  typed; an ordered item takes its number alone, without the dot. A task takes its
+  box, a quote its bar. A collapsible section opens with `+` and closes with `−`. A
+  code block's language is a lowercase word. None of these are images, so they scale
+  with your text size and match the body face.
+- **One left edge.** Heading text and prose start on the paragraph edge. Every
+  hanging block — bulleted, numbered, task, quote, callout — starts its text four
+  characters further in, on one shared edge, and keeps it there whether you are
+  reading the note, editing another line, or editing that very line: the marks live
+  in the four-character column and never push the text. Wrapped lines return to the
+  same edge. Nested items step by exactly one column, so a nested mark starts where
+  its parent's text starts.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit
@@ -85,7 +90,7 @@ All of these live in Settings → Style Settings → Klartext.
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size |
 | Readable Line Width | 680px | Feeds Obsidian's own readable-line-length setting |
 | Line Height | 1.6 | Body leading |
-| List Indent | 2em | Indent step per nested list level |
+| List Indent | 2.4em | Indent step per nested list level; 2.4em is the marker column, so nested marks start on the parent's text edge |
 | Paragraph Spacing | 1.4 | Gap between paragraphs as a multiple of the line height |
 
 After editing `theme.css` by hand, Style Settings keeps its cached parse until it
@@ -106,13 +111,28 @@ rather than Obsidian's.
 explains why the value is what it is. Where a number was measured rather than chosen,
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
-system; `--ia-editor-font-size` is the alias every derived size chains from.
+system; `--ia-editor-font-size` is the alias every derived size chains from;
+`--klartext-col` is the marker column every hanging block shares.
+
+Live Preview keeps a block's source marker in the editor as real text, and the theme
+relies on that: Obsidian measures each line's hanging indent from the caret position at
+the end of the marker, so the theme makes every marker token exactly one column wide
+and lets the indent follow. The characters that must not show — the space, `-`, `*`,
+`+`, `>`, and the dot after a number — are hidden by a font rather than by CSS:
+`Klartext Marks`, a 400-byte face of empty glyphs built by `fonts/make-marks.py` and
+embedded like the others. Nothing is clipped, boxed in flex or painted over, which is
+what keeps the caret visible and the layout the same in every state.
+
+Measured values were taken in the running Obsidian over Chromium's debugging port
+(`open -a Obsidian --args --remote-debugging-port=9222`), where the caret position,
+the inline hanging indent and screenshots of the real editor can be read directly.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.
 
 ## Credits
 
-By [Steffen Seitz](https://smsag.de). Typeface: [JetBrains
-Mono](https://www.jetbrains.com/lp/mono/) by JetBrains, under the SIL Open Font
-License 1.1.
+By [Steffen Seitz](https://smsag.de). Typefaces: [JetBrains
+Mono](https://www.jetbrains.com/lp/mono/) by JetBrains and [Fira
+Sans](https://github.com/mozilla/Fira) by Mozilla, both under the SIL Open Font
+License 1.1. Klartext Marks is part of the theme.

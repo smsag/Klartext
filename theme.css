@@ -107,9 +107,9 @@ settings:
     variable: --ia-line-height
   - id: klartext-list-indent
     title: List Indent
-    description: Indent step per nested list level (Obsidian default is 2em)
+    description: Indent step per nested list level. 2.4em is the width of the marker column, so a nested item's marker starts where its parent's text starts (Obsidian default is 2em)
     type: variable-number-slider
-    default: 2
+    default: 2.4
     min: 0.25
     max: 4
     step: 0.25
@@ -297,7 +297,7 @@ body {
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
   --file-line-width:        680px;
-  --list-indent:            2em;      /* nesting step per list level (Live Preview derives nested indents from this) */
+  --list-indent:            2.4em;    /* nesting step per list level = the marker column, so a nested marker starts on its parent's text edge */
   /* --p-spacing is an Obsidian token. Reading-view paragraphs take their
      margin-top from it, and lists their block margins. (The heading→text gap
      in Reading view is NOT this: heading margins in the HEADINGS section fold
@@ -309,9 +309,25 @@ body {
      so paragraph spacing doesn't jump when switching to Read mode. */
   --readability-p-spacing:  calc(var(--ia-line-height) * var(--klartext-p-gap) * 1em);
   --klartext-blank-line:    calc(var(--ia-line-height) * var(--ia-editor-font-size));   /* one Live-Preview blank line, as a length */
-  /* The marker width: what "- " measures in the monospace body (2ch = 1.2em).
-     List text hangs here in both modes; quote and callout text start here too,
-     so a quote's text lines up with a first-level list item's text. */
+  /* THE MARKER COLUMN. Four characters of the monospace body (4ch = 2.4em):
+     room for a three-digit number, then one blank cell as the gap. Every
+     hanging block — bulleted, numbered, task, quote, callout — starts its
+     text at this edge in both modes and in every editing state, and every
+     mark sits inside the column, right-aligned against the gap cell (so the
+     dash, the last digit and the checkbox all end at 3ch).
+       In Live Preview the column is not drawn as a box: the marker token
+     keeps its source characters in normal flow (hidden by the Klartext Marks
+     face, see EMBEDDED FONTS) and is padded so that the CARET at the end of
+     the marker lands exactly at this edge. Obsidian measures each line's
+     hanging indent from that same caret position (see LISTS), so wrapped
+     lines follow by construction rather than by a second rule. */
+  --klartext-col:           calc(var(--ia-editor-font-size) * 2.4);
+  --klartext-cell:          calc(var(--ia-editor-font-size) * 0.6);   /* one character cell of the body face */
+  /* The font stack for a marker token: the companion face first, so its
+     empty glyphs hide the source characters, JetBrains Mono for the digits. */
+  --klartext-mark-font:     'Klartext Marks', var(--font-monospace-theme);
+  /* The narrow column (2ch = 1.2em) is what the mobile page padding and the
+     <details> mark still use: what "- " measures in the body. */
   --klartext-marker-width:  calc(var(--ia-editor-font-size) * 1.2);
   /* Obsidian pads the editor's list-marker span by --list-indent-editing
      (0.75em by default), which put the dash ~10px in and list text ~25px in
@@ -323,13 +339,13 @@ body {
      gap is a third of the column, like dash → text. Scoped to notes below
      (.markdown-source-view / .markdown-rendered), not to settings toggles. */
   --klartext-checkbox-size: calc(var(--ia-editor-font-size) * 0.8);
-  /* The marker AXIS: half a character in, the centre of the dash, under the
-     "1" of a number, through the checkbox. Everything that is a vertical
-     line in the margin sits on it — indentation guides, the list tree line,
-     the quote bar and the callout rule — so they read as one axis with the
-     markers. Text edges are unaffected (paragraphs at 0, hanging text at
-     the marker width). */
-  --klartext-marker-axis:   round(calc(var(--ia-editor-font-size) * 0.3), 1px);   /* whole pixels: a 3.9px axis let a border and a positioned bar snap to different device pixels */
+  /* The marker AXIS: the centre of the column's third cell (2.5ch = 1.5em),
+     which is where the dash, the last digit and the checkbox sit. Everything
+     that is a vertical line in the margin sits on it — indentation guides,
+     the list tree line, the quote bar and the callout rule — so they read
+     as one axis with the marks. Text edges are unaffected (paragraphs at 0,
+     hanging text at the column width). */
+  --klartext-marker-axis:   round(calc(var(--ia-editor-font-size) * 1.5), 1px);   /* whole pixels: a fractional axis let a border and a positioned bar snap to different device pixels */
   /* Obsidian's 0.85em put the guide right of the dash, detached from the
      marker it continues; the tree line and the Reading guide derive from it.
      Obsidian draws the guide as the END border of a 1px box that starts at
@@ -976,12 +992,13 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
   color: var(--text-faint);
 }
 
-/* 5) Lists — the hanging indent is deliberately NOT overridden. Obsidian
-   sets each list line's padding-inline-start / text-indent per line from
-   the measured width of its rendered marker, so wrapped lines align exactly
-   under the item text. What the theme does set is the marker itself (see
-   LISTS): Obsidian's 0.75em marker inset is zeroed in the tokens so the
-   level-1 dash sits on the line's edge = the shared text edge. */
+/* 5) Lists and quotes — the hanging indent is deliberately NOT overridden.
+   Obsidian sets each line's padding-inline-start / text-indent per line
+   from the caret position at the end of its marker, so wrapped lines align
+   exactly under the item text. What the theme does set is the marker
+   itself (see LISTS and BLOCKQUOTE): every marker token is made exactly one
+   column wide, so that caret, and with it the indent, lands on the column
+   edge. Obsidian's 0.75em marker inset is zeroed in the tokens. */
 
 /* ------------------------------------------------------------------
    VERTICAL RHYTHM  (Live Preview only)
@@ -1557,31 +1574,42 @@ blockquote,
      the paragraph's larger bottom margin still wins and the block gap is
      never seen. */
   margin: var(--readability-blockquote-spacing) 0 calc(var(--klartext-p-gap) * var(--klartext-blank-line)) var(--klartext-marker-axis) !important;
-  padding: 0 0 0 calc(var(--klartext-marker-width) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text still at the marker width, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
+  padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text on the column edge, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
   color: var(--text-secondary);
   font-size: calc(1em * var(--klartext-quote-scale));
   font-style: italic;
   background: transparent;
 }
 
-/* Live-preview blockquote — theme-controlled geometry, matching callouts
-   and lists: the bar on the surrounding text edge, quote text at the marker
-   width (where list text hangs), wrapped lines flush with the text, and the
-   > marker drawn in that gap only while the line is edited. Pieces:
-     • LINE — padding-left: the marker width (the gap) and text-indent: 0
-       override the measured hanging indent Obsidian sets inline; that
-       indent came out far deeper than the marker here and made quotes look
-       more nested than lists.
-     • BAR — Obsidian's own full-height ::before at the line's box edge,
-       drawn from --blockquote-border-thickness/-color, which the typography
-       block pins to the theme's 1px accent rule. Hidden on the edited line
-       (see below) so bar and marker never overlap.
-     • MARKER — stays in flow (width always reserved → no jump on focus) but
-       boxed to 1em (of the quote size) and hung back into the gap: net
-       advance 0, so line 1 starts where the wrapped lines start. Colour is
-       Obsidian's (faint while editing, transparent otherwise), restated
-       below with !important. Caveat: nested quotes (> > …) hang two
-       markers into the same gap. */
+/* Live-preview blockquote — the marker column model (see --klartext-col in
+   the typography block, and the LIVE PREVIEW MARKERS note in LISTS for the
+   two Obsidian facts it rests on).
+     The "> " token stays in the DOM as real text in every state. Idle,
+   Obsidian wraps the ">" in its own transparent span and leaves the space
+   beside it; on the active line the token is one plain span. Both live
+   inside .cm-formatting-quote, which is the element styled here, so the two
+   states render identically and nothing moves when the cursor arrives.
+     • The token is padded by the column width, and its characters are set
+       in the Klartext Marks face, in which ">" and the space are empty
+       glyphs with zero advance. The token therefore measures exactly one
+       column, the caret at its end sits on the text edge, and Obsidian's
+       hanging indent — which it measures from that very caret position —
+       puts wrapped lines on the same edge. Nothing is clipped, boxed or
+       painted over, so the caret is drawn where the text will begin.
+     • The ">" is never shown. The bar is the mark, in every state, so the
+       rule that stepped the bar back on the active line is gone.
+     • Nested quotes: each "> " token is one column, so level-2 text sits
+       one column further in, and the bars are drawn from the LINE rather
+       than from the tokens — level 1 by Obsidian's own ::before, level 2
+       and 3 by an ::after on the line — each on the axis of its own column,
+       in every state. Obsidian's level-2 widget (.cm-blockquote-border,
+       present only on idle lines) is collapsed to nothing, so an idle
+       nested line measures the same as an active one.
+     The LINE takes the quote's size, not just the spans inside it, so both
+   modes lead a quote identically (Reading view sizes the blockquote); the
+   column is derived from the body size rather than from em, so the text
+   edge is the edge every other block uses. The inline hanging indent
+   Obsidian writes is left alone: it now equals the token's width. */
 .cm-quote {
   color: var(--text-secondary) !important;
   font-style: italic;
@@ -1589,100 +1617,60 @@ blockquote,
 }
 
 .cm-line[class*="HyperMD-quote"] {
-  padding-left: var(--klartext-marker-width) !important;   /* the gap; matches callouts */
-  /* The LINE takes the quote's size, not just the spans inside it. Setting it
-     only on .cm-quote left the line box sized from the body font while its
-     text was at the 0.93 quote scale, so a Live Preview quote ran on 25.6px
-     lines where Reading view gave it 23.8px. That put the two modes ~3px
-     apart above a quote and, worse, drifted further with every wrapped line
-     of a long one. Sized here, both modes lead a quote identically. */
   font-size: var(--klartext-quote-font-size);
 }
 
-/* Cancel Obsidian's inline hanging indent — on quote lines that are NOT list
-   items. Obsidian measures each marker and writes the pair straight onto the
-   line element (`v.style.textIndent = -k + "px"; v.style.paddingInlineStart
-   = k`), and an inline declaration out-ranks any rule that is not
-   !important. While this was plain, only the padding half was cancelled, so
-   every quote's FIRST visual line was pulled left by the measured marker
-   width and hung out past the bar.
-     The `:not()` matters, and its absence was a regression. A list inside a
-   blockquote carries BOTH classes, and that same inline indent is what gives
-   a list item its hanging indent — the thing that puts wrapped lines under
-   the item's text rather than under its number. Cancelling it there flattened
-   quoted lists so every wrapped line ran back to the marker column. Lists are
-   deliberately left to Obsidian's own measurement everywhere else in this
-   theme (see LIVE PREVIEW note 5); this keeps that true inside quotes. */
-.cm-line[class*="HyperMD-quote"]:not(.HyperMD-list-line) {
-  text-indent: 0 !important;
-}
-
-/* On an idle line Obsidian splits "> " into a transparent ">" span and a
-   separate space span. Both are zeroed the same way the heading marks are
-   (see LIVE PREVIEW rule 2): the monospace face advances every glyph exactly
-   1ch, and letter-spacing: -1ch takes that advance back, so each span ends
-   up zero-width with its GLYPH AND METRICS intact. `pre` keeps the space
-   span's space from being collapsed away, which would leave that span with
-   no character at all.
-     This replaces an inline-block boxed to 1em and pulled back by an equal
-   negative margin. That construction also produced a zero-advance marker,
-   but an inline-block is an atomic box with no text metrics inside it, and
-   CodeMirror sizes the caret from the metrics of the character the caret
-   sits in. On a fresh quote line the marker is the only content, so there
-   was nothing to measure and the caret came out zero-height: pressing Enter
-   inside a quote gave a new "> " line with no visible cursor. Exactly the
-   failure font-size: 0 caused on headings, and the same remedy.
-     Two things the box had been there to fix cannot recur without it: an
-   empty inline-block sitting on the baseline raised idle lines ~15px above
-   edited ones, and an inline-block with non-visible overflow takes its
-   bottom edge as baseline, which lifted every quote line ~5px. Both were
-   properties of the box.
-     An atomic inline also claims its width for line-breaking even when a
-   negative margin moves it elsewhere, so quote lines had been wrapping
-   about one character early; they now use the full measure.
-     NOT for a callout header: Obsidian appends the callout classes to the
-   marker token it is already building and consumes "[!type] " into it, so
-   the header line's "> [!note] " is ONE span with the quote-formatting
-   class — zeroing each of its glyphs would stack them. That span keeps its
-   own rule below and stays in normal flow. */
-.cm-line[class*="HyperMD-quote"] .cm-formatting-quote:not(.cm-hmd-callout) {
-  font-family: var(--font-monospace-theme);
-  letter-spacing: -1ch;
+.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-formatting-quote {
+  display: inline;
+  padding-inline-start: var(--klartext-col);
+  font-family: var(--klartext-mark-font);
+  font-style: normal;
+  letter-spacing: 0;
   white-space: pre;
-}
-/* The header token stays in flow but is pulled back by the same em, so its
-   `>` sits in the same column as the boxed `>` of the body lines. */
-.cm-line[class*="HyperMD-quote"] .cm-formatting-quote.cm-hmd-callout {
-  margin-left: -1em;
+  color: transparent !important;   /* also beats the theme's own .cm-quote colour; the glyphs are empty anyway */
 }
 
-/* Marker colours restate Obsidian's own with !important, because the theme's
-   `.cm-quote { color … !important }` also matches the marker span and would
-   otherwise repaint the > on every line. Specificity is deliberate: the
-   transparent rule (0,2,0) beats the faint rule (0,1,0), and the faint rule
-   sits later in the file than .cm-quote, so it wins that tie. */
-/* Size and style set on the marker itself: Obsidian gives the body-line `>`
-   only the formatting class, so it took the full line size, while a callout
-   header's `> [!type] ` token also carries the quote class and rendered at
-   the quote size — two sizes of `>` in one block. */
-.cm-formatting-quote {
-  color: var(--text-faint) !important;
-  font-size: var(--klartext-quote-font-size);
-  font-style: italic;
+/* A callout's type tag while its source is showing. Obsidian tokenises
+   "[!note]" on the header line as a bare link (cm-hmd-barelink cm-link),
+   which the LINKS section would underline dotted like an external link. It
+   is a mark, not a link: faint, upright, undecorated. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-hmd-barelink {
+  color: var(--text-faint);
+  font-style: normal;
+  text-decoration: none !important;
 }
-.hmd-inactive-line .cm-formatting-quote { color: transparent !important; }
 
-/* Bar OR marker, never both. Obsidian draws the Live-Preview quote bar as
-   .HyperMD-quote::before on every quote line; on the line being edited the
-   `>` marker is shown, so that line's bar segment steps back (colour only —
-   the box stays, so nothing shifts). Idle lines: bar, marker transparent. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote.cm-active::before {
-  border-inline-start-color: transparent;
+/* Obsidian's level-2 widget: zero width, and its own bar switched off in
+   favour of the line's. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-blockquote-border {
+  display: inline-block;
+  width: 0;
+  font-size: 0;
 }
-/* The bar on the marker axis (Obsidian draws it at inset 0, the column's
-   edge; markers are read by their centres, so the bar looked shifted left). */
+.markdown-source-view.mod-cm6.is-live-preview .cm-blockquote-border::before {
+  display: none;
+}
+
+/* The bars. Level 1 is Obsidian's ::before, moved from the column's edge to
+   the marker axis. Levels 2 and 3 are one ::after on the line, on the axis
+   of the second column; a box-shadow offset by one column repeats it for
+   the third, so a three-deep quote shows all three bars. */
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote::before {
   inset-inline-start: var(--klartext-marker-axis);
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2::after,
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: calc(var(--klartext-marker-axis) + var(--klartext-col));
+  width: 0;
+  border-inline-start: var(--blockquote-border-thickness) solid var(--blockquote-border-color);
+  pointer-events: none;
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3::after {
+  box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color);
 }
 
 /* No vertical padding on the first/last quote line: the bar spans the
@@ -1709,53 +1697,44 @@ hr,
 /* ------------------------------------------------------------------
    LISTS
    ------------------------------------------------------------------ */
-/* Reading-view list geometry mirrors Live Preview, measured against
-   Obsidian 1.13.7's rendered-list model:
-     • Obsidian puts a top-level item 3ch in and floats the bullet 0.8em
-       back from the text; the theme used to ADD list padding on top, so
-       text sat ~38px from the edge with a dot at 26px, and each nested
-       level stepped ~54px. Live Preview has the dash ON the text edge,
-       text at the marker width ("- " = 2ch) and a 30px (--list-indent)
-       tab step per level.
-     • Here: no list padding; every item hangs exactly the marker width
-       (1.2 × body size = 2ch of the monospace body, as a length so the
-       font-size:0 bullet box can't collapse it); nested items keep
-       Obsidian's own --list-indent step; ordered items are written "1–"
-       (below), two characters like "– ", so their text shares the edge.
-     • The bullet box is the marker column itself: floated back by its
-       own width, glyph at its start, so the dash sits on the text edge.
-     • Obsidian's reading indentation guide hangs off the nested list's
-       edge by --indentation-guide-reading-indent; re-based so it lands on
-       the parent's bullet column at the same offset Live Preview uses. */
+/* READING VIEW — the marker column model (see --klartext-col). Every item
+   hangs exactly one column (2.4 × body size = 4ch of the monospace body, as
+   a length so the font-size:0 bullet box can't collapse it); nested items
+   keep Obsidian's own --list-indent step, which defaults to the same
+   column so a nested marker starts on its parent's text edge. Each mark is
+   a float pulled back into the column and END-aligned against the column's
+   last cell, which stays empty as the gap: dash, last digit and checkbox
+   all end one cell before the text. Obsidian's reading indentation guide
+   hangs off the nested list's edge by --indentation-guide-reading-indent;
+   re-based so it lands on the parent's marker axis, as in the editor. */
 .markdown-preview-view ul,
 .markdown-preview-view ol {
   padding-left: 0;
 }
 .markdown-rendered ul > li,
 .markdown-rendered ol > li {
-  margin-inline-start: var(--klartext-marker-width);
+  margin-inline-start: var(--klartext-col);
 }
-/* "1–" numbering: digit in the first column, dash in the second, text right
-   after the dash on the same edge as bullet, task and quote text (the
-   marker width, 2ch). NOT done via ::marker content — WebKit (iOS/macOS
-   Obsidian) honours only color and font-size on ::marker and paints "1."
-   with its default spacing instead (verified in a WKWebView). So the native
-   marker is switched off and the number is a ::before float in the marker
-   column, the same construction as the bullet's .list-bullet box. The
-   implicit list-item counter honours <ol start> and nesting in WebKit and
-   Blink (verified). End-aligned flex so "10–" overflows to the start side,
-   its first digit hanging into the margin, dash still on the text edge.
+/* Numbering: the counter alone, no dot, no dash, right-aligned in the
+   column. NOT done via ::marker content — WebKit (iOS/macOS Obsidian)
+   honours only color and font-size on ::marker and paints "1." with its
+   default spacing instead (verified in a WKWebView). So the native marker is
+   switched off and the number is a ::before float in the column, the same
+   construction as the bullet's .list-bullet box. The implicit list-item
+   counter honours <ol start> and nesting in WebKit and Blink (verified).
    Ordered task items keep their number, as in Obsidian. */
 .markdown-rendered ol {
   list-style: none;
 }
 .markdown-rendered ol > li::before {
-  content: counter(list-item) "\2013";   /* "1–", no space: the dash abuts the text like the editor */
+  content: counter(list-item);
   display: flex;
   justify-content: flex-end;
   float: inline-start;
-  width: var(--klartext-marker-width);
-  margin-inline-start: calc(-1 * var(--klartext-marker-width));
+  box-sizing: border-box;
+  width: var(--klartext-col);
+  padding-inline-end: var(--klartext-cell);
+  margin-inline-start: calc(-1 * var(--klartext-col));
   color: var(--list-marker-color);
   white-space: nowrap;
 }
@@ -1764,104 +1743,117 @@ hr,
 }
 .markdown-rendered .list-bullet {
   float: inline-start;
-  width: calc(var(--ia-editor-font-size) * 1.2);
-  margin-inline-start: calc(var(--ia-editor-font-size) * -1.2);
-  justify-content: flex-start;
+  box-sizing: border-box;
+  width: var(--klartext-col);
+  padding-inline-end: var(--klartext-cell);
+  margin-inline-start: calc(-1 * var(--klartext-col));
+  justify-content: flex-end;
 }
 .markdown-rendered {
   /* Obsidian draws this guide as the end border of a ZERO-width box (the
      editor's is a 1px box), so the line sits exactly at the inset: derive
      from the axis itself, not from the editor token's minus-one-pixel. */
-  --indentation-guide-reading-indent: calc(var(--klartext-marker-axis) - var(--klartext-marker-width));
+  --indentation-guide-reading-indent: calc(var(--klartext-marker-axis) - var(--klartext-col));
 }
-/* Task items: Obsidian pulls the checkbox back 1.5 × its size, which is
-   more than the marker column now is. Put the checkbox on the text edge and
-   let the text start at the marker width like every other item. */
+/* Task items: the box ends on the gap cell like every other mark, and is
+   centred on the line rather than sat on the baseline. */
 .markdown-rendered ul > li.task-list-item > .task-list-item-checkbox,
 .markdown-rendered ul > li.task-list-item > p > .task-list-item-checkbox {
-  margin-inline-start: calc(-1 * var(--klartext-marker-width));
-  margin-inline-end: calc(var(--klartext-marker-width) - var(--checkbox-size));
+  margin-inline-start: calc(-1 * (var(--klartext-cell) + var(--checkbox-size)));
+  margin-inline-end: var(--klartext-cell);
+  vertical-align: middle;
 }
-/* Editor task lines: Obsidian removes the "- " from the DOM and places the
-   checkbox widget with its own margins (label -0.25em, box +0.85em), so the
-   box sat ~8px in and the text ~32px in. A task is a list item: box on the
-   text edge where the dash would be, text at the marker width like list
-   text. The source space after "[ ]" is still rendered (0.6em in the
-   monospace body), so the end margin is what brings the text back. */
-/* Editor: "1–" numbering. The "1. " token becomes an end-aligned flex box
-   one marker width wide: the number's ". " (its last two characters —
-   Obsidian's number mark covers the whole token, trailing space included,
-   and the editor keeps spaces) is clipped away and the bullet dash is drawn
-   in the second column on top of the clipped dot. Obsidian measures the
-   hanging indent from the rendered token end, so wrapped lines follow. */
-/* Editor: the UNORDERED marker gets the same treatment as the ordered one
-   below — its token pinned to exactly one marker column. Without it the
-   ordered marker was pinned and the unordered marker was left to whatever it
-   happened to render, so the two list types put their text on different
-   edges and only ordered lists sat where the theme intends.
-   Pinning the container rather than its contents is deliberate. The token
-   holds a dash, a space, and Obsidian's own .list-bullet — itself a flex box
-   that CENTRES its content, which is why the dash also sat slightly right of
-   the line edge. Fixing the container makes every one of those irrelevant:
-   whatever the parts measure, the token is one column wide, the dash starts
-   at its edge, the text starts after it, and Obsidian measures that column
-   for the hanging indent so wrapped lines follow too. */
+
+/* LIVE PREVIEW MARKERS — the marker column model (see --klartext-col).
+   Obsidian keeps a list marker in the DOM as real text, one span per
+   token: .cm-formatting-list-ul holds "- " (idle: the "-" wrapped in
+   Obsidian's .list-bullet; active: plain), .cm-formatting-list-ol holds
+   "1. " together with EVERY space that follows it (idle: wrapped in
+   .list-number; active: plain). The CONTAINER is what is styled, so both
+   states render the same and nothing moves when the cursor arrives.
+     Two facts of Obsidian 1.13.7 decide the construction (both read from
+   its code and measured over the debugging port):
+     • The rendered number and bullet marks are withheld while the
+       selection touches the token, END INCLUDED. A fresh item, with the
+       cursor right after "1. ", is therefore always in its plain state,
+       and so is one the user has just typed extra spaces into.
+     • The hanging indent is written per line from coordsAtPos() at the
+       end of the marker text — the caret position — floored to a pixel
+       and applied as text-indent / padding-inline-start. Where there is
+       no caret coordinate there is no indent at all.
+   So: keep the characters in normal flow with real metrics, turn the ones
+   that must not show into empty zero-advance glyphs through the Klartext
+   Marks face (see EMBEDDED FONTS), and size the token so that the caret
+   at its end lands on the column edge. The caret is then drawn where the
+   text will begin, and the wrapped lines follow it by construction.
+     Bulleted: no character of the token is visible, so the token is
+   padded by the whole column and the dash is drawn by a ::before whose box
+   takes no net advance (pulled back two cells, pushed on one), landing in
+   the third cell. One dash for "-", "*" and "+", since Reading view
+   cannot tell them apart either.
+     Numbered: the digits are visible and must right-align, so the token
+   is an inline-block one column wide with end alignment; the dot (or
+   parenthesis) keeps one cell of advance but no ink, so "10." ends on the
+   column edge with its digits ending one cell earlier, and extra spaces
+   cost nothing. A real text run inside the box keeps the caret
+   measurable — what killed the caret before was the trailing space as a
+   whitespace-only text node inside an inline-FLEX container, which flex
+   layout does not render at all — and nothing is clipped or painted over,
+   which is what hid it on numbered items.
+     Task: Obsidian replaces "- [ ]" with a checkbox widget and leaves the
+   space after it as body text. The widget is three cells wide with the box
+   at its end; the space is the fourth cell. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul,
+.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
+  font-family: var(--klartext-mark-font);
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  color: var(--text-faint);
+}
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul {
-  display: inline-flex;
-  justify-content: flex-start;
-  width: var(--klartext-marker-width);
+  display: inline;
+  padding-inline-start: var(--klartext-col);
+}
+.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul::before {
+  content: "\2013";
+  font-family: var(--font-monospace-theme);
+  margin-inline-start: calc(-2 * var(--klartext-cell));
+  margin-inline-end: var(--klartext-cell);
+  color: var(--text-faint);
+}
+/* Obsidian's own bullet span: no flex box, no dot; the "-" it wraps is an
+   empty glyph already. */
+.markdown-source-view.mod-cm6.is-live-preview .list-bullet {
+  display: inline;
+}
+.markdown-source-view.mod-cm6 .list-bullet::after {
+  display: none;
 }
 
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
-  display: inline-flex;
-  justify-content: flex-end;
-  width: var(--klartext-marker-width);
-  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: var(--klartext-col);   /* a minimum, not a width: a four-digit number (five cells with its dot) widens the box and moves that item's text one cell rather than running into it */
+  padding-inline-start: 0;
+  text-align: end;
+  vertical-align: baseline;
 }
-/* "1–" fills the two-character marker column like "– " does: digit in the
-   first column, dash in the second, text right after the dash on the shared
-   edge. The number's end is pushed one character past the box so the digit
-   lands in the first column; "10–" hangs its first digit into the margin. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol > .list-number {
-  margin-inline-end: -0.6em;
-  clip-path: inset(0 1.2em 0 0);
-}
-.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol::after {
-  content: "\2013";
-  position: absolute;
-  inset-inline-start: 0.6em;
-  top: 0;
-  color: var(--text-faint);
-  pointer-events: none;
-}
-/* Raw state. Obsidian drops its marks on any token the selection touches
-   (the same mechanism that reveals ** inside bold), so while the cursor is
-   on the marker there is no .list-number span and the raw "8. " sits in the
-   box as plain text, which clip-path cannot reach. The box then aligns to
-   the start (digit in the first column) and the dash is painted OVER the
-   dot on an opaque page-coloured patch one character wide, so the item
-   still reads "8–". Accepted trade-offs, chosen deliberately: the caret is
-   hidden behind the patch while it sits on the marker, and a two-digit
-   number shows only its first digit for that moment. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol:not(:has(> .list-number)) {
-  justify-content: flex-start;
-  word-spacing: -0.6em;   /* the raw "8. " is three characters in a two-character column: its trailing space spilled past the column and parked the caret one character right of where the text begins once typing starts; zero-width space, caret on the text start */
-}
-.markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol:not(:has(> .list-number))::after {
-  width: 0.6em;
-  height: 100%;
-  background-color: var(--background-primary);
-}
+
 .markdown-source-view.mod-cm6,
 .markdown-rendered {
   --checkbox-size: var(--klartext-checkbox-size);
 }
-.markdown-source-view.mod-cm6 .HyperMD-task-line .task-list-label {
-  margin-inline-start: 0;
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  box-sizing: border-box;
+  width: calc(var(--klartext-col) - var(--klartext-cell));
+  margin: 0;
+  vertical-align: middle;
 }
-.markdown-source-view.mod-cm6 .HyperMD-task-line .task-list-label .task-list-item-checkbox {
-  margin-inline-start: 0;
-  margin-inline-end: calc(var(--klartext-marker-width) - var(--checkbox-size) - 0.6 * var(--ia-editor-font-size));
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label .task-list-item-checkbox {
+  margin: 0;
 }
 
 /* Item spacing as in the editor: top-level items 0.4em apart, nested items
@@ -1872,34 +1864,21 @@ hr,
 .list-bullet  { color: var(--text-faint); }
 .list-number  { color: var(--text-faint); }
 
-/* Unordered bullet, both modes: a quieter en-dash instead of the filled dot.
-   Obsidian draws the dot as an absolutely-positioned ::after box (sized by
-   --list-bullet-size) plus a zero-width ::before. Hide the box explicitly —
-   not by relying on font-size:0 collapsing an em-sized box — and draw the
-   dash via ::before. To try another glyph, change the content escape:
+/* Unordered bullet in Reading view: a quieter en-dash instead of the filled
+   dot. Obsidian draws the dot as an absolutely-positioned ::after box (sized
+   by --list-bullet-size) plus a zero-width ::before. Hide the box explicitly
+   — not by relying on font-size:0 collapsing an em-sized box — and draw the
+   dash via ::before. (Live Preview draws its dash from the marker token
+   instead; see LIVE PREVIEW MARKERS above.) To try another glyph, change
+   the content escape:
      \2013 –  (en dash)   \2022 •  (dot)   \00B7 ·  (middot)
      \25E6 ◦  (hollow)    \203A ›  (angle)  \2192 →  (arrow) */
-.markdown-source-view.mod-cm6 .list-bullet,
 .markdown-rendered .list-bullet {
   font-size: 0;
 }
-
-/* The bullet is deliberately NOT boxed to the marker column in Live Preview.
-   Obsidian's marker token there is the dash AND the space after it, each one
-   character of the monospace body, so the two already fill the column
-   exactly: the dash sits in the first character cell, the item's text starts
-   in the third — the same edge an ordered "1–" and a task checkbox land on.
-   Giving the dash the full column width once seemed right, on the reasoning
-   that the glyph is only half of it. That measurement left the space out.
-   With it, the marker came to one and a half columns: unordered text sat a
-   character right of every other list type, and its wrapped lines, which
-   follow Obsidian's measurement of the whole token, fell back a character
-   from its own first line. Left as the glyph. */
-.markdown-source-view.mod-cm6 .list-bullet::after,
 .markdown-rendered .list-bullet::after {
   display: none;
 }
-.markdown-source-view.mod-cm6 .list-bullet::before,
 .markdown-rendered .list-bullet::before {
   content: "\2013";
   font-size: var(--ia-editor-font-size);
@@ -2752,7 +2731,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
   border-radius: 0;
   background-color: transparent;
   box-shadow: none;
-  padding: 0 0 0 calc(var(--klartext-marker-width) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text at the marker width, like quotes and list text */
+  padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text on the column edge, like quotes and list text */
   margin: var(--klartext-block-gap) 0 var(--klartext-block-gap) var(--klartext-marker-axis);   /* rule on the marker axis */
 }
 /* Live Preview: Obsidian zeroes every callout margin inside the editor
@@ -3680,4 +3659,9 @@ body {
   font-family: 'JetBrains Mono'; font-style: italic; font-weight: 400 700; font-display: swap;
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
   src: url(data:font/woff2;base64,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) format('woff2');
+}
+@font-face {
+  font-family: 'Klartext Marks'; font-style: normal; font-weight: 400; font-display: swap;
+  unicode-range: U+0020, U+0029-002B, U+002D-002E, U+003E;
+  src: url(data:font/woff2;base64,d09GMgABAAAAAAGkAAoAAAAAA8gAAAFbAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAVgoUQAE2AiQDHgsSAAQgBYJrBzIbKgMArgbsJnjGRB2mmeK2uNqGDX481UdQP/bbe/fNkSQi08UTlaFpSLQApVAKoVAqQyg0g2hu9xsr/bO4lNYM7cMj4qPwm2B6aPM3DyS1vgCADbgWp4UnOT93PB8mFD1KLcHrRwkmEkZxW4pZiyDwhOIEcm4yNqIzkikReNeJKuVWbCqmDNDRpt6pw/yRP9kBykoJc6AgMS4FxlWcoqWhKOZs2nH4L5izbht/zMF/BQ0dUJcqihpogAECiQqgAgIAyGhPCkAg2Nnruevz3aj5BZ8f2/sJIZAKCO57c7mFfxEBAKhLqxKoNKTQFRh2vCIg9MBO6noYaWSirvBQ1bY6rplwIEWlKUy5wih6npCWPNeVQNWkl7xmw9sIS/OYf7bd61aFRtL9nT1rM/QEU7Gr3oERlsv/pa4t73n4+YWx19S+HXtuPOf1Pp2yOoxWP6ejWNhilHlXz7yhDgAA) format('woff2');
 }

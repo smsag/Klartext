@@ -9,16 +9,6 @@
 name: Klartext
 id: klartext
 settings:
-  - id: klartext-bg-mode
-    title: Editor Background
-    description: Choose between pure white or warm off-white
-    type: class-select
-    default: klartext-bg-white
-    options:
-      - label: Pure White
-        value: klartext-bg-white
-      - label: Warm Off-White
-        value: klartext-bg-warm
   - id: klartext-dotted-bg
     title: Dotted Code & Header Fill
     description: Gives code blocks and table headers a subtle dot-grid texture
@@ -69,15 +59,6 @@ settings:
     step: 0.5
     format: px
     variable: --klartext-mobile-font-size
-  - id: klartext-line-width
-    title: Readable Line Width
-    type: variable-number-slider
-    default: 680
-    min: 400
-    max: 1200
-    step: 20
-    format: px
-    variable: --file-line-width
   - id: klartext-line-height
     title: Line Height
     type: variable-number-slider
@@ -208,21 +189,6 @@ body.is-ios.theme-light {
 }
 
 /* Warm off-white override */
-.theme-light.klartext-bg-warm {
-  --bg-primary:               #f5f5f0;
-  --bg-secondary:             #ededea;
-  --bg-secondary-alt:         #e8e8e4;
-  --background-primary:       #f5f5f0;
-  --background-secondary:     #ededea;
-  --background-secondary-alt: #e8e8e4;
-  /* Surfaces and borders a step below the warm page — on pure-white values
-     the table-header / code fills all but vanished against #f5f5f0. */
-  --surface-muted:            #ebebe4;
-  --code-bg:                  #eeeee7;
-  --border:                   #dededa;
-  --border-subtle:            #e6e6e1;
-}
-
 /* ------------------------------------------------------------------
    CSS VARIABLES — DARK MODE  (screen only — see the light block)
    ------------------------------------------------------------------ */
@@ -300,7 +266,7 @@ body {
      without compounding. */
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--ia-editor-font-size) * var(--klartext-diagram-font-scale));
-  --file-line-width:        680px;
+  --file-line-width:        680px;    /* the text column when Obsidian's Appearance → Readable line length is on; with it off the column spans the pane and this is never read */
   --list-indent:            var(--klartext-col);   /* nesting step per list level = the marker column, so a nested mark starts on its parent's text edge; deliberately not a setting — a fixed value would stop following the column */
   /* --p-spacing is an Obsidian token. Reading-view paragraphs take their
      margin-top from it, and lists their block margins. (The heading→text gap
@@ -2620,8 +2586,7 @@ body.is-ios .view-header {
    as a hard line is text being cut off flush against the header while
    scrolling. A short gradient scrim just below the header fades text out
    instead. An overlay, not a mask, so the scrollbar is untouched and the
-   colour follows the page token (correct on the warm off-white option and
-   in dark mode). Markdown views only; a note's top padding means nothing is
+   colour follows the page token (correct in dark mode too). Markdown views only; a note's top padding means nothing is
    faded at scroll-top. Was a Style Settings toggle until 1.5.0; it is the
    theme's own polish, not a preference, so it is always on. */
 body .workspace-leaf-content[data-type="markdown"] .view-content {

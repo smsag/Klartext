@@ -25,13 +25,12 @@ one file and follow Obsidian's own light/dark setting.
   box, a quote its bar. A collapsible section opens with `+` and closes with `−`. A
   code block's language is a lowercase word. None of these are images, so they scale
   with your text size and match the body face.
-- **One left edge.** Heading text and prose start on the paragraph edge. Every
-  hanging block — bulleted, numbered, task, quote, callout — starts its text four
-  characters further in, on one shared edge, and keeps it there whether you are
-  reading the note, editing another line, or editing that very line: the marks live
-  in the four-character column and never push the text. Wrapped lines return to the
-  same edge. Nested items step by exactly one column, so a nested mark starts where
-  its parent's text starts.
+- **One left edge.** Headings, prose, list items, tasks, quotes and callouts all
+  start their text on the same vertical line, and keep it there whether you are
+  reading the note, editing another line, or editing that very line. Every mark hangs
+  into a four-character column to the left of that edge, ending one cell before the
+  text, and never pushes it. Wrapped lines return to the edge. Nested items step in by
+  exactly one column, so a nested mark sits in the column its parent's text starts on.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit
@@ -112,15 +111,16 @@ explains why the value is what it is. Where a number was measured rather than ch
 the comment says what it was measured against. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
 system; `--ia-editor-font-size` is the alias every derived size chains from;
-`--klartext-col` is the marker column every hanging block shares.
+`--klartext-col` is the marker column every mark hangs into, to the left of the text
+edge.
 
 Live Preview keeps a block's source marker in the editor as real text, and the theme
 relies on that: Obsidian measures each line's hanging indent from the caret position at
 the end of the marker, so the theme makes every marker token exactly one column wide
 and lets the indent follow. The characters that must not show — the space, `-`, `*`,
 `+`, `>`, and the dot after a number — are hidden by a font rather than by CSS:
-`Klartext Marks`, a 400-byte face of empty glyphs built by `fonts/make-marks.py` and
-embedded like the others. Nothing is clipped, boxed in flex or painted over, which is
+`Klartext Marks` and its `Quote` variant, two 400-byte faces of empty glyphs built by
+`fonts/make-marks.py` and embedded like the others. Nothing is clipped, boxed in flex or painted over, which is
 what keeps the caret visible and the layout the same in every state.
 
 Measured values were taken in the running Obsidian over Chromium's debugging port
@@ -135,4 +135,4 @@ records the mechanism behind each change, not just the outcome.
 By [Steffen Seitz](https://smsag.de). Typefaces: [JetBrains
 Mono](https://www.jetbrains.com/lp/mono/) by JetBrains and [Fira
 Sans](https://github.com/mozilla/Fira) by Mozilla, both under the SIL Open Font
-License 1.1. Klartext Marks is part of the theme.
+License 1.1. The Klartext Marks faces are part of the theme.

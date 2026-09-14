@@ -64,5 +64,7 @@ for family, style, weight, latin_file, ext_file in FACES:
 # those code points, so it never touches anything else.
 out.append(face("Klartext Marks", "normal", "400", "KlartextMarks.woff2",
                 "U+0020, U+0029-002B, U+002D-002E, U+003E"))
+# …and the variant for a callout's header token, which blanks only the ">".
+out.append(face("Klartext Marks Quote", "normal", "400", "KlartextMarksQuote.woff2", "U+003E"))
 
 print("".join(out), end="")

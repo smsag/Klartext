@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build KlartextMarks.woff2, the marker companion face.
+"""Build KlartextMarks.woff2 and KlartextMarksQuote.woff2, the marker companion faces.
 
 Live Preview keeps a block's source marker in the DOM as real text: "- ",
 "1. ", "> ". The theme wants the caret and the hanging indent measured from
@@ -43,9 +43,10 @@ GLYPHS = {            # name: (code point, advance)
     "parenright": (0x29, 600),
 }
 
-fb = FontBuilder(1000, isTTF=True)
-fb.setupGlyphOrder(list(GLYPHS))
-fb.setupCharacterMap({cp: name for name, (cp, _) in GLYPHS.items() if cp is not None})
+# A second face for a callout's header token, which Obsidian tokenises as
+# ONE span, "> [!type] ". There only the ">" may vanish: the spaces must keep
+# their advance so the tag sits one cell in from the ">" and the title one
+# cell after the tag.
 # Every marker glyph is empty. .notdef alone gets one contour of three
 # points one unit apart — a triangle 1/1000 em across, which no screen can
 # draw — because Chromium's font sanitizer rejects a font whose glyph table
@@ -55,19 +56,35 @@ def _empty():
     return TTGlyphPen(None).glyph()
 def _dot():
     pen = TTGlyphPen(None); pen.moveTo((0, 0)); pen.lineTo((1, 0)); pen.lineTo((0, 1)); pen.closePath(); return pen.glyph()
-fb.setupGlyf({name: (_dot() if name == ".notdef" else _empty()) for name in GLYPHS})
-fb.setupHorizontalMetrics({name: (adv, 0) for name, (_, adv) in GLYPHS.items()})
-fb.setupHorizontalHeader(ascent=1020, descent=-300, lineGap=0)
-fb.setupNameTable({"familyName": "Klartext Marks", "styleName": "Regular",
-                   "uniqueFontIdentifier": "Klartext Marks 1.0",
-                   "fullName": "Klartext Marks", "psName": "KlartextMarks-Regular",
-                   "version": "Version 1.0"})
-fb.setupOS2(sTypoAscender=1020, sTypoDescender=-300, sTypoLineGap=0,
-            usWinAscent=1020, usWinDescent=300, sxHeight=550, sCapHeight=730,
-            fsSelection=0b11000000, version=4)   # REGULAR + USE_TYPO_METRICS, as JetBrains Mono
-fb.setupPost()
-font = fb.font
-font.flavor = "woff2"
-out = HERE / "KlartextMarks.woff2"
-font.save(out)
-print(f"{out.name}: {out.stat().st_size} bytes,", TTFont(out)["hhea"].ascent, TTFont(out)["hhea"].descent)
+
+
+QUOTE_GLYPHS = {
+    ".notdef": (None, 0),
+    "greater": (0x3E, 0),
+}
+
+
+def build(family, ps_name, glyphs, filename):
+    fb = FontBuilder(1000, isTTF=True)
+    fb.setupGlyphOrder(list(glyphs))
+    fb.setupCharacterMap({cp: name for name, (cp, _) in glyphs.items() if cp is not None})
+    fb.setupGlyf({name: (_dot() if name == ".notdef" else _empty()) for name in glyphs})
+    fb.setupHorizontalMetrics({name: (adv, 0) for name, (_, adv) in glyphs.items()})
+    fb.setupHorizontalHeader(ascent=1020, descent=-300, lineGap=0)
+    fb.setupNameTable({"familyName": family, "styleName": "Regular",
+                       "uniqueFontIdentifier": family + " 1.0",
+                       "fullName": family, "psName": ps_name, "version": "Version 1.0"})
+    fb.setupOS2(sTypoAscender=1020, sTypoDescender=-300, sTypoLineGap=0,
+                usWinAscent=1020, usWinDescent=300, sxHeight=550, sCapHeight=730,
+                fsSelection=0b11000000, version=4)   # REGULAR + USE_TYPO_METRICS, as JetBrains Mono
+    fb.setupPost()
+    font = fb.font
+    font.flavor = "woff2"
+    out = HERE / filename
+    font.save(out)
+    print(f"{out.name}: {out.stat().st_size} bytes,", TTFont(out)["hhea"].ascent, TTFont(out)["hhea"].descent)
+
+
+
+build("Klartext Marks", "KlartextMarks-Regular", GLYPHS, "KlartextMarks.woff2")
+build("Klartext Marks Quote", "KlartextMarksQuote-Regular", QUOTE_GLYPHS, "KlartextMarksQuote.woff2")

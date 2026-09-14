@@ -180,7 +180,8 @@ body.theme-dark {
   --klartext-shadow-panel:      0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* Mobile: reinforce background tokens so iOS picks up warm-mode overrides */
+/* Mobile: restate the background tokens under Obsidian's mobile selectors so
+   iOS takes the theme's page colour rather than its own */
 body.is-mobile.theme-light,
 body.is-ios.theme-light {
   --background-primary:       var(--bg-primary);
@@ -3115,8 +3116,7 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
        vanishes under the flat end instead of showing as a seam. Translucent
        tints could not do this: two of them always add up darker. The opaque
        colours are the old tints composited on the page, so nothing looks
-       different; on the warm off-white page darken keeps the page's own
-       cast.
+       different.
      The one thing this cannot do: a span that leads into formatting ends
    flat on ALL its lines, because a span's ends are decided per span, not per
    line — so a long span before an inline code has no lift at its own line

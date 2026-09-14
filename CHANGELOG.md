@@ -51,24 +51,27 @@ size and the default two-cell column.
 - **One bullet mark for `-`, `*` and `+`, in every state.** The active line
   used to reveal the literal character while idle lines showed the dash.
   Reading view cannot tell the three apart either, so one dash for all.
-- **A highlight is one stroke.** It lands once, before its first character,
-  runs flat across wrapped lines and across every piece of formatting inside
-  it, and lifts once, after its last. Two things had broken it: 1.3.0 gave
-  every wrapped line its own landing and lift, which turned one thought into
-  as many strokes as it had lines; and Live Preview splits a highlight into
-  one span per formatting change — inline code, bold, a link, the `==` marks
-  while the line is edited — and the theme painted each span as a complete
-  stroke, so the pen lifted and landed again around every piece of code in
-  a sentence. Now `box-decoration-break: slice` paints a wrapped span as one
-  unbroken box, and the stroke's stops are custom properties that a span
-  continuing a highlight, or followed by more of it, sets to flat. Which
-  spans those are is read off the siblings: adjacent while the line is
-  edited, and on an idle line separated by the two widget buffers and the
-  empty span Obsidian leaves in place of hidden formatting, so both patterns
-  are matched. Inline code inside a highlight keeps a fill, but a
-  translucent one, so it sits on the stroke instead of cutting a window into
-  it. Reading view, which renders the whole highlight as one element, gets
-  the same stroke through the same rule.
+- **A highlight never lifts mid-line.** It still lands and lifts once per
+  wrapped line, as a marker pen on paper does, but it no longer lifts and
+  lands again around every piece of formatting inside it. Live Preview
+  splits a highlight into one span per formatting change — inline code,
+  bold, a link, the `==` marks while the line is edited — and the theme
+  painted each span as a complete stroke. Now a span followed by more of the
+  same highlight ends flat and runs on under the next span's landing, the
+  ink is opaque and the span blends with `darken` (`lighten` in dark mode),
+  so ink over ink is simply ink and the landing vanishes under the flat end
+  instead of showing as a seam. Which spans those are is read off the
+  siblings: adjacent while the line is edited, and on an idle line separated
+  by the two widget buffers and the empty span Obsidian leaves in place of
+  hidden formatting, so both patterns are matched. A span that continues a
+  highlight keeps its landing on each of its wrapped lines, in the plain ink;
+  the strong press belongs to the true start only. One limit remains,
+  because a span's ends are decided per span rather than per line: a span
+  that leads into formatting ends flat on all its own lines. Inline code
+  inside a highlight keeps a fill, but a translucent one, so it sits on the
+  stroke instead of cutting a window into it. Reading view renders the whole
+  highlight as one element with the formatting nested inside, so there every
+  line lands and lifts and no seam exists.
 - **The quote mark is never shown.** The bar is the mark in every state,
   including the line being edited, where the theme used to step the bar
   back and show the `>`. Nested quotes show one bar per level, drawn from

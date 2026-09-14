@@ -520,14 +520,14 @@ body {
   --checklist-done-color:            var(--text-subtle);
 
   /* TAGS — Obsidian draws editor hashtags (.cm-hashtag) and rendered tags
-     (a.tag) from these tokens; setting them here gives both modes the same
-     quiet tag: no pill, secondary grey, body size, weight 500 (sans beside
-     monospace). The .tag rule in TAGS keeps the interface font. */
+     (a.tag) from these tokens, so setting them here gives both modes the
+     same tag: a soft accent chip at body size, weight 500 (sans beside
+     monospace), on the corner every other chip shares. The fill is built
+     from Obsidian's accent token, so it follows whatever accent is set
+     rather than being a colour of its own. The .tag rule in the TAGS
+     section keeps the interface font; the rest is these tokens. */
   --tag-color:              var(--text-secondary);   /* was --text-subtle: unreadable inline */
   --tag-color-hover:        var(--interactive-accent);
-  /* Tags carry a soft accent chip. The fill follows Obsidian's accent token,
-     so it tracks whatever accent the user picks, and --tag-radius reads the
-     chip radius, which every other family now shares. */
   --tag-background:         hsla(var(--interactive-accent-hsl), 0.2);
   --tag-border-width:       0px;
   --tag-background-hover:   hsla(var(--interactive-accent-hsl), 0.3);

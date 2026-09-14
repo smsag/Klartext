@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0] — 2026-09-14
 
+### Added
+- **LICENSE.** The theme is under the MIT License, which the community theme
+  store requires as a file at the repository root. The embedded typefaces
+  are not covered by it and the file says so: JetBrains Mono and Fira Sans
+  are used under the SIL Open Font License 1.1, whose only condition on
+  bundling is that the copyright notice and the licence accompany the
+  fonts. The notices are in the embedded fonts' own name tables (read
+  back from the woff2 files: copyright and the OFL URL are present, the
+  licence description field is not), and the full licence texts are now
+  in `fonts/LICENSE-JetBrainsMono.txt` and `fonts/LICENSE-FiraSans.txt`.
+  Neither face declares a Reserved Font Name, so the subsetted copies may
+  keep their names. The README credits say the same.
+- **Guidelines check for the embedded fonts.** Obsidian's theme guidelines
+  and the submission page were read on 2026-09-14. They require that a
+  theme load nothing over the network — every asset bundled — and set no
+  size limit; the embedding guide only warns that a large file may load
+  and edit slowly. theme.css is 575 KB: 187 KB of CSS and 388 KB of
+  base64 holding 291 KB of woff2 across fourteen faces, every one with a
+  unicode-range so only the faces a note needs are decoded. No `@import`,
+  no remote `url()`. The four Latin Extended faces of Fira Sans are the
+  largest single item (128 KB decoded, about 170 KB of base64) and serve
+  only characters outside basic Latin; dropping them is the one cut worth
+  weighing if the size ever matters.
+
 One change, made because the previous constructions had become a fight with
 the editor and were expected to break on the next Obsidian release: every
 mark — dash, number, checkbox, quote bar, callout rule — sits in the text

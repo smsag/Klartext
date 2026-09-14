@@ -138,7 +138,15 @@ records the mechanism behind each change, not just the outcome.
 
 ## Credits
 
-By [Steffen Seitz](https://smsag.de). Typefaces: [JetBrains
-Mono](https://www.jetbrains.com/lp/mono/) by JetBrains and [Fira
-Sans](https://github.com/mozilla/Fira) by Mozilla, both under the SIL Open Font
-License 1.1. The Klartext Marks faces are part of the theme.
+By [Steffen Seitz](https://smsag.de), under the [MIT License](LICENSE).
+
+Typefaces: [JetBrains Mono](https://www.jetbrains.com/lp/mono/), copyright 2020
+The JetBrains Mono Project Authors, and [Fira Sans](https://github.com/mozilla/Fira),
+digitized data copyright 2012–2016 The Mozilla Foundation and Telefonica S.A.
+Both are used under the SIL Open Font License 1.1, which permits bundling them
+with software as long as the copyright notice and the licence travel with them:
+the notices are inside the embedded fonts' own metadata, and the full licence
+texts are in [fonts/LICENSE-JetBrainsMono.txt](fonts/LICENSE-JetBrainsMono.txt)
+and [fonts/LICENSE-FiraSans.txt](fonts/LICENSE-FiraSans.txt). Neither face
+declares a Reserved Font Name, so the subsetted copies may keep their names.
+The Klartext Marks faces are part of the theme and under its MIT licence.

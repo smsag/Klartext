@@ -126,6 +126,20 @@ settings:
     step: 0.25
     format: em
     variable: --list-indent
+  - id: klartext-space-indent
+    title: Lists Indented With Spaces
+    description: Turn this on if Obsidian's Editor → "Indent using tabs" is OFF. A tab is rendered at exactly the List Indent above, spaces at their own width, so the two are not the same distance — and a stylesheet cannot see which one a vault types. Only the list tree line depends on knowing; everything else follows Obsidian either way
+    type: class-toggle
+    default: false
+  - id: klartext-tab-size
+    title: Spaces Per Level
+    description: Only read while "Lists Indented With Spaces" is on — how many spaces Obsidian inserts per level (Editor → Tab indent size)
+    type: variable-number-slider
+    default: 4
+    min: 2
+    max: 8
+    step: 1
+    variable: --klartext-tab-size
   - id: klartext-p-gap
     title: Paragraph Spacing
     description: Gap between paragraphs as a multiple of the body line height
@@ -353,6 +367,20 @@ body {
   --klartext-col-cells:     2;
   --klartext-col:           calc(var(--ia-editor-font-size) * 0.6 * var(--klartext-col-cells));
   --klartext-cell:          calc(var(--ia-editor-font-size) * 0.6);   /* one character cell of the body face */
+  /* ONE INDENT LEVEL, as it is actually rendered. Obsidian sets `tab-size`
+     to a LENGTH on list lines, so a tab is exactly --list-indent wide;
+     spaces cannot be, so a space-indented level renders at its own width
+     instead — the number of spaces times one character cell, floored by the
+     --list-indent minimum Obsidian puts on the indent span. Obsidian's own
+     indentation guides ride on those spans and are right either way; the
+     theme's list tree line is the one thing that has to know the width
+     without an element to measure, and CSS cannot read the indent
+     characters — hence the Style Settings toggle rather than detection.
+     The cell, not `ch`: `ch` would resolve against whatever font the
+     element carries, and this token is read on `body`, where that is the
+     interface face. */
+  --klartext-tab-size:      4;
+  --klartext-indent-unit:   var(--list-indent);
   /* The font stack for a marker token: the companion face first, so its
      empty glyphs hide the source characters, JetBrains Mono for the digits. */
   --klartext-mark-font:     'Klartext Marks', var(--font-monospace-theme);
@@ -572,6 +600,13 @@ body {
   --graph-text:             var(--text-secondary);
   --graph-node-tag:         var(--text-subtle);
   --graph-node-attachment:  var(--text-secondary);
+}
+
+/* Lists indented with spaces (Style Settings: klartext-space-indent). See
+   --klartext-indent-unit. `body.klartext-space-indent` (0,1,1) out-ranks the
+   `body` block the token is declared in. */
+body.klartext-space-indent {
+  --klartext-indent-unit: max(var(--list-indent), calc(var(--klartext-tab-size) * var(--klartext-cell)));
 }
 
 /* ------------------------------------------------------------------
@@ -1991,9 +2026,11 @@ hr,
    lines, into the children's own guide. Same column, width and colour as
    Obsidian's guide (.cm-indent::before: a 1px box with the border on its
    end side, --indentation-guide-editing-indent from the indent unit's
-   start). One indent unit is a tab rendered at --list-indent through
-   Obsidian's tab-size rule on list lines, so a parent at level N sits
-   (N-1) units in; space-indented lists would need 4ch per unit instead.
+   start). A parent at level N sits (N-1) indent
+   units in, and one unit is --klartext-indent-unit: --list-indent for a
+   tab, which Obsidian's tab-size renders at exactly that length, and the
+   spaces-per-level width when the Style Settings toggle says the vault
+   indents with spaces (see that token).
    The segment starts below the item's first line box, leaving a clear
    gap under the dash rather than touching it. Active colour follows the child's .cm-active-indent,
    which Obsidian places on the unit at the cursor item's column, i.e.
@@ -2012,7 +2049,7 @@ hr,
   position: absolute;
   display: block;
   width: 1px;
-  inset-inline-start: calc(var(--klartext-tree-col) * var(--list-indent) + var(--indentation-guide-editing-indent));
+  inset-inline-start: calc(var(--klartext-tree-col) * var(--klartext-indent-unit) + var(--indentation-guide-editing-indent));
   top: calc(var(--list-spacing, 0px) + var(--ia-line-height) * 1em);   /* below the first line box: a clear gap under the dash */
   bottom: 0;
   border-inline-end: var(--indentation-guide-width) solid var(--indentation-guide-color);

@@ -121,6 +121,19 @@ size and the default two-cell column.
   natively (`caret-color`), not through CodeMirror's cursor layer, and the
   page-coloured patch the theme painted over the dot sat above it. The
   patch is gone with the rest of that construction.
+- **The list tree line assumed tab indentation.** Obsidian sets `tab-size`
+  to a LENGTH on list lines, so a tab is exactly one List Indent wide;
+  spaces render at their own width instead — four of them are 38.4px against
+  the 19.2px a tab gives at the default. The parent segment multiplies a
+  level by that unit, so in a vault with "Indent using tabs" off it was
+  drawn 15px short at level 2 and 34px short at level 3, while Obsidian's
+  own guides, which ride on the indent spans, sat where the text was. The
+  unit is now its own token and a Style Settings toggle, **Lists Indented
+  With Spaces** (with **Spaces Per Level**, default 4), switches it. A
+  stylesheet cannot read the indent characters, so this is told rather than
+  detected; nothing else in the theme depends on knowing. Measured both
+  ways at every level: with the toggle matching the vault the segment lands
+  on the child's guide column exactly.
 - **The fold chevron sat on a list item's number.** Obsidian anchors it just
   before the item's own column, and its 0.4em put the glyph 6.4px out — but
   a mark wider than the column overflows to the start, so a two-digit

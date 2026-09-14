@@ -94,6 +94,8 @@ All of these live in Settings → Style Settings → Klartext.
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
 | List Indent | the column | Indent step per nested list level; left alone it equals the marker column, so nested marks start on the parent's text edge |
+| Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it |
+| Spaces Per Level | 4 | Read only while the option above is on; match Editor → Tab indent size |
 | Paragraph Spacing | 1.4 | Gap between paragraphs as a multiple of the line height |
 
 After editing `theme.css` by hand, Style Settings keeps its cached parse until it

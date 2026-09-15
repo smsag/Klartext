@@ -2606,10 +2606,60 @@ body.is-mobile {
   --font-ui-small:   var(--klartext-ui-font-size);
   --font-ui-medium:  var(--klartext-ui-md);
   --font-ui-large:   var(--klartext-ui-lg);
+
+  /* CORNERS — the ladder restated for the phone. The radii are pinned at
+     the source (see Corner radii), but that block sits on `body` (0,0,1)
+     and Obsidian assigns the phone's own radius tokens under `.is-mobile`
+     (0,1,0), which out-ranks it: a pin written on `body` alone never
+     reached the drawer, its search field or the tab switcher, and the phone
+     kept 24-44px corners while the desktop sat at 4px. Restated here, where
+     `body.is-mobile` (0,1,1) clears that, and both halves are given — the
+     touch ladder and the six tokens Obsidian assigns FROM it — so a rule
+     reading either lands flat. The sheet grab handle is the one exception
+     and restores its pill below. */
+  --touch-radius-xxs:       var(--klartext-radius-flat);
+  --touch-radius-xs:        var(--klartext-radius-flat);
+  --touch-radius-s:         var(--klartext-radius-flat);
+  --touch-radius-m:         var(--klartext-radius-flat);
+  --touch-radius-l:         var(--klartext-radius-flat);
+  --touch-radius-xl:        var(--klartext-radius-flat);
+  --nav-item-radius:        var(--klartext-radius-flat);
+  --input-radius:           var(--klartext-radius-flat);
+  --textarea-radius:        var(--klartext-radius-flat);
+  --modal-radius:           var(--klartext-radius-flat);
+  --setting-items-radius:   var(--klartext-radius-flat);
+  --canvas-controls-radius: var(--klartext-radius-flat);
 }
 
 body.is-mobile .workspace-drawer {
   background-color: var(--background-secondary) !important;
+  /* Nothing paints outside the drawer. A row wider than the panel — a
+     selection band drawn full-bleed by a list view, which sizes itself
+     against the window rather than against the drawer — was painted across
+     the note beside it. `clip` rather than `hidden`: it establishes no
+     scroll container, so the drawer's own scrolling and the sticky headers
+     inside it are untouched, and only the horizontal axis is clipped. */
+  overflow-x: clip;
+}
+
+/* SELECT CHROME — flat, like every other panel. The tab switcher is drawn
+   as a floating card on the phone: a pill for the collapsed selector, a
+   rounded sheet for the open list, and a rounded field for a view's search
+   or filter box. Pinning the tokens (above) is what a rule reading a token
+   follows; these elements are given the radius directly as well, so a
+   literal value in Obsidian's own mobile rules — or in a plugin view that
+   copies the shape — cannot put a 24px corner back beside 4px panels.
+   Specificity: Obsidian's own are (0,2,0) at most, these are (0,3,1). */
+body.is-mobile .workspace-drawer-tab-options,
+body.is-mobile .workspace-drawer-tab-options-list,
+body.is-mobile .workspace-drawer-tab-select,
+body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner,
+body.is-mobile .workspace-drawer-tab-options-list .workspace-tab-header-inner,
+body.is-mobile .workspace-drawer .search-input-container,
+body.is-mobile .workspace-drawer .search-input-container input,
+body.is-mobile .workspace-drawer input[type="text"],
+body.is-mobile .workspace-drawer input[type="search"] {
+  border-radius: var(--klartext-radius-flat);
 }
 
 /* SIDEBAR TAB SWITCHER — icon sized from the theme's interface scale rather
@@ -2673,6 +2723,19 @@ body.is-mobile .workspace-drawer-header {
 }
 body.is-phone .workspace-drawer-tab-options-list {
   padding-bottom: calc(var(--klartext-ui-font-size) * 2.85);
+}
+
+/* The same strip, for the VIEW the drawer is showing. The collapsed
+   selector floats over the bottom of the drawer, so the last row of a list
+   ends up under it — reachable only by over-scrolling, and half-covered at
+   rest. The core file list carries its own bottom slack; a plugin's view
+   has no way to know the control is there, so the reserve is given to the
+   drawer's content once, sized from the touch target the control is built
+   on (--touch-size-l, 52px) rather than from the theme's tighter estimate:
+   this one has to clear the control on every Obsidian version, and scroll
+   slack at the foot of a list costs nothing where it is not needed. */
+body.is-phone .workspace-drawer .workspace-leaf-content > .view-content {
+  padding-bottom: var(--touch-size-l);
 }
 
 /* The bottom-sheet grab handle is the ONE mobile shape that stays round: it

@@ -5,6 +5,35 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Flat corners on the phone's chrome.** The radius ladder was pinned on
+  `body`, and Obsidian assigns the phone's radius tokens under `.is-mobile`,
+  which out-ranks it — so the drawer's tab switcher, its search and filter
+  fields and every control reading `--touch-radius-*` kept 24-44px corners
+  while the desktop sat at 4px. The ladder and the six tokens Obsidian
+  derives from it (`--nav-item-radius`, `--input-radius`, `--textarea-radius`,
+  `--modal-radius`, `--setting-items-radius`, `--canvas-controls-radius`)
+  are restated on `body.is-mobile`, and the switcher's own elements take the
+  flat radius directly, so a literal value in a mobile rule cannot put a
+  round corner back beside 4px panels. The sheet grab handle keeps its pill.
+- **Nothing paints outside the drawer.** A list row wider than the drawer —
+  a full-bleed selection band sized against the window rather than against
+  the panel — was drawn across the note beside it. The drawer clips its own
+  horizontal overflow (`overflow-x: clip`, which establishes no scroll
+  container, so scrolling inside it is untouched).
+- **The last entry of a sidebar list clears the tab selector.** The
+  collapsed selector floats over the bottom of the drawer, so a view whose
+  list runs to the foot of the panel put its last row under the control.
+  The drawer's content carries a scroll reserve of one touch target
+  (`--touch-size-l`).
+
+### Verification
+- Written from two phone screenshots; not yet checked on a device. The
+  radius restatement and the drawer clip are both cascade-level changes with
+  no desktop selector, so the desktop is unaffected by construction.
+
 ## [1.6.0] — 2026-09-14
 
 ### Changed

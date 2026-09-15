@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the panel — was drawn across the note beside it. The drawer clips its own
   horizontal overflow (`overflow-x: clip`, which establishes no scroll
   container, so scrolling inside it is untouched).
+- **The last row of the open tab switcher clears the selector.** The theme
+  cut the panel's bottom reserve from Obsidian's `--touch-size-l` (52px) to
+  a flat 40px, read off a ~35px control. The control is a floating card with
+  its own margins and is taller than that, so the panel's last option sat
+  half-covered by it. The reserve now follows the theme's interface scale
+  only where that is the larger value and never falls below the touch size.
 - **The last entry of a sidebar list clears the tab selector.** The
   collapsed selector floats over the bottom of the drawer, so a view whose
   list runs to the foot of the panel put its last row under the control.

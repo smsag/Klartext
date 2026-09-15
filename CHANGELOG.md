@@ -5,6 +5,28 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **The drawer has an edge again.** The theme painted `.workspace-drawer`
+  with `--background-secondary`, but that element is only the shell:
+  Obsidian fills the sidebar inside it from `--mobile-sidebar-background`,
+  which falls through to `--background-primary`. The shell was covered by its
+  own contents, so the open drawer came out the same grey as the note it
+  slides over — three values apart in dark, with no border between them — and
+  read as a hole rather than as a surface above the page. The token itself is
+  now set, which is what the sidebar actually reads, and it makes the
+  assumption the collapsed selector already states — that
+  `--mobile-sidebar-background` is the surround — true rather than accidental.
+- **The tab switcher's rows keep their touch height.** The switcher's icon is
+  sized from the theme's interface scale rather than Obsidian's 24px, which
+  reads correctly beside 14px type — but that icon was holding the row's
+  height, so shrinking it took the difference straight out of the thumb
+  target and left the rows at about 102px against the 120px Obsidian sizes.
+  The row now carries a `min-height` of one touch target: a floor, not a
+  fixed height, so it still grows with the type and a wrapping label is not
+  cut.
+
 ## [1.6.1] — 2026-09-15
 
 ### Fixed

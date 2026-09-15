@@ -2629,6 +2629,18 @@ body.is-mobile {
   --modal-radius:           var(--klartext-radius-flat);
   --setting-items-radius:   var(--klartext-radius-flat);
   --canvas-controls-radius: var(--klartext-radius-flat);
+
+  /* THE DRAWER'S OWN SURFACE. The rule below paints .workspace-drawer with
+     --background-secondary, but that element is the shell: Obsidian fills the
+     sidebar INSIDE it from --mobile-sidebar-background, which falls through to
+     --background-primary — the note's colour. The shell was therefore covered
+     by its own contents and the drawer came out the same grey as the note it
+     slides over, three values apart in dark with no border between them, so
+     the panel read as a hole rather than as a surface above the page. Setting
+     the token is what actually lands, and it makes the assumption the
+     collapsed selector already states further down — that
+     --mobile-sidebar-background IS the surround — true rather than accidental. */
+  --mobile-sidebar-background: var(--background-secondary);
 }
 
 body.is-mobile .workspace-drawer {
@@ -2677,6 +2689,18 @@ body.is-mobile .workspace-drawer-tab-options .workspace-tab-header-inner-icon,
 body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner-icon {
   --icon-size: calc(var(--klartext-ui-font-size) * 1.3);
   --icon-stroke: 1.75px;
+}
+
+/* …and the height that icon was holding, given back. The note above says the
+   row's padding is left alone because the row is a thumb target, but the icon
+   WAS the row's height: at 24px it set the box, and shrinking it to ~18px took
+   the difference straight out of the target, which measured about 102px per
+   row against the 120px Obsidian sizes. A floor rather than a fixed height, so
+   the row still grows with the type and a long label that wraps is not cut.
+   Specificity: (0,3,1), clearing Obsidian's own (0,2,0). */
+body.is-mobile .workspace-drawer-tab-options .workspace-tab-header-inner,
+body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner {
+  min-height: var(--touch-size-l);
 }
 
 /* The collapsed selector: Obsidian's fill (1.05 from the surround in light,

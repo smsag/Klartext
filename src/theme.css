@@ -2712,9 +2712,15 @@ body.is-mobile .workspace-drawer-tab-options.is-collapsed .workspace-drawer-tab-
      1. The drawer footer (vault or file name) sits 12px under the selector;
         8px is enough once the selector no longer reads as a button needing
         its own breathing room.
-     2. The OPEN panel reserves a strip at its bottom so it cannot cover the
-        selector, sized from --touch-size-l (52px); 40px clears the 35px
-        control and gives the list that much more room before it scrolls.
+     2. The OPEN panel reserves a strip at its bottom so its last row cannot
+        end up under the selector. Obsidian sizes that strip from
+        --touch-size-l (52px). A flat 40px, derived from the theme's ~35px
+        reading of the control, was too little: the control is a floating
+        card with its own margins, so its footprint is taller than its row,
+        and the panel's last option was left half-covered. The strip follows
+        the theme's interface scale where that is the larger of the two —
+        the control grows with the type — and never falls below the touch
+        size Obsidian's own sizing assumes.
    NOT reduced: the space under the footer is --safe-area-inset-bottom, the
    home indicator, about 34px on a phone. Taking it back would put the file
    name under the indicator. It only looks like padding. */
@@ -2722,7 +2728,7 @@ body.is-mobile .workspace-drawer-header {
   padding-top: var(--size-4-2);
 }
 body.is-phone .workspace-drawer-tab-options-list {
-  padding-bottom: calc(var(--klartext-ui-font-size) * 2.85);
+  padding-bottom: max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85));
 }
 
 /* The same strip, for the VIEW the drawer is showing. The collapsed

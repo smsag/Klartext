@@ -467,28 +467,14 @@ body {
   --input-radius:           var(--klartext-radius-flat);
   --pill-radius:            var(--klartext-radius-chip);
 
-  /* MOBILE'S OWN RADIUS LADDER. Obsidian 1.13 added a --touch-radius-* scale
-     that does not derive from --radius-* at all: each step is assigned the
-     matching TOUCH TARGET dimension, so --touch-radius-xs is 30px and
-     --touch-radius-m is 44px. Unpinned, a phone keeps corners between 24px
-     and 60px while the desktop sits at 4px; the sidebar tab switcher's rows
-     (30px corners on a row about 44px tall) are the most visible case.
-     Pinning these six at the source is enough on its own: `.is-mobile`
-     assigns --nav-item-radius, --modal-radius, --input-radius,
-     --textarea-radius, --setting-items-radius and --canvas-controls-radius
-     FROM this ladder, and those assignments out-rank a plain `body` pin, so
-     overriding each one separately would be both redundant and fragile. The
-     ladder itself is declared on `body`, which this block matches and
-     out-ranks by load order. Harmless on versions that predate it.
-     --touch-size-* is deliberately untouched: those are real touch targets
-     and have no business being corner radii, which is the underlying mix-up
-     here. */
-  --touch-radius-xxs:       var(--klartext-radius-flat);
-  --touch-radius-xs:        var(--klartext-radius-flat);
-  --touch-radius-s:         var(--klartext-radius-flat);
-  --touch-radius-m:         var(--klartext-radius-flat);
-  --touch-radius-l:         var(--klartext-radius-flat);
-  --touch-radius-xl:        var(--klartext-radius-flat);
+  /* MOBILE'S OWN RADIUS LADDER — left to Obsidian. 1.6.1 pinned the
+     --touch-radius-* scale flat as well. Those tokens shape the phone's
+     floating controls: the tab switcher's card and rows, the collapsed
+     selector, the search and filter fields. Obsidian draws those as pills
+     because they are controls under a thumb, not panels on a page, and a
+     4px corner on a floating card read as a broken default rather than a
+     decision. The flat family above stays for what IS a panel: blocks,
+     callouts, code, tables, the desktop's inputs and buttons. */
 
   /* Wire to Obsidian UI font tokens so plugins inherit the scale */
   --font-ui-smaller:        var(--klartext-ui-xs);
@@ -2607,28 +2593,14 @@ body.is-mobile {
   --font-ui-medium:  var(--klartext-ui-md);
   --font-ui-large:   var(--klartext-ui-lg);
 
-  /* CORNERS — the ladder restated for the phone. The radii are pinned at
-     the source (see Corner radii), but that block sits on `body` (0,0,1)
-     and Obsidian assigns the phone's own radius tokens under `.is-mobile`
-     (0,1,0), which out-ranks it: a pin written on `body` alone never
-     reached the drawer, its search field or the tab switcher, and the phone
-     kept 24-44px corners while the desktop sat at 4px. Restated here, where
-     `body.is-mobile` (0,1,1) clears that, and both halves are given — the
-     touch ladder and the six tokens Obsidian assigns FROM it — so a rule
-     reading either lands flat. The sheet grab handle is the one exception
-     and restores its pill below. */
-  --touch-radius-xxs:       var(--klartext-radius-flat);
-  --touch-radius-xs:        var(--klartext-radius-flat);
-  --touch-radius-s:         var(--klartext-radius-flat);
-  --touch-radius-m:         var(--klartext-radius-flat);
-  --touch-radius-l:         var(--klartext-radius-flat);
-  --touch-radius-xl:        var(--klartext-radius-flat);
-  --nav-item-radius:        var(--klartext-radius-flat);
-  --input-radius:           var(--klartext-radius-flat);
-  --textarea-radius:        var(--klartext-radius-flat);
-  --modal-radius:           var(--klartext-radius-flat);
-  --setting-items-radius:   var(--klartext-radius-flat);
-  --canvas-controls-radius: var(--klartext-radius-flat);
+  /* CORNERS — NOT restated for the phone. Obsidian assigns the phone its
+     own radius tokens under `.is-mobile`, and 1.6.1 flattened every one of
+     them here. Measured against Obsidian's own drawer (1.13, phone
+     emulation): the switcher card and its rows at 30px, the selector a pill,
+     the filter field at 44px. Flattened, the same elements were 4px
+     rectangles with a blurred shadow above them and the active row's
+     highlight ending hard on the selector's edge. The phone's chrome takes
+     Obsidian's shapes; the theme's flat corner is for the page. */
 }
 
 body.is-mobile .workspace-drawer {
@@ -2642,25 +2614,9 @@ body.is-mobile .workspace-drawer {
   overflow-x: clip;
 }
 
-/* SELECT CHROME — flat, like every other panel. The tab switcher is drawn
-   as a floating card on the phone: a pill for the collapsed selector, a
-   rounded sheet for the open list, and a rounded field for a view's search
-   or filter box. Pinning the tokens (above) is what a rule reading a token
-   follows; these elements are given the radius directly as well, so a
-   literal value in Obsidian's own mobile rules — or in a plugin view that
-   copies the shape — cannot put a 24px corner back beside 4px panels.
-   Specificity: Obsidian's own are (0,2,0) at most, these are (0,3,1). */
-body.is-mobile .workspace-drawer-tab-options,
-body.is-mobile .workspace-drawer-tab-options-list,
-body.is-mobile .workspace-drawer-tab-select,
-body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner,
-body.is-mobile .workspace-drawer-tab-options-list .workspace-tab-header-inner,
-body.is-mobile .workspace-drawer .search-input-container,
-body.is-mobile .workspace-drawer .search-input-container input,
-body.is-mobile .workspace-drawer input[type="text"],
-body.is-mobile .workspace-drawer input[type="search"] {
-  border-radius: var(--klartext-radius-flat);
-}
+/* SELECT CHROME — Obsidian's. See CORNERS above: the switcher card, its
+   rows, the collapsed selector and the drawer's search and filter fields
+   keep the radii Obsidian gives them on the phone. */
 
 /* SIDEBAR TAB SWITCHER — icon sized from the theme's interface scale rather
    than from Obsidian's touch scale. Obsidian gives every row in this control
@@ -2673,38 +2629,29 @@ body.is-mobile .workspace-drawer input[type="search"] {
    area stays exactly as Obsidian sized it.
    Specificity: Obsidian's icon rule is (0,2,0); the `body.is-mobile` prefix
    clears it. */
+/* The switcher's rows are `.workspace-tab-header` too, and the desktop tab
+   bar's active rule (page colour, !important, in TABS) reached them: a white
+   rectangle behind each active row's pill, showing at the pill's four
+   corners. Measured in the phone emulation once the pills came back. Here
+   the row is a box around a pill and paints nothing of its own; the pill
+   (`.workspace-tab-header-inner`) carries the highlight, as Obsidian has it.
+   `!important` against `!important`: (0,4,1) beats (0,2,0). */
+body.is-mobile .workspace-drawer-tab-options .workspace-tab-header,
+body.is-mobile .workspace-drawer-tab-options .workspace-tab-header.is-active {
+  background-color: transparent !important;
+}
+
 body.is-mobile .workspace-drawer-tab-options .workspace-tab-header-inner-icon,
 body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner-icon {
   --icon-size: calc(var(--klartext-ui-font-size) * 1.3);
   --icon-stroke: 1.75px;
 }
 
-/* The collapsed selector: Obsidian's fill (1.05 from the surround in light,
-   1.17 in dark) makes it read as a button, a large solid shape with its own
-   corner under a busy list. So the fill takes the surrounding colour. It
-   stays FULLY OPAQUE, which matters: this control masks the file list
-   scrolling behind it, and a transparent one would let rows show through the
-   label. A hairline above draws the boundary the slab was drawing.
-     The grey is spent on touch instead, where it says something. `:not(
-   .mobile-tap)` is what makes that work: this rule is (0,3,1) and would
-   otherwise out-rank Obsidian's own tap fill at (0,3,0) and kill the
-   feedback, so it simply stops matching while a finger is down. The tap
-   state is also restated directly, so it does not depend on the ancestor
-   Obsidian's rule expects. Label contrast: 11.8 in light, 10.7 in dark.
-     SCOPED TO `.is-collapsed`. The select is not only the collapsed control:
-   when the switcher is open, the same element is a row inside the panel,
-   where the surround-coloured fill would punch a light hole in the panel and
-   the hairline draw a line above the last row. Open, the select keeps
-   Obsidian's styling and matches its siblings. */
-body.is-mobile .workspace-drawer-tab-options.is-collapsed .workspace-drawer-tab-select:not(.mobile-tap) .workspace-tab-header-inner {
-  background-color: var(--mobile-sidebar-background);
-}
-body.is-mobile .workspace-drawer-tab-options.is-collapsed .workspace-drawer-tab-select.mobile-tap .workspace-tab-header-inner {
-  background-color: var(--nav-item-background-hover);
-}
-body.is-mobile .workspace-drawer-tab-options.is-collapsed .workspace-drawer-tab-select {
-  border-top: 1px solid var(--border-subtle);
-}
+/* The collapsed selector keeps Obsidian's fill: a pill in --interactive-
+   normal over the list, the shape the drawer is designed around. 1.6.1 gave
+   it the surround colour and a hairline above, to make a 4px slab read less
+   like a button; with the pill back, the hairline would draw a straight line
+   over a rounded corner, and the fill is what makes the pill a pill. */
 
 /* Slack below the selector, which is ~35px tall with the icon above, against
    the 52px Obsidian's own sizing assumes. Two gaps, and only these two are
@@ -2728,21 +2675,28 @@ body.is-mobile .workspace-drawer-header {
   padding-top: var(--size-4-2);
 }
 body.is-phone .workspace-drawer-tab-options-list {
-  padding-bottom: max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85));
+  /* Plus one step of air: Obsidian's own reserve puts the last row's bottom
+     exactly on the selector's top (measured: 0px in both themes), where its
+     pill highlight hides the seam. Eight pixels — the card's own top
+     padding — make the seam a gap instead, whatever the highlight's shape. */
+  padding-bottom: calc(max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85)) + var(--size-4-2));
 }
 
-/* The same strip, for the VIEW the drawer is showing. The collapsed
-   selector floats over the bottom of the drawer, so the last row of a list
-   ends up under it — reachable only by over-scrolling, and half-covered at
-   rest. The core file list carries its own bottom slack; a plugin's view
-   has no way to know the control is there, so the reserve is given to the
-   drawer's content once, sized from the touch target the control is built
-   on (--touch-size-l, 52px) rather than from the theme's tighter estimate:
-   this one has to clear the control on every Obsidian version, and scroll
-   slack at the foot of a list costs nothing where it is not needed. */
-body.is-phone .workspace-drawer .workspace-leaf-content > .view-content {
-  padding-bottom: var(--touch-size-l);
-}
+/* NO strip for the VIEW the drawer is showing. 1.6.1 reserved
+   --touch-size-l (52px) at the foot of every drawer view, by analogy with the
+   open switcher above: "the collapsed selector floats over the bottom of the
+   drawer". Measured in Obsidian 1.13 with the phone emulation, it does not:
+   `.workspace-drawer-inner` is a flex column, the tab container is `flex: 1`,
+   and `.workspace-drawer-tab-options` is `position: relative` — the selector
+   sits BELOW the view in normal flow and never covers its last row. The
+   reserve was 52px of dead panel under every plugin view, most visibly under
+   a composer whose Send button then hung two finger-widths above the
+   selector; Obsidian's own floating-nav fade (`.workspace-leaf-content::after`,
+   48px, sidebar colour) then painted that empty strip as a gradient band.
+   Only the OPEN switcher's option list (above) needs its reserve, because
+   that list is a card floating over the drawer. A view that scrolls a list
+   under a floating control of its own carries its own slack, as the core
+   file list does. */
 
 /* The bottom-sheet grab handle is the ONE mobile shape that stays round: it
    reads as a physical handle, not as a panel. Obsidian draws it with

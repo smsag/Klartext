@@ -5,6 +5,33 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **The line between a sidebar and the note is a hairline again.** The theme
+  softens that divider on the resize handle, where Obsidian draws it, and then
+  drew a second one at full strength on the sidebar split itself, immediately
+  alongside. Measured in Obsidian, the seam painted as a two-pixel ramp —
+  `#f0f0ed` then `#e8e8e6` against the note's `#ffffff` — so it read as a rule
+  rather than an edge. The split's border is gone; one pixel of `--border-subtle`
+  remains, a contrast step of 15 against the note instead of 23 (dark mode: 12
+  instead of 20). Pane geometry is unchanged.
+
+### Fixed
+- **The sidebar's background rule points at a class that exists.** It was headed
+  by `.workspace-sidebar`, which matches nothing — Obsidian's stylesheet never
+  emits that class, and this was the only rule in the theme that named it. The
+  file explorer was tinted anyway, through `.nav-files-container` further down
+  the same selector list; the dead lines have been dropped. The tint is not
+  extended to plugin panels: a panel builds its own tonal hierarchy on
+  `--background-primary`, and repainting its ground flattens the surfaces it
+  raises to `--background-secondary`.
+
+### Added
+- `tools/check-dividers.mjs` fails if a border on the sidebar split comes back.
+  It needs no Obsidian and runs from the pre-commit hook for any commit that
+  touches `src/theme.css`.
+
 ## [1.6.2] — 2026-09-16
 
 ### Changed

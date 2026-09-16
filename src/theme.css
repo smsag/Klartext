@@ -573,9 +573,19 @@ body.is-mobile {
   border-color: var(--border-subtle);
 }
 
-.workspace-sidebar,
-.workspace-sidebar .workspace-leaf,
-.workspace-sidebar .workspace-leaf-content,
+/* The core navigation panes carry the secondary ground. `.workspace-sidebar`
+   used to head this list; it matches nothing — Obsidian's own stylesheet never
+   emits that class and the real one is `mod-sidedock`. It was the only rule in
+   the theme that referred to it, so the font lines went nowhere either; both
+   are inherited from `body` already, which is why nobody noticed.
+   The tint is deliberately NOT widened to `.mod-sidedock .workspace-leaf-content`
+   now that the correct selector is known. A plugin panel builds its own tonal
+   hierarchy on top of `--background-primary` — raised cards and inline code on
+   `--background-secondary`, code blocks back down on primary. Repainting the
+   ground secondary inverts that hierarchy and flattens the raised surfaces into
+   their borders. The sidebars separate from the note by their divider and by
+   this theme's own chrome (tab bar, vault profile), not by repainting panels
+   the theme does not own. */
 .nav-folder,
 .nav-files-container {
   background-color: var(--background-secondary);
@@ -583,9 +593,12 @@ body.is-mobile {
   font-size: var(--klartext-ui-font-size);
 }
 
-/* Borders between sidebar and editor */
-.workspace-split.mod-left-split  { border-right: 1px solid var(--border); }
-.workspace-split.mod-right-split { border-left:  1px solid var(--border); }
+/* No border between sidebar and editor here. The divider is drawn once, on the
+   resize handle, by the `--border-subtle` rule above. This block used to draw a
+   second one at full `--border` strength directly alongside it, so the seam
+   painted as a two-pixel ramp (#f0f0ed then #e8e8e6 against #ffffff) and read
+   as a heavy rule rather than a hairline. `tools/check-dividers.mjs` fails if a
+   border on `.mod-left-split` / `.mod-right-split` comes back. */
 
 /* Tab bar */
 .workspace-tab-header-container {
@@ -2188,7 +2201,7 @@ a.tag {
    ------------------------------------------------------------------ */
 .nav-file-title,
 .nav-folder-title {
-  /* font-size and font-family inherited from .workspace-sidebar container */
+  /* font-size and font-family inherited from body */
   font-weight: 400;
   color: var(--text-normal);
   border-radius: var(--radius-m);

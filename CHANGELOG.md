@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.2] — 2026-09-16
 
+### Changed
+- **The phone's floating chrome takes Obsidian's own shapes again.** 1.6.1
+  flattened the phone's touch radius ladder along with the desktop's, so the
+  tab switcher's card and rows, the collapsed selector and the drawer's
+  search and filter fields became 4px rectangles — under a blurred shadow
+  drawn for a rounded card, with the active row's highlight ending hard on
+  the selector. Those are controls under a thumb, not panels on a page, and
+  measured against Obsidian's own drawer they are pills for that reason (card
+  and rows 30px, filter 44px). The touch ladder and the six tokens Obsidian
+  derives from it are no longer pinned; the theme's flat corner stays for
+  blocks, callouts, code, tables and the desktop's controls. The selector
+  also keeps Obsidian's fill rather than 1.6.1's surround colour and hairline.
+
 ### Fixed
+- **The open tab switcher's last row no longer ends on the selector's edge.**
+  Obsidian's reserve puts the last row's bottom exactly on the selector's top
+  (0px, measured in both themes); the card's own 8px step is added, so the
+  seam is a gap.
 - **No dead strip under a plugin's view in the phone drawer.** 1.6.1 padded the
   bottom of every drawer view by `--touch-size-l` (52px), reasoning that the
   collapsed tab selector floats over the view's last row. Measured in Obsidian

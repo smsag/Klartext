@@ -5,6 +5,21 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] — 2026-09-16
+
+### Fixed
+- **No dead strip under a plugin's view in the phone drawer.** 1.6.1 padded the
+  bottom of every drawer view by `--touch-size-l` (52px), reasoning that the
+  collapsed tab selector floats over the view's last row. Measured in Obsidian
+  1.13 with the phone emulation, it does not: the drawer is a flex column and
+  the selector is `position: relative`, sitting below the view in normal flow.
+  The reserve was 52px of empty panel under every plugin view — under a chat
+  composer, its Send button hung two finger-widths above the selector, and
+  Obsidian's own floating-nav fade (a 48px sidebar-coloured `::after` at the
+  foot of each drawer leaf) painted that empty strip as a gradient band. The
+  rule is removed; the open tab switcher's own reserve (the floating option
+  list) is unchanged.
+
 ## [1.6.1] — 2026-09-15
 
 ### Fixed

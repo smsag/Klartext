@@ -2731,18 +2731,21 @@ body.is-phone .workspace-drawer-tab-options-list {
   padding-bottom: max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85));
 }
 
-/* The same strip, for the VIEW the drawer is showing. The collapsed
-   selector floats over the bottom of the drawer, so the last row of a list
-   ends up under it — reachable only by over-scrolling, and half-covered at
-   rest. The core file list carries its own bottom slack; a plugin's view
-   has no way to know the control is there, so the reserve is given to the
-   drawer's content once, sized from the touch target the control is built
-   on (--touch-size-l, 52px) rather than from the theme's tighter estimate:
-   this one has to clear the control on every Obsidian version, and scroll
-   slack at the foot of a list costs nothing where it is not needed. */
-body.is-phone .workspace-drawer .workspace-leaf-content > .view-content {
-  padding-bottom: var(--touch-size-l);
-}
+/* NO strip for the VIEW the drawer is showing. 1.6.1 reserved
+   --touch-size-l (52px) at the foot of every drawer view, by analogy with the
+   open switcher above: "the collapsed selector floats over the bottom of the
+   drawer". Measured in Obsidian 1.13 with the phone emulation, it does not:
+   `.workspace-drawer-inner` is a flex column, the tab container is `flex: 1`,
+   and `.workspace-drawer-tab-options` is `position: relative` — the selector
+   sits BELOW the view in normal flow and never covers its last row. The
+   reserve was 52px of dead panel under every plugin view, most visibly under
+   a composer whose Send button then hung two finger-widths above the
+   selector; Obsidian's own floating-nav fade (`.workspace-leaf-content::after`,
+   48px, sidebar colour) then painted that empty strip as a gradient band.
+   Only the OPEN switcher's option list (above) needs its reserve, because
+   that list is a card floating over the drawer. A view that scrolls a list
+   under a floating control of its own carries its own slack, as the core
+   file list does. */
 
 /* The bottom-sheet grab handle is the ONE mobile shape that stays round: it
    reads as a physical handle, not as a panel. Obsidian draws it with

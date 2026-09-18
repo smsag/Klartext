@@ -27,10 +27,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--background-primary`, and repainting its ground flattens the surfaces it
   raises to `--background-secondary`.
 
+- **A list level indented with spaces no longer paints twice as deep.** Obsidian
+  emits one indent box per nesting level and floors each at `--list-indent`; a
+  tab is exactly that wide, and a run of spaces is only correct while the floor
+  catches it. This theme's unit is the marker column, 1.2em, and Live-Preview
+  list lines are monospace, where a space is 0.6em — so four spaces measured
+  2.4em, cleared the floor, and rendered as two levels. In a file mixing tabs
+  and spaces (a paste, an import, a vault whose "Indent using tabs" setting
+  changed) a sibling therefore dropped onto its own children's column while the
+  parser still read it as a sibling, so it also survived the parent's fold.
+  A whole level's worth of spaces now carries no advance, which puts it back
+  under the floor; tabs are untouched, and the remainder of a PARTIAL indent
+  (three spaces under "1. ", say) is left as Obsidian renders it, since it has
+  no floor to fall back on. Measured in Obsidian: a second-level item was
+  19.2px in with a tab and 38.4px in with four spaces, and is now 19.2px either
+  way.
+
 ### Added
 - `tools/check-dividers.mjs` fails if a border on the sidebar split comes back.
   It needs no Obsidian and runs from the pre-commit hook for any commit that
   touches `src/theme.css`.
+- `tools/check-list-indent.mjs` fails if a level written with spaces can render
+  wider than one indent unit — if the space advance stops being neutralised on
+  the indent box, if it is neutralised with `font-size` (which also collapses
+  the indentation guide, measured at 25.6px to 6.4px), or if the tokens the
+  arithmetic reads change shape. Same conditions: no Obsidian, run from the
+  hook.
 
 ## [1.6.2] — 2026-09-16
 

@@ -2,11 +2,12 @@
 # Lint and guard the stylesheet before a commit that touches it. Enable once per
 # clone:
 #     git config core.hooksPath .githooks
-# stylelint is skipped quietly when npx is not installed; the divider guard is
-# plain node with no dependencies, so it always runs.
+# stylelint is skipped quietly when npx is not installed; the guards below are
+# plain node with no dependencies, so they always run.
 if git diff --cached --name-only | grep -q '^src/theme.css$'; then
   if command -v npx >/dev/null 2>&1; then
     npx --yes stylelint src/theme.css || { echo "stylelint failed; commit aborted"; exit 1; }
   fi
   node tools/check-dividers.mjs || { echo "divider check failed; commit aborted"; exit 1; }
+  node tools/check-list-indent.mjs || { echo "list indent check failed; commit aborted"; exit 1; }
 fi

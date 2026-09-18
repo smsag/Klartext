@@ -1916,6 +1916,46 @@ hr,
   color: var(--text-faint);
 }
 
+/* One nesting level is one indent unit, whether it is written with a tab or
+   with spaces (Live Preview).
+
+   Obsidian emits one .cm-indent per level and floors each at --list-indent:
+
+       .markdown-source-view.mod-cm6 .cm-indent
+         { min-width: var(--list-indent); display: inline-block; }
+
+   A tab is exactly --list-indent wide, because Obsidian sets `tab-size` to
+   that length. A run of spaces is not: it renders at its own width, and the
+   floor is what normally keeps it in line — under Obsidian's own tokens four
+   spaces measure about 20px against a 36px unit, so they round up to the unit
+   and land on the same column as a tab.
+
+   This theme's unit is the marker column, 1.2em, and Live-Preview list lines
+   are set in the monospace face where a space is 0.6em. Four spaces are
+   therefore 2.4em: WIDER than the unit, so the floor never applies and one
+   space-indented level paints as exactly two levels. In a file where some
+   lines are tabbed and some are spaced — a paste, an import, a vault whose
+   "Indent using tabs" setting changed — a sibling drops onto its own
+   children's column while the parser still reads it as a sibling, so it also
+   survives the parent's fold. Measured in Obsidian: level 2 at 19.2px with a
+   tab, 38.4px with four spaces.
+
+   Zero-advance spaces put a whole level's worth back under the floor, so it
+   resolves to exactly one unit while tabs are untouched (word-spacing does not
+   apply to a tab, and a tab's width comes from `tab-size` anyway).
+   ONLY on .cm-indent, which is Obsidian's box for a COMPLETE level and the one
+   carrying the floor. The remainder of a partial indent — three spaces under
+   "1. ", say — goes in a .cm-indent-spacing, which has no floor to fall back
+   on, so zeroing it there would collapse the indent entirely rather than
+   correct it. That case is left as Obsidian renders it.
+   NOT font-size, which would fix the width and then collapse the box: the
+   indentation guide is .cm-indent's own ::before and takes its height, so
+   shrinking the face to make four spaces fit drops the guide from 25.6px to
+   6.4px. Measured both. */
+.markdown-source-view.mod-cm6 .cm-hmd-list-indent > .cm-indent {
+  word-spacing: calc(var(--klartext-cell) * -1);
+}
+
 /* List tree line (Live Preview). Obsidian draws indentation guides only on
    indented lines, so a guide begins at the first child, never at the parent.
    This adds the missing segment: on an item that is directly followed by a

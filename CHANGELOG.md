@@ -43,10 +43,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   19.2px in with a tab and 38.4px in with four spaces, and is now 19.2px either
   way.
 
+- **A callout or a quote inside a list item is spaced like an item again.** Both
+  blocks carry generous vertical margins chosen against the paragraphs they sit
+  between, and the quote's is deliberately asymmetric so its bottom survives the
+  collapse with the next paragraph. A list item collapses none of it: Obsidian
+  gives every item 1.2px of vertical padding, and a padding edge stops a child's
+  margin collapsing through it, so both ends were added in full inside the item.
+  Measured in reading view: a callout with a title and no body, written as a
+  list item's whole content, turned a 22px block into a 72px item and left the
+  item's number sitting 25px above the line it numbers; a quote turned a 24px
+  block into 84px. A three-item sublist came out 184px tall where its content
+  needs 91px. Such a block now takes the same 0.4em the theme already puts
+  between items. Live Preview is unaffected — Obsidian does not build a callout
+  widget for one written inside a list item, so those lines stay source there.
+
 ### Added
 - `tools/check-dividers.mjs` fails if a border on the sidebar split comes back.
   It needs no Obsidian and runs from the pre-commit hook for any commit that
   touches `src/theme.css`.
+- `tools/check-list-blocks.mjs` fails if a callout or a quote keeps its
+  prose-flow margin inside a list item — if the override is dropped, if only one
+  of the two blocks is covered, or if it is written without the `!important` the
+  rule it overrides carries. Same conditions: no Obsidian, run from the hook.
 - `tools/check-list-indent.mjs` fails if a level written with spaces can render
   wider than one indent unit — if the space advance stops being neutralised on
   the indent box, if it is neutralised with `font-size` (which also collapses

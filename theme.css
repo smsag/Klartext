@@ -1894,6 +1894,30 @@ hr,
    tight (the editor gives .HyperMD-list-line-1 a 0.4em top margin only). */
 .markdown-preview-view li      { margin-bottom: 0.4em; }
 .markdown-preview-view li li   { margin-bottom: 0; }
+
+/* A callout or a quote INSIDE a list item takes that item gap too, not the
+   prose block gap. Both blocks carry generous vertical margins (see
+   BLOCKQUOTE and CALLOUTS), measured against the paragraphs they sit between,
+   and the quote's is deliberately asymmetric so its bottom survives the
+   collapse with the next paragraph's top margin. A list item collapses none
+   of it: Obsidian gives every <li> 1.2px of vertical padding, and a padding
+   edge stops a child's margin collapsing through it, so both ends are added
+   in full inside the item.
+   Measured in Obsidian's reading view, before this rule: a bodyless callout
+   as a list item's whole content turned a 22px block into a 72px item, with
+   the marker sitting 25px above the line it numbers; a quote turned a 24px
+   block into 84px (22.32 above, 35.84 below). A three-item sublist came out
+   184px tall against the 91px its content needs.
+   Same 0.4em as between items, so a block in an item is spaced like an item,
+   and the marker lands on its first line. !important because the blockquote
+   rule this overrides carries one; the selector out-ranks both base rules on
+   specificity in any case. Live Preview needs nothing: Obsidian does not
+   build a callout widget for one written inside a list item, so those lines
+   stay source there. */
+.markdown-rendered li > .callout,
+.markdown-rendered li > blockquote {
+  margin-block: 0.4em !important;
+}
 /* Markers quieter than the text — never louder than the content itself */
 .list-bullet  { color: var(--text-faint); }
 .list-number  { color: var(--text-faint); }

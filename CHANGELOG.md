@@ -5,6 +5,27 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`kit/highlight.css` — the family's highlighter, written so a plugin can carry
+  it.** Klartext is the baseline, so this is its own stroke: the angle, the
+  feathered landing and lift, the overshoot, the square ends, and one stroke per
+  line. It reads only Obsidian's variables and its own `--hl-*` properties, never
+  a `--klartext-*` token, so a plugin copies it at build time with its own prefix
+  and it works under any theme. What it deliberately leaves behind is the opaque
+  ink and `mix-blend-mode` this theme needs because Live Preview splits one
+  highlight into a span per formatting change — a plugin wraps a selection in one
+  element and never meets that case.
+- `tools/check-highlight-kit.mjs` fails if the theme's stroke and the kit drift
+  apart on any number, or if a border-radius, a text-shadow or a box-shadow
+  creeps back into either. The hook now also runs for a change under `kit/`.
+
+### Changed
+- The HIGHLIGHT / MARK rule now uses the kit's `--hl-*` property names. Values
+  are unchanged and the render is pixel-identical — verified against the same
+  note before and after: 0 of 1,208,320 pixels differ.
+
 ## [1.6.3] — 2026-09-19
 
 ### Changed

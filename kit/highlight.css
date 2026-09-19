@@ -1,0 +1,92 @@
+/* ==========================================================================
+   THE HIGHLIGHTER — the family's shared mark on a run of text.
+   ==========================================================================
+
+   Klartext is the baseline. This file is the same stroke, written so a plugin
+   can carry it: it reads only Obsidian's own variables and its own --hl-*
+   properties, never a --klartext-* token, so it works under any theme.
+
+   WHAT IS SHARED is the pen: the angle, the feathered landing and lift, the
+   overshoot, the square ends, and one stroke per line.
+   WHAT IS NOT SHARED is the ink. Each surface sets --hl-ink for what its mark
+   MEANS — yellow for a highlight, the accent for a fork origin, green and red
+   for a diff. A shared hue would say the marks are the same thing; they are
+   not. The shape is what says one hand made them.
+
+   THE INK BAND. Klartext's own ink measures 70 against the page (Euclidean
+   RGB distance from --background-primary, sampled over the flat middle of the
+   stroke). Anything the family paints on a run of text belongs in 60–140.
+   Below it the mark reads as a rendering artefact; above it, as a UI chip
+   dropped into prose. Measured before this file existed: Pythia's favourite
+   sat at 32, Schreibstube's diff insert at 312.
+
+   USE
+     Copy this file into the plugin at build time and replace %%P%% with the
+     plugin's own prefix. Then, per mark:
+
+       .%%P%%-favorite { --hl-ink: var(--text-highlight-bg); }
+
+     A single --hl-ink is enough; --hl-ink-strong defaults to it. Set the
+     strong ink only where the wet end where the pen sets down should be
+     darker than the rest, as Klartext's does.
+
+   WHAT NOT TO ADD
+     No border-radius: a marker pen has no corners, and a rounded end reads as
+     a field or a chip.
+     No text-shadow: a halo is a second treatment competing with the stroke,
+     and it inverts between light and dark themes.
+     No box-shadow, no border.
+     Do not change --hl-angle to distinguish two marks. The angle is not
+     legible at text size — it was measured mirrored between two of these
+     plugins for a year and nobody saw it. Distinguish by ink.
+
+   WHAT IS DELIBERATELY NOT HERE
+     mix-blend-mode and the sibling rules that keep a stroke from lifting
+     mid-line. Live Preview splits one highlight into a span per formatting
+     change, so the theme needs opaque ink and a blend mode to stop two
+     feathered ends adding up darker where they overlap. A plugin wraps a
+     selection in ONE element and never meets that case. mix-blend-mode is
+     also fragile in a plugin panel: any ancestor with transform, filter or
+     opacity creates a stacking context and the blend stops at it. See the
+     HIGHLIGHT / MARK section of Klartext's theme.css for that half.
+   ========================================================================== */
+
+.%%P%%-hl {
+  /* The stroke. Every number here is the baseline's. */
+  --hl-angle: 104deg;
+  --hl-land-0: 0.2em;                    /* transparent until here… */
+  --hl-land-1: 0.7em;                    /* …ink from here: the pen lands over half a character */
+  --hl-lift-1: 88%;                      /* full ink until here… */
+  --hl-lift-0: calc(100% - 0.28em);      /* …transparent from here: it lifts off in a sixth */
+  --hl-pad-y: 0.14em;                    /* overshoots the letters as a felt tip does */
+  --hl-pad-x: 0.42em;
+
+  /* The ink. Override --hl-ink per mark; the strong ink follows it unless set. */
+  --hl-ink: var(--text-highlight-bg);
+  --hl-ink-strong: var(--hl-ink);
+
+  background-color: transparent;
+  background-image: linear-gradient(
+    var(--hl-angle),
+    transparent var(--hl-land-0),
+    var(--hl-ink-strong) var(--hl-land-1),
+    var(--hl-ink) var(--hl-lift-1),
+    transparent var(--hl-lift-0)
+  );
+  color: inherit;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+
+  /* Inline padding never moves the line, and the side margins hand the
+     overshoot back, so the stroke runs past the text without taking width. */
+  padding: var(--hl-pad-y) var(--hl-pad-x);
+  margin: 0 calc(-1 * var(--hl-pad-x));
+
+  /* One stroke PER LINE, each with its own landing and lift, as a marker pen
+     on paper leaves them. Without this a wrapped run is one stroke stretched
+     over two lines and the feathering lands in the wrong place on both. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

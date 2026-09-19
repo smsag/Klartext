@@ -573,9 +573,19 @@ body.is-mobile {
   border-color: var(--border-subtle);
 }
 
-.workspace-sidebar,
-.workspace-sidebar .workspace-leaf,
-.workspace-sidebar .workspace-leaf-content,
+/* The core navigation panes carry the secondary ground. `.workspace-sidebar`
+   used to head this list; it matches nothing — Obsidian's own stylesheet never
+   emits that class and the real one is `mod-sidedock`. It was the only rule in
+   the theme that referred to it, so the font lines went nowhere either; both
+   are inherited from `body` already, which is why nobody noticed.
+   The tint is deliberately NOT widened to `.mod-sidedock .workspace-leaf-content`
+   now that the correct selector is known. A plugin panel builds its own tonal
+   hierarchy on top of `--background-primary` — raised cards and inline code on
+   `--background-secondary`, code blocks back down on primary. Repainting the
+   ground secondary inverts that hierarchy and flattens the raised surfaces into
+   their borders. The sidebars separate from the note by their divider and by
+   this theme's own chrome (tab bar, vault profile), not by repainting panels
+   the theme does not own. */
 .nav-folder,
 .nav-files-container {
   background-color: var(--background-secondary);
@@ -583,9 +593,12 @@ body.is-mobile {
   font-size: var(--klartext-ui-font-size);
 }
 
-/* Borders between sidebar and editor */
-.workspace-split.mod-left-split  { border-right: 1px solid var(--border); }
-.workspace-split.mod-right-split { border-left:  1px solid var(--border); }
+/* No border between sidebar and editor here. The divider is drawn once, on the
+   resize handle, by the `--border-subtle` rule above. This block used to draw a
+   second one at full `--border` strength directly alongside it, so the seam
+   painted as a two-pixel ramp (#f0f0ed then #e8e8e6 against #ffffff) and read
+   as a heavy rule rather than a hairline. `tools/check-dividers.mjs` fails if a
+   border on `.mod-left-split` / `.mod-right-split` comes back. */
 
 /* Tab bar */
 .workspace-tab-header-container {
@@ -1881,6 +1894,30 @@ hr,
    tight (the editor gives .HyperMD-list-line-1 a 0.4em top margin only). */
 .markdown-preview-view li      { margin-bottom: 0.4em; }
 .markdown-preview-view li li   { margin-bottom: 0; }
+
+/* A callout or a quote INSIDE a list item takes that item gap too, not the
+   prose block gap. Both blocks carry generous vertical margins (see
+   BLOCKQUOTE and CALLOUTS), measured against the paragraphs they sit between,
+   and the quote's is deliberately asymmetric so its bottom survives the
+   collapse with the next paragraph's top margin. A list item collapses none
+   of it: Obsidian gives every <li> 1.2px of vertical padding, and a padding
+   edge stops a child's margin collapsing through it, so both ends are added
+   in full inside the item.
+   Measured in Obsidian's reading view, before this rule: a bodyless callout
+   as a list item's whole content turned a 22px block into a 72px item, with
+   the marker sitting 25px above the line it numbers; a quote turned a 24px
+   block into 84px (22.32 above, 35.84 below). A three-item sublist came out
+   184px tall against the 91px its content needs.
+   Same 0.4em as between items, so a block in an item is spaced like an item,
+   and the marker lands on its first line. !important because the blockquote
+   rule this overrides carries one; the selector out-ranks both base rules on
+   specificity in any case. Live Preview needs nothing: Obsidian does not
+   build a callout widget for one written inside a list item, so those lines
+   stay source there. */
+.markdown-rendered li > .callout,
+.markdown-rendered li > blockquote {
+  margin-block: 0.4em !important;
+}
 /* Markers quieter than the text — never louder than the content itself */
 .list-bullet  { color: var(--text-faint); }
 .list-number  { color: var(--text-faint); }
@@ -1901,6 +1938,46 @@ hr,
   content: "\2013";
   font-size: var(--klartext-font-size);
   color: var(--text-faint);
+}
+
+/* One nesting level is one indent unit, whether it is written with a tab or
+   with spaces (Live Preview).
+
+   Obsidian emits one .cm-indent per level and floors each at --list-indent:
+
+       .markdown-source-view.mod-cm6 .cm-indent
+         { min-width: var(--list-indent); display: inline-block; }
+
+   A tab is exactly --list-indent wide, because Obsidian sets `tab-size` to
+   that length. A run of spaces is not: it renders at its own width, and the
+   floor is what normally keeps it in line — under Obsidian's own tokens four
+   spaces measure about 20px against a 36px unit, so they round up to the unit
+   and land on the same column as a tab.
+
+   This theme's unit is the marker column, 1.2em, and Live-Preview list lines
+   are set in the monospace face where a space is 0.6em. Four spaces are
+   therefore 2.4em: WIDER than the unit, so the floor never applies and one
+   space-indented level paints as exactly two levels. In a file where some
+   lines are tabbed and some are spaced — a paste, an import, a vault whose
+   "Indent using tabs" setting changed — a sibling drops onto its own
+   children's column while the parser still reads it as a sibling, so it also
+   survives the parent's fold. Measured in Obsidian: level 2 at 19.2px with a
+   tab, 38.4px with four spaces.
+
+   Zero-advance spaces put a whole level's worth back under the floor, so it
+   resolves to exactly one unit while tabs are untouched (word-spacing does not
+   apply to a tab, and a tab's width comes from `tab-size` anyway).
+   ONLY on .cm-indent, which is Obsidian's box for a COMPLETE level and the one
+   carrying the floor. The remainder of a partial indent — three spaces under
+   "1. ", say — goes in a .cm-indent-spacing, which has no floor to fall back
+   on, so zeroing it there would collapse the indent entirely rather than
+   correct it. That case is left as Obsidian renders it.
+   NOT font-size, which would fix the width and then collapse the box: the
+   indentation guide is .cm-indent's own ::before and takes its height, so
+   shrinking the face to make four spaces fit drops the guide from 25.6px to
+   6.4px. Measured both. */
+.markdown-source-view.mod-cm6 .cm-hmd-list-indent > .cm-indent {
+  word-spacing: calc(var(--klartext-cell) * -1);
 }
 
 /* List tree line (Live Preview). Obsidian draws indentation guides only on
@@ -2188,7 +2265,7 @@ a.tag {
    ------------------------------------------------------------------ */
 .nav-file-title,
 .nav-folder-title {
-  /* font-size and font-family inherited from .workspace-sidebar container */
+  /* font-size and font-family inherited from body */
   font-weight: 400;
   color: var(--text-normal);
   border-radius: var(--radius-m);

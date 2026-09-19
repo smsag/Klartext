@@ -5,6 +5,73 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3] — 2026-09-19
+
+### Changed
+- **The line between a sidebar and the note is a hairline again.** The theme
+  softens that divider on the resize handle, where Obsidian draws it, and then
+  drew a second one at full strength on the sidebar split itself, immediately
+  alongside. Measured in Obsidian, the seam painted as a two-pixel ramp —
+  `#f0f0ed` then `#e8e8e6` against the note's `#ffffff` — so it read as a rule
+  rather than an edge. The split's border is gone; one pixel of `--border-subtle`
+  remains, a contrast step of 15 against the note instead of 23 (dark mode: 12
+  instead of 20). Pane geometry is unchanged.
+
+### Fixed
+- **The sidebar's background rule points at a class that exists.** It was headed
+  by `.workspace-sidebar`, which matches nothing — Obsidian's stylesheet never
+  emits that class, and this was the only rule in the theme that named it. The
+  file explorer was tinted anyway, through `.nav-files-container` further down
+  the same selector list; the dead lines have been dropped. The tint is not
+  extended to plugin panels: a panel builds its own tonal hierarchy on
+  `--background-primary`, and repainting its ground flattens the surfaces it
+  raises to `--background-secondary`.
+
+- **A list level indented with spaces no longer paints twice as deep.** Obsidian
+  emits one indent box per nesting level and floors each at `--list-indent`; a
+  tab is exactly that wide, and a run of spaces is only correct while the floor
+  catches it. This theme's unit is the marker column, 1.2em, and Live-Preview
+  list lines are monospace, where a space is 0.6em — so four spaces measured
+  2.4em, cleared the floor, and rendered as two levels. In a file mixing tabs
+  and spaces (a paste, an import, a vault whose "Indent using tabs" setting
+  changed) a sibling therefore dropped onto its own children's column while the
+  parser still read it as a sibling, so it also survived the parent's fold.
+  A whole level's worth of spaces now carries no advance, which puts it back
+  under the floor; tabs are untouched, and the remainder of a PARTIAL indent
+  (three spaces under "1. ", say) is left as Obsidian renders it, since it has
+  no floor to fall back on. Measured in Obsidian: a second-level item was
+  19.2px in with a tab and 38.4px in with four spaces, and is now 19.2px either
+  way.
+
+- **A callout or a quote inside a list item is spaced like an item again.** Both
+  blocks carry generous vertical margins chosen against the paragraphs they sit
+  between, and the quote's is deliberately asymmetric so its bottom survives the
+  collapse with the next paragraph. A list item collapses none of it: Obsidian
+  gives every item 1.2px of vertical padding, and a padding edge stops a child's
+  margin collapsing through it, so both ends were added in full inside the item.
+  Measured in reading view: a callout with a title and no body, written as a
+  list item's whole content, turned a 22px block into a 72px item and left the
+  item's number sitting 25px above the line it numbers; a quote turned a 24px
+  block into 84px. A three-item sublist came out 184px tall where its content
+  needs 91px. Such a block now takes the same 0.4em the theme already puts
+  between items. Live Preview is unaffected — Obsidian does not build a callout
+  widget for one written inside a list item, so those lines stay source there.
+
+### Added
+- `tools/check-dividers.mjs` fails if a border on the sidebar split comes back.
+  It needs no Obsidian and runs from the pre-commit hook for any commit that
+  touches `src/theme.css`.
+- `tools/check-list-blocks.mjs` fails if a callout or a quote keeps its
+  prose-flow margin inside a list item — if the override is dropped, if only one
+  of the two blocks is covered, or if it is written without the `!important` the
+  rule it overrides carries. Same conditions: no Obsidian, run from the hook.
+- `tools/check-list-indent.mjs` fails if a level written with spaces can render
+  wider than one indent unit — if the space advance stops being neutralised on
+  the indent box, if it is neutralised with `font-size` (which also collapses
+  the indentation guide, measured at 25.6px to 6.4px), or if the tokens the
+  arithmetic reads change shape. Same conditions: no Obsidian, run from the
+  hook.
+
 ## [1.6.2] — 2026-09-16
 
 ### Changed

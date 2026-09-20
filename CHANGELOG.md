@@ -28,23 +28,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   button in `:has()` is not flagged.
 
 ### Added
-- **`kit/highlight.css` — the family's highlighter, written so a plugin can carry
-  it.** Klartext is the baseline, so this is its own stroke: the angle, the
-  feathered landing and lift, the overshoot, the square ends, and one stroke per
-  line. It reads only Obsidian's variables and its own `--hl-*` properties, never
-  a `--klartext-*` token, so a plugin copies it at build time with its own prefix
-  and it works under any theme. What it deliberately leaves behind is the opaque
-  ink and `mix-blend-mode` this theme needs because Live Preview splits one
-  highlight into a span per formatting change — a plugin wraps a selection in one
-  element and never meets that case.
-- `tools/check-highlight-kit.mjs` fails if the theme's stroke and the kit drift
-  apart on any number, or if a border-radius, a text-shadow or a box-shadow
-  creeps back into either. The hook now also runs for a change under `kit/`.
+- `tools/check-highlight.mjs` fails if the marker-pen stroke changes shape: the
+  seven numbers that are the geometry, and the three properties the rule states
+  as `none` / `0` because each has been re-added by hand before — a
+  border-radius (which makes the end read as a chip), a text-shadow halo (which
+  inverts between light and dark) and a box-shadow.
 
 ### Changed
-- The HIGHLIGHT / MARK rule now uses the kit's `--hl-*` property names. Values
-  are unchanged and the render is pixel-identical — verified against the same
-  note before and after: 0 of 1,208,320 pixels differ.
+- The HIGHLIGHT / MARK rule's comment now states the stroke's own reasoning: the
+  geometry, the measured ink strength (this ink sits 70 from the page, Euclidean
+  RGB distance sampled over the flat middle of the stroke; 60-140 is the band
+  where a mark on prose reads as a mark), and the three things not to add. It
+  previously pointed at a file outside the theme for half of that.
+
+### Removed
+- **`kit/highlight.css` and `tools/check-highlight-kit.mjs`.** The theme had
+  started carrying a copy of its own stroke for other projects to take, and a
+  guard that failed when the two drifted. That made the theme a dependency of
+  things that must work under any theme, and it made a change here a red build
+  elsewhere. The stroke stays exactly as it is; it is simply the theme's own
+  again, documented in the rule rather than in a file written for someone else.
 
 ## [1.6.3] — 2026-09-19
 

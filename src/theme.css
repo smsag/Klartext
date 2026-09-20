@@ -3143,12 +3143,27 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
    every line lands and lifts and no seam exists.
      Inline code inside a highlight keeps a fill, but a translucent one, so
    it sits ON the stroke instead of cutting a window into it. */
-/* The stroke itself is the family's, kept verbatim in `kit/highlight.css` so
-   the plugins can carry the same pen without reading a --klartext-* token.
-   The --hl-* property names below ARE that file's; only the values that are
-   this theme's own (the opaque inks, the blend mode) and the Live-Preview
-   sibling rules stay here. `tools/check-highlight-kit.mjs` fails if a number
-   drifts between the two. */
+/* THE STROKE. A felt tip laid over the words and lifted off again: the sweep
+   is 104deg, the ink fades in over the first half character (transparent to
+   0.2em, full by 0.7em) and lifts off over the last sixth (full to 88%,
+   transparent by calc(100% - 0.28em)), and 0.14em/0.42em of padding lets it
+   overshoot the letters the way a real one does. Cancelled by an equal
+   negative margin so the run of text does not move.
+
+   INK STRENGTH IS MEASURED, NOT PICKED. This ink sits 70 from the page —
+   Euclidean RGB distance from --background-primary, sampled over the flat
+   middle of the stroke in a screenshot. 60-140 is the band where a mark on a
+   run of prose reads as a mark: below it, a rendering artefact; above it, a UI
+   chip dropped into a paragraph.
+
+   NOT: no border-radius (a marker pen has no corners, and a rounded end reads
+   as a field or a chip), no text-shadow (a halo is a second treatment
+   competing with the stroke, and it inverts between light and dark), no
+   box-shadow, no border. Do not vary the angle to tell two marks apart — it is
+   not legible at text size. Vary the ink.
+
+   The --hl-* names are local to this rule. They are short because they are
+   read here and nowhere else. */
 mark,
 .markdown-preview-view mark,
 .cm-highlight {

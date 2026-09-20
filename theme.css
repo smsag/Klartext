@@ -2389,9 +2389,25 @@ button.mod-cta:hover,
   background-color: var(--interactive-accent-hover) !important;
 }
 
+/* A hover for buttons that do not bring their own.
+   This theme flattens the resting fill to white (--interactive-normal), which
+   leaves Obsidian's own hover, --interactive-hover #fafafa, a five-in-255 step
+   off the ground: not visible. --surface-muted is thirteen, which is. It
+   matters most for plugins, which use <button> for icon-shaped controls that
+   would otherwise have no hover feedback at all.
+
+   NOT !important. The selector is (0,2,1) and Obsidian's `button:hover` is
+   (0,1,1), so specificity alone already wins where it needs to — the
+   !important only reached past plugins that had deliberately styled their own
+   hover, and took it from them. Measured in Obsidian with it removed: every
+   button without its own hover rule still paints #f2f2ee (Obsidian's own,
+   Schreibstube's review actions, Vizardry's canvas controls), and only a
+   plugin that defines its own gets it back. With it, one plugin's accent-
+   filled primary button painted #f2f2ee under a white label: 1.12:1, an empty
+   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off. */
 button:not(.mod-cta):hover,
 button:not(.mod-cta):focus-visible {
-  background-color: var(--surface-muted) !important;
+  background-color: var(--surface-muted);
 }
 
 .clickable-icon {

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The theme's button hover no longer overrides a plugin that styles its own.**
+  This theme flattens the resting fill to white, which leaves Obsidian's own
+  hover a five-in-255 step off the ground, so the BUTTONS rule replaces it with
+  `--surface-muted`. That is worth keeping — plugins use `<button>` for
+  icon-shaped controls that would otherwise have no hover feedback at all. The
+  `!important` on it was not: the selector is (0,2,1) against Obsidian's (0,1,1)
+  and already wins, while `!important` cannot be out-ranked at any specificity,
+  so it also reached past plugins that had deliberately styled their own hover.
+  Measured in Obsidian: one plugin's accent-filled primary button painted
+  `#f2f2ee` under a white label — 1.12:1, an empty grey box where its Send
+  button used to be. With the `!important` gone, every button without a hover
+  of its own still paints `#f2f2ee` (Obsidian's own, and two of the three
+  plugins measured), and that primary button is back to 3.51:1 on its own
+  accent.
+- `tools/check-button-hover.mjs` fails if an `!important` declaration lands on a
+  bare `button` again. `.mod-cta` is exempt — that is Obsidian's own dialog
+  chrome. It reads the selector's SUBJECT, so a rule that merely mentions a
+  button in `:has()` is not flagged.
+
 ### Added
 - **`kit/highlight.css` — the family's highlighter, written so a plugin can carry
   it.** Klartext is the baseline, so this is its own stroke: the angle, the

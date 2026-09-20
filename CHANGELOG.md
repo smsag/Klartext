@@ -5,6 +5,50 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **The theme's button hover no longer overrides a plugin that styles its own.**
+  This theme flattens the resting fill to white, which leaves Obsidian's own
+  hover a five-in-255 step off the ground, so the BUTTONS rule replaces it with
+  `--surface-muted`. That is worth keeping — plugins use `<button>` for
+  icon-shaped controls that would otherwise have no hover feedback at all. The
+  `!important` on it was not: the selector is (0,2,1) against Obsidian's (0,1,1)
+  and already wins, while `!important` cannot be out-ranked at any specificity,
+  so it also reached past plugins that had deliberately styled their own hover.
+  Measured in Obsidian: one plugin's accent-filled primary button painted
+  `#f2f2ee` under a white label — 1.12:1, an empty grey box where its Send
+  button used to be. With the `!important` gone, every button without a hover
+  of its own still paints `#f2f2ee` (Obsidian's own, and two of the three
+  plugins measured), and that primary button is back to 3.51:1 on its own
+  accent.
+- `tools/check-button-hover.mjs` fails if an `!important` declaration lands on a
+  bare `button` again. `.mod-cta` is exempt — that is Obsidian's own dialog
+  chrome. It reads the selector's SUBJECT, so a rule that merely mentions a
+  button in `:has()` is not flagged.
+
+### Added
+- `tools/check-highlight.mjs` fails if the marker-pen stroke changes shape: the
+  seven numbers that are the geometry, and the three properties the rule states
+  as `none` / `0` because each has been re-added by hand before — a
+  border-radius (which makes the end read as a chip), a text-shadow halo (which
+  inverts between light and dark) and a box-shadow.
+
+### Changed
+- The HIGHLIGHT / MARK rule's comment now states the stroke's own reasoning: the
+  geometry, the measured ink strength (this ink sits 70 from the page, Euclidean
+  RGB distance sampled over the flat middle of the stroke; 60-140 is the band
+  where a mark on prose reads as a mark), and the three things not to add. It
+  previously pointed at a file outside the theme for half of that.
+
+### Removed
+- **`kit/highlight.css` and `tools/check-highlight-kit.mjs`.** The theme had
+  started carrying a copy of its own stroke for other projects to take, and a
+  guard that failed when the two drifted. That made the theme a dependency of
+  things that must work under any theme, and it made a change here a red build
+  elsewhere. The stroke stays exactly as it is; it is simply the theme's own
+  again, documented in the rule rather than in a file written for someone else.
+
 ## [1.6.3] — 2026-09-19
 
 ### Changed

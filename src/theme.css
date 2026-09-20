@@ -2389,9 +2389,25 @@ button.mod-cta:hover,
   background-color: var(--interactive-accent-hover) !important;
 }
 
+/* A hover for buttons that do not bring their own.
+   This theme flattens the resting fill to white (--interactive-normal), which
+   leaves Obsidian's own hover, --interactive-hover #fafafa, a five-in-255 step
+   off the ground: not visible. --surface-muted is thirteen, which is. It
+   matters most for plugins, which use <button> for icon-shaped controls that
+   would otherwise have no hover feedback at all.
+
+   NOT !important. The selector is (0,2,1) and Obsidian's `button:hover` is
+   (0,1,1), so specificity alone already wins where it needs to — the
+   !important only reached past plugins that had deliberately styled their own
+   hover, and took it from them. Measured in Obsidian with it removed: every
+   button without its own hover rule still paints #f2f2ee (Obsidian's own,
+   Schreibstube's review actions, Vizardry's canvas controls), and only a
+   plugin that defines its own gets it back. With it, one plugin's accent-
+   filled primary button painted #f2f2ee under a white label: 1.12:1, an empty
+   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off. */
 button:not(.mod-cta):hover,
 button:not(.mod-cta):focus-visible {
-  background-color: var(--surface-muted) !important;
+  background-color: var(--surface-muted);
 }
 
 .clickable-icon {
@@ -3127,27 +3143,56 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
    every line lands and lifts and no seam exists.
      Inline code inside a highlight keeps a fill, but a translucent one, so
    it sits ON the stroke instead of cutting a window into it. */
+/* THE STROKE. A felt tip laid over the words and lifted off again: the sweep
+   is 104deg, the ink fades in over the first half character (transparent to
+   0.2em, full by 0.7em) and lifts off over the last sixth (full to 88%,
+   transparent by calc(100% - 0.28em)), and 0.14em/0.42em of padding lets it
+   overshoot the letters the way a real one does. Cancelled by an equal
+   negative margin so the run of text does not move.
+
+   INK STRENGTH IS MEASURED, NOT PICKED. This ink sits 70 from the page —
+   Euclidean RGB distance from --background-primary, sampled over the flat
+   middle of the stroke in a screenshot. 60-140 is the band where a mark on a
+   run of prose reads as a mark: below it, a rendering artefact; above it, a UI
+   chip dropped into a paragraph.
+
+   NOT: no border-radius (a marker pen has no corners, and a rounded end reads
+   as a field or a chip), no text-shadow (a halo is a second treatment
+   competing with the stroke, and it inverts between light and dark), no
+   box-shadow, no border. Do not vary the angle to tell two marks apart — it is
+   not legible at text size. Vary the ink.
+
+   The --hl-* names are local to this rule. They are short because they are
+   read here and nowhere else. */
 mark,
 .markdown-preview-view mark,
 .cm-highlight {
-  --klartext-hl-s0: 0.2em;                          /* landing: transparent until here… */
-  --klartext-hl-s1: 0.7em;                          /* …ink from here: the pen lands over half a character */
-  --klartext-hl-c0: var(--klartext-hl-ink-strong);  /* the ink at the landing */
-  --klartext-hl-e1: 88%;                            /* lift: full ink until here… */
-  --klartext-hl-e0: calc(100% - 0.28em);            /* …transparent from here: it lifts off in a sixth */
-  --klartext-hl-stroke: linear-gradient(104deg,
-    transparent var(--klartext-hl-s0),
-    var(--klartext-hl-c0) var(--klartext-hl-s1),
-    var(--klartext-hl-ink) var(--klartext-hl-e1),
-    transparent var(--klartext-hl-e0));
+  --hl-angle: 104deg;
+  --hl-land-0: 0.2em;                       /* landing: transparent until here… */
+  --hl-land-1: 0.7em;                       /* …ink from here: the pen lands over half a character */
+  --hl-lift-1: 88%;                         /* lift: full ink until here… */
+  --hl-lift-0: calc(100% - 0.28em);         /* …transparent from here: it lifts off in a sixth */
+  --hl-pad-y: 0.14em;
+  --hl-pad-x: 0.42em;
+  --hl-ink: var(--klartext-hl-ink);
+  --hl-ink-strong: var(--klartext-hl-ink-strong);   /* the wet end where the pen set down */
+  --klartext-hl-stroke: linear-gradient(
+    var(--hl-angle),
+    transparent var(--hl-land-0),
+    var(--hl-ink-strong) var(--hl-land-1),
+    var(--hl-ink) var(--hl-lift-1),
+    transparent var(--hl-lift-0)
+  );
   background-color: transparent !important;
   background-image: var(--klartext-hl-stroke);
   mix-blend-mode: var(--klartext-hl-blend);
   color: inherit !important;
+  border: none;
   border-radius: 0;
   box-shadow: none;
-  padding: 0.14em 0.42em;
-  margin: 0 -0.42em;   /* cancels the side padding exactly, so the ends overshoot the text without taking any width */
+  text-shadow: none;
+  padding: var(--hl-pad-y) var(--hl-pad-x);
+  margin: 0 calc(-1 * var(--hl-pad-x));   /* cancels the side padding exactly, so the ends overshoot the text without taking any width */
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -3155,13 +3200,13 @@ mark,
 /* A span that continues a highlight: lands in the plain ink. */
 .cm-highlight + .cm-highlight,
 .cm-highlight + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight {
-  --klartext-hl-c0: var(--klartext-hl-ink);
+  --hl-ink-strong: var(--klartext-hl-ink);
 }
 /* A span followed by more of the same highlight: no lift. */
 .cm-highlight:has(+ .cm-highlight),
 .cm-highlight:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight) {
-  --klartext-hl-e1: 100%;
-  --klartext-hl-e0: 100%;
+  --hl-lift-1: 100%;
+  --hl-lift-0: 100%;
 }
 
 /* Inline code on the stroke: the translucent tint layered over it. */

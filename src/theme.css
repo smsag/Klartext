@@ -2004,59 +2004,103 @@ hr,
   word-spacing: calc(var(--klartext-cell) * -1);
 }
 
-/* List tree line (Live Preview). Obsidian draws indentation guides only on
-   indented lines, so a guide begins at the first child, never at the parent.
-   This adds the missing segment: on an item that is directly followed by a
-   child item, a guide runs from just below its bullet, down its wrapped
-   lines, into the children's own guide. Same column, width and colour as
-   Obsidian's guide (.cm-indent::before: a 1px box with the border on its
-   end side, --indentation-guide-editing-indent from the indent unit's
-   start). A parent at level N sits (N-1) indent
-   units in, and one unit is --klartext-indent-unit: --list-indent for a
-   tab, which Obsidian's tab-size renders at exactly that length, and the
-   spaces-per-level width when the Style Settings toggle says the vault
-   indents with spaces (see that token).
-   The segment starts below the item's first line box, leaving a clear
-   gap under the dash rather than touching it. Active colour follows the child's .cm-active-indent,
-   which Obsidian places on the unit at the cursor item's column, i.e.
-   the parent's. The deeper-level active selectors assume the indent
-   spans are the line's first children; if not, the segment stays grey
-   rather than misfiring. Nothing here touches Source mode or folding.
+/* The list tree line (Live Preview), drawn by the theme from end to end.
 
-   EVERY SELECTOR REQUIRES A `.cm-indent` IN THE CHILD, which is how this
-   rule follows Obsidian's own "Show indentation guides" setting. With that
-   setting off, Obsidian emits the indent as raw tabs inside
-   `.cm-hmd-list-indent` and no `.cm-indent` span at all, so it draws no
-   guides — but this segment went on painting, and a bridge to a guide that
-   is not there is a stub beside one item, joined to nothing. It showed up
-   only on a parent whose own text WRAPS, since the segment starts below the
-   first line box and has no room in a parent one line long: one short line
-   next to one item in a whole note, which is how it was reported. The child
-   is the right thing to test, because the child is where Obsidian's guide
-   would begin. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent) { --klartext-tree-col: 0; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 .cm-indent) { --klartext-tree-col: 1; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 .cm-indent) { --klartext-tree-col: 2; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 .cm-indent) { --klartext-tree-col: 3; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 .cm-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 .cm-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 .cm-indent)::after {
+   Obsidian draws an indentation guide only on an INDENTED line, so a guide
+   begins at the first child and never at the parent, and it draws nothing at
+   all when "Show indentation guides" is off. The theme used to add only the
+   missing parent segment and lean on Obsidian for the rest, which meant the
+   line existed or did not according to a setting, and the one segment the
+   theme drew went on painting with nothing to join when the setting was off.
+
+   So the theme draws the whole thing and Obsidian's own guide steps aside.
+   A line's ancestor columns are a background gradient over the line's full
+   height; the parent's own column is the ::after below, from under its bullet
+   to the end of the item. Both read --klartext-tree-x, so they cannot drift a
+   pixel apart — which is exactly what happened while each did its own
+   arithmetic.
+
+   The colour is --indentation-guide-color throughout, so a vault that restyles
+   guides restyles this, and the print block's `transparent` still removes it. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-list-line-"] {
+  /* Where the 1px band sits inside its unit. Obsidian's own guide is a box
+     with the border on its END side, so the band lands one width past the
+     inset; matching it keeps the line where readers already expect it. */
+  --klartext-tree-x: calc(var(--indentation-guide-editing-indent) + var(--indentation-guide-width));
+
+  /* One band per unit, repeated, then clipped to the number of ancestor
+     columns this line has. A line at level N sits N-1 units in and therefore
+     carries N-1 columns; level 1 sets none and paints nothing.
+     border-box, NOT content-box: Obsidian gives a list line a padding-left
+     equal to its whole indent with a matching negative text-indent, so a
+     gradient measured from the content box starts past every column it is
+     meant to draw — measured, it landed 38px right on level 2. */
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0 var(--klartext-tree-x),
+    var(--indentation-guide-color) var(--klartext-tree-x)
+      calc(var(--klartext-tree-x) + var(--indentation-guide-width)),
+    transparent calc(var(--klartext-tree-x) + var(--indentation-guide-width))
+      var(--klartext-indent-unit)
+  );
+  background-repeat: no-repeat;
+  background-size: calc(var(--klartext-tree-cols, 0) * var(--klartext-indent-unit)) 100%;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+
+/* Six levels. A deeper one simply gets no line rather than a wrong one. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2 { --klartext-tree-cols: 1; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3 { --klartext-tree-cols: 2; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4 { --klartext-tree-cols: 3; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-5 { --klartext-tree-cols: 4; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-6 { --klartext-tree-cols: 5; }
+
+/* Obsidian's own guide steps aside so there is one painter and no doubled or
+   half-offset line. Its ACTIVE guide is deliberately left alone: it marks the
+   level the cursor is on, the theme's uniform line cannot say that, and it
+   exists only when the setting is on anyway — where Obsidian would have drawn
+   it regardless. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-indent:not(.cm-active-indent)::before {
+  border-inline-end-color: transparent;
+}
+
+/* The parent's own column: from below its bullet, down its wrapped lines, into
+   its children's. A filled band rather than a border, so it shares the
+   gradient's x instead of adding a border width of its own on top of it.
+   The segment starts below the item's first line box, leaving a clear gap
+   under the dash rather than touching it — a one-line parent therefore has
+   nothing to draw, and needs nothing: its child's own columns start where it
+   ends. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2) { --klartext-tree-col: 0; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3) { --klartext-tree-col: 1; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4) { --klartext-tree-col: 2; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5) { --klartext-tree-col: 3; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-5:has(+ .HyperMD-list-line-6) { --klartext-tree-col: 4; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-5:has(+ .HyperMD-list-line-6)::after {
   content: "";
   position: absolute;
   display: block;
-  width: 1px;
-  inset-inline-start: calc(var(--klartext-tree-col) * var(--klartext-indent-unit) + var(--indentation-guide-editing-indent));
+  width: var(--indentation-guide-width);
+  inset-inline-start: calc(var(--klartext-tree-col) * var(--klartext-indent-unit) + var(--klartext-tree-x));
   top: calc(var(--list-spacing, 0px) + var(--klartext-line-height) * 1em);   /* below the first line box: a clear gap under the dash */
   bottom: 0;
-  border-inline-end: var(--indentation-guide-width) solid var(--indentation-guide-color);
+  background-color: var(--indentation-guide-color);
   pointer-events: none;
 }
+
+/* The cursor's own level, where Obsidian marks it. Only reachable while its
+   setting is on, which is why the active guide above is left painting. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent.cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 > .cm-indent:nth-child(2).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 > .cm-indent:nth-child(3).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-indent:nth-child(4).cm-active-indent)::after {
-  border-inline-end: var(--indentation-guide-width-active) solid var(--indentation-guide-color-active);
+  width: var(--indentation-guide-width-active);
+  background-color: var(--indentation-guide-color-active);
 }
 
 /* ------------------------------------------------------------------

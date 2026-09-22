@@ -7,21 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- **A stray vertical line beside one list item, when indentation guides are
-  off.** Obsidian draws its guides only on indented lines, so a guide begins at
-  the first child and never at the parent; the theme adds the missing segment on
-  the parent so the column reads as one line. That segment is a bridge to
-  Obsidian's guide — and with **Settings → Editor → Show indentation guides**
-  switched off there is no guide to bridge to, so it painted a stub joined to
-  nothing. It appeared only next to a parent whose own text wraps, because the
-  segment starts below the first line box and a one-line parent leaves it no
-  room: one short line beside one item in a whole note, which is how it was
-  reported. Every selector for the segment now requires the child to carry a
-  `.cm-indent` span, which is exactly what Obsidian stops emitting when the
-  setting is off. With the setting on, nothing changes — verified by scanning
-  the painted pixels before and after.
+### Changed
+- **The list tree line is the theme's, from end to end.** It used to be a
+  collaboration: Obsidian drew a guide on every indented line, and the theme
+  added the one segment Obsidian never draws — the parent's own, since a guide
+  begins at the first child. That made the line depend on **Settings → Editor →
+  Show indentation guides**: with it off there were no guides, and the theme's
+  segment became a stub joined to nothing, beside the one item in a note whose
+  text happened to wrap. Reported as exactly that.
 
+  The theme now draws the whole line. A line's ancestor columns are a single
+  repeating gradient over its full height, its parent's column is the segment
+  below its bullet, and Obsidian's own guide steps aside so nothing is painted
+  twice. The tree reads the same whether the setting is on or off — verified by
+  scanning the painted pixels in both states and finding the same columns to
+  the pixel. Obsidian's **active** guide is deliberately left alone: it marks
+  the level the cursor is on, which a uniform line cannot say, and it only
+  exists while the setting is on.
+
+  Nesting is drawn to six levels; deeper items simply get no line rather than a
+  wrong one.
 ### Changed
 - **A search field now has an edge you can see.** The field at the top of the
   search, tag and backlinks panes was drawn as a filled box with a border, and

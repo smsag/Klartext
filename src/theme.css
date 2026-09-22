@@ -2021,15 +2021,27 @@ hr,
    which Obsidian places on the unit at the cursor item's column, i.e.
    the parent's. The deeper-level active selectors assume the indent
    spans are the line's first children; if not, the segment stays grey
-   rather than misfiring. Nothing here touches Source mode or folding. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2) { --klartext-tree-col: 0; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3) { --klartext-tree-col: 1; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4) { --klartext-tree-col: 2; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5) { --klartext-tree-col: 3; }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5)::after {
+   rather than misfiring. Nothing here touches Source mode or folding.
+
+   EVERY SELECTOR REQUIRES A `.cm-indent` IN THE CHILD, which is how this
+   rule follows Obsidian's own "Show indentation guides" setting. With that
+   setting off, Obsidian emits the indent as raw tabs inside
+   `.cm-hmd-list-indent` and no `.cm-indent` span at all, so it draws no
+   guides — but this segment went on painting, and a bridge to a guide that
+   is not there is a stub beside one item, joined to nothing. It showed up
+   only on a parent whose own text WRAPS, since the segment starts below the
+   first line box and has no room in a parent one line long: one short line
+   next to one item in a whole note, which is how it was reported. The child
+   is the right thing to test, because the child is where Obsidian's guide
+   would begin. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent) { --klartext-tree-col: 0; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 .cm-indent) { --klartext-tree-col: 1; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 .cm-indent) { --klartext-tree-col: 2; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 .cm-indent) { --klartext-tree-col: 3; }
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 .cm-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 .cm-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 .cm-indent)::after {
   content: "";
   position: absolute;
   display: block;

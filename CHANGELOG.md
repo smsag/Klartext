@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **A stray vertical line beside one list item, when indentation guides are
+  off.** Obsidian draws its guides only on indented lines, so a guide begins at
+  the first child and never at the parent; the theme adds the missing segment on
+  the parent so the column reads as one line. That segment is a bridge to
+  Obsidian's guide — and with **Settings → Editor → Show indentation guides**
+  switched off there is no guide to bridge to, so it painted a stub joined to
+  nothing. It appeared only next to a parent whose own text wraps, because the
+  segment starts below the first line box and a one-line parent leaves it no
+  room: one short line beside one item in a whole note, which is how it was
+  reported. Every selector for the segment now requires the child to carry a
+  `.cm-indent` span, which is exactly what Obsidian stops emitting when the
+  setting is off. With the setting on, nothing changes — verified by scanning
+  the painted pixels before and after.
+
 ### Changed
 - **A search field now has an edge you can see.** The field at the top of the
   search, tag and backlinks panes was drawn as a filled box with a border, and

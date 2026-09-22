@@ -924,9 +924,18 @@ body {
 /* 4) The fold chevron on heading lines. Obsidian anchors it with its right
       edge on the line start, i.e. between marker and text; shifted left by
       the marker's width (2ch at body size) plus its gap, so it sits beyond
-      the marker, still inside the column, still hover-only. */
+      the marker, still inside the column, still hover-only.
+
+      EVERY LENGTH IN THIS COLUMN IS IN BODY UNITS. It used to end `+ 0.5em`,
+      and `em` on this element is the HEADING's size, not the body's — so the
+      one gap in the gutter that was supposed to be constant came out at
+      18.2px under an h1, 10.5px under an h2 and 9.1px under an h3 at a 14px
+      body. Nothing on the desktop showed it, because the chevron is hover-only
+      there and its margin never reaches the layout; that is what let a
+      level-dependent length sit here unnoticed. `tools/check-heading-gutter.mjs`
+      now refuses any unqualified `em` in these rules. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"] .cm-fold-indicator .collapse-indicator {
-  margin-inline-end: calc(var(--klartext-font-size) * 1.2 + 0.5em);
+  margin-inline-end: calc(var(--klartext-font-size) * 1.2 + var(--klartext-cell));
 }
 
 /* 4b) Mobile: a small SYMMETRIC column instead of the 2.6em strip. On a

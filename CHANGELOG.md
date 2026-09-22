@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **The one gap in the heading gutter that was supposed to be constant came
+  out three different sizes.** Live Preview reserves a column to the left of
+  every heading and hangs the `#ₙ` badge back into it, so headings share a left
+  edge with the body text. Every length in that column is measured in body
+  units — except the fold chevron's, which ended `+ 0.5em`, and `em` on that
+  element is the HEADING's size. At a 14px body that is 18.2px under an `h1`,
+  10.5px under an `h2` and 9.1px under an `h3`. It is now
+  `var(--klartext-cell)`, one width at every level.
+  Nothing on a desktop ever showed it: the chevron is hover-only there, so its
+  margin never reaches the layout. That is exactly what let a level-dependent
+  length sit in the column unnoticed, and it is why the guard below is worth
+  more than the fix.
+- `tools/check-heading-gutter.mjs` fails on any heading-relative unit (`em`,
+  `rem`, `ch`, `ex`, `lh`) inside the gutter rules, and on the rules going
+  missing. Proved to fail on the original `0.5em` and on a fresh one planted in
+  the badge rule.
+
 - **The theme's button hover no longer overrides a plugin that styles its own.**
   This theme flattens the resting fill to white, which leaves Obsidian's own
   hover a five-in-255 step off the ground, so the BUTTONS rule replaces it with

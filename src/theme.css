@@ -131,6 +131,15 @@ body.theme-dark {
      multi-select container, and the theme's frame lines must not follow. */
   --border:                #e8e8e6;
   --border-subtle:         #f0f0ed;
+  /* The boundary of a SEARCH FIELD, which is not a divider and must not be
+     drawn like one. --border is a hairline between surfaces and is meant to be
+     quiet: measured against the three grounds a field can sit on it comes out
+     1.23 / 1.14 / 1.07 to 1, and WCAG 1.4.11 asks 3:1 for the boundary of a
+     control. This is the darkest neutral that clears 3:1 on ALL of them —
+     3.46 on --background-primary, 3.23 on --background-secondary, 3.03 on
+     --background-secondary-alt. --text-subtle would also pass but lands at
+     4.0–4.6 and reads as an underline rather than as an edge. */
+  --klartext-field-rule:   #8a8a87;
 
   --code-bg:               #f4f4f2;
   --code-text:             #1a1a1a;
@@ -184,6 +193,12 @@ body.theme-dark {
 
   --border:                #2e2e2e;
   --border-subtle:         #262626;
+  /* Same rule, measured on the dark grounds: 3.65 / 3.34 / 3.01 to 1, against
+     --border's 1.28 / 1.17 / 1.06. In dark the old number was not merely low:
+     Obsidian sets --background-modifier-form-field to #2e2e2e as well, so a
+     field drawn as fill-plus-border had its border at exactly 1.00:1 — no
+     edge at all. */
+  --klartext-field-rule:   #73736e;
 
   --code-bg:               #222222;
   --code-text:             #d4d4d0;
@@ -2312,6 +2327,57 @@ a.tag {
 /* ------------------------------------------------------------------
    SEARCH
    ------------------------------------------------------------------ */
+
+/* The field a search pane is typed into — the global search, the tag pane,
+   the backlinks pane, and anything else built on Obsidian's own
+   .search-input-container.
+
+   Obsidian draws it as a filled box with a border, and in dark that fill and
+   that border are the same colour, so the box has no edge (see the token's
+   comment). Rather than tint the fill harder, the box goes: a pane is already
+   a box, and a second one at the top of it competes with the thing it
+   filters. What is left is the field on the pane's own ground with one rule
+   under it — the silhouette this theme already gives the command palette.
+
+   The focus ring is the rule thickening and taking the accent, and nothing
+   else. A pane clips what leaves it, so a ring drawn outside the box loses
+   its top edge and reads as a rendering fault.
+
+   One rule for every size, because this IS the mobile silhouette already:
+   measured with no theme loaded, Obsidian draws this field on a phone with no
+   fill, no radius and a bottom border alone, and only on a desktop wraps it
+   in a box. The phone was right; the desktop is what changes here. (The pill
+   shapes 1.6.1 left to Obsidian's touch-radius ladder are the floating nav's
+   controls, not a field inside a pane — this element never had one.) */
+.search-input-container input {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--klartext-field-rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Obsidian states hover and focus for this field at (0,3,1) —
+   `input[type='search']:not(:disabled):hover` sets `border-color`, which
+   reaches the bottom edge as well and puts the boundary back under 3:1 the
+   moment a pointer crosses it; `input[type='search']:focus` does the same and
+   adds a ring. A rule at (0,2,1) loses to both, so these are restated at
+   Obsidian's own specificity and win on source order, the way the rest of
+   this theme does. Hover keeps the rest colour: hovering a field is not a
+   state worth saying anything about when focus is about to say it. */
+.search-input-container input:not(:disabled):hover {
+  border-bottom-color: var(--klartext-field-rule);
+}
+
+.search-input-container input:not(:disabled):focus,
+.search-input-container input:not(:disabled):focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-bottom: 2px solid var(--interactive-accent);
+  /* The extra pixel comes out of the padding, so the text does not shift. */
+  padding-bottom: 3px;
+}
+
 .search-result-file-title {
   font-family: var(--font-interface-theme);
   font-weight: 500;
@@ -2334,12 +2400,23 @@ a.tag {
   box-shadow: var(--klartext-shadow-panel);
 }
 
+/* Already the right silhouette — no box, the panel's own ground, one rule.
+   What it lacked was an edge anybody could see (--border is 1.2:1 here) and
+   any focus state at all. !important throughout because Obsidian's own rule
+   for this input is a strong one. */
 .prompt-input {
   background-color: var(--background-primary) !important;
-  border-bottom: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--klartext-field-rule) !important;
   font-family: var(--font-interface-theme) !important;
   font-size: var(--klartext-ui-lg) !important;
   color: var(--text-normal) !important;
+}
+
+.prompt-input:focus,
+.prompt-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-bottom: 2px solid var(--interactive-accent) !important;
 }
 
 .prompt-results {

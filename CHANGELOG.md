@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **A search field now has an edge you can see.** The field at the top of the
+  search, tag and backlinks panes was drawn as a filled box with a border, and
+  the border was `--background-modifier-border` — a hairline meant for the seam
+  between two surfaces, measured here at 1.23:1 against the page. In dark it was
+  worse than faint: Obsidian sets the form-field fill to `#2e2e2e`, which is
+  exactly what that token resolves to, so fill and border were the same colour
+  and the box had no edge at all. WCAG asks 3:1 for the boundary of a control.
+
+  Rather than tint the fill harder, the box is gone. A pane is already a box,
+  and a second one at the top of it competes with the list it filters. What is
+  left is the field on the pane's own ground with one rule underneath, at
+  `--klartext-field-rule` — a new token, measured at 3.46 / 3.23 / 3.03 to 1 on
+  the three light grounds and 3.65 / 3.34 / 3.01 on the dark ones. This is the
+  silhouette the theme already gave the command palette; the palette keeps it
+  and gains the same rule.
+
+  It is also the silhouette Obsidian itself uses on a phone. Measured with no
+  theme loaded, the field there already has no fill, no radius and a bottom
+  border alone — only the desktop wrapped it in a box. So there is one rule at
+  every size, and the phone is unchanged apart from the colour.
+
+- **Focus says something.** Both fields now answer focus by thickening that rule
+  to 2px in the accent, and nothing else — no ring outside the box, which a pane
+  clips along its top edge into something that reads as a rendering fault.
+  Hover holds the rest colour rather than replacing it: Obsidian states hover
+  and focus for this field at a specificity a plain rule loses to, so both are
+  restated here at its own and win on source order. Without that, crossing the
+  field with a pointer put the boundary straight back under 3:1.
+
 ### Fixed
 - **The one gap in the heading gutter that was supposed to be constant came
   out three different sizes.** Live Preview reserves a column to the left of

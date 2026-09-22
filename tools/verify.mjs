@@ -138,6 +138,19 @@ try {
       const A = window.__kxSnaps?.[${JSON.stringify(a1)}], B = window.__kxSnaps?.[${JSON.stringify(a2)}];
       if (!A || !B) throw new Error('missing snapshot');
       const SEP = '\\u001f'; const lines = []; let total = 0;
+      // Values are stored positionally against the snapshot's own property
+      // list, and that list is whatever the browser reported at the time. Add
+      // a custom property to the stylesheet and the list grows, so comparing
+      // by index reads every later value against its neighbour and calls the
+      // whole snapshot a difference — two million of them, none real. Compare
+      // by NAME, and say plainly which properties only one side had.
+      const ia = new Map(A.names.map((n, i) => [n, i]));
+      const ib = new Map(B.names.map((n, i) => [n, i]));
+      const shared = A.names.filter((n) => ib.has(n));
+      for (const [label, from, to] of [['only in ${a1}', A.names, ib], ['only in ${a2}', B.names, ia]]) {
+        const only = from.filter((n) => !to.has(n));
+        if (only.length) lines.push(label + ': ' + only.join(', '));
+      }
       for (const ctx of Object.keys(A.snap)) {
         for (const root of Object.keys(A.snap[ctx])) {
           const la = A.snap[ctx][root], lb = B.snap[ctx][root] || [];
@@ -149,7 +162,12 @@ try {
             for (const part of new Set([...Object.keys(rec), ...Object.keys(rb)])) {
               if (rec[part] === rb[part]) continue;
               const va = (rec[part] || '').split(SEP), vb = (rb[part] || '').split(SEP);
-              for (let k = 0; k < A.names.length; k++) if (va[k] !== vb[k]) { total++; if (lines.length < 400) lines.push(ctx + '/' + root + ' ' + key + ' ' + part + ' ' + A.names[k] + ': ' + va[k] + ' → ' + vb[k]); }
+              for (const name of shared) {
+                const x = va[ia.get(name)], y = vb[ib.get(name)];
+                if (x === y) continue;
+                total++;
+                if (lines.length < 400) lines.push(ctx + '/' + root + ' ' + key + ' ' + part + ' ' + name + ': ' + x + ' → ' + y);
+              }
             }
           }
         }

@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **The list tree line is the theme's, from end to end.** It used to be a
+  collaboration: Obsidian drew a guide on every indented line, and the theme
+  added the one segment Obsidian never draws — the parent's own, since a guide
+  begins at the first child. That made the line depend on **Settings → Editor →
+  Show indentation guides**: with it off there were no guides, and the theme's
+  segment became a stub joined to nothing, beside the one item in a note whose
+  text happened to wrap. Reported as exactly that.
+
+  The theme now draws the whole line. A line's ancestor columns are a single
+  repeating gradient over its full height, its parent's column is the segment
+  below its bullet, and Obsidian's own guide steps aside so nothing is painted
+  twice. The tree reads the same whether the setting is on or off — verified by
+  scanning the painted pixels in both states and finding the same columns to
+  the pixel. Obsidian's **active** guide is deliberately left alone: it marks
+  the level the cursor is on, which a uniform line cannot say, and it only
+  exists while the setting is on.
+
+  Nesting is drawn to six levels; deeper items simply get no line rather than a
+  wrong one.
+### Changed
 - **A search field now has an edge you can see.** The field at the top of the
   search, tag and backlinks panes was drawn as a filled box with a border, and
   the border was `--background-modifier-border` — a hairline meant for the seam

@@ -8,18 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- **Your interface and monospace fonts win.** Appearance → Interface font and
-  Monospace font did nothing under Klartext: every rule read the theme's own
-  Fira Sans and JetBrains Mono directly, past the value Obsidian builds from
-  the user's choice. They now read `--font-interface` and `--font-monospace`,
-  so a font set there paints the sidebars, tabs, headings and code; with
-  nothing set, the look is unchanged. The body stays JetBrains Mono whatever
-  Appearance → Text font says, because the marks are placed on its character
-  cell; the README now says so. Measured in Obsidian 1.13.7 with Georgia and
-  Courier New set: the interface and code follow, the heading badge and every
-  list mark stay on the same pixel. `tools/check-fonts.mjs` fails if a rule
-  reads `--font-interface-theme` or `--font-monospace-theme` again, or if the
-  body or the marks leave the body face.
+- **Your interface and monospace fonts win; the note's own type stays.**
+  Appearance → Interface font and Monospace font did nothing under Klartext:
+  every rule read the theme's own Fira Sans and JetBrains Mono directly, past
+  the value Obsidian builds from the user's choice. The interface and code now
+  read `--font-interface` and `--font-monospace`, so a font set there paints
+  the sidebars, tabs, menus, dialogs and code; with nothing set, the look is
+  unchanged. The note's own type does not follow: the body and its marks stay
+  JetBrains Mono whatever Appearance → Text font says, because the marks are
+  placed on its character cell, and the headings, and a note title set to
+  the sans face, stay Fira Sans through a new `--klartext-heading-font`,
+  because they are paired with that body and an interface font chosen for the
+  sidebars should not restyle every note. The Note Title Font option reads
+  "Heading sans" instead of "Interface sans" for the same reason. Measured in
+  Obsidian 1.13.7 with Georgia and Courier New set: the interface and code
+  follow, the headings stay Fira Sans, the heading badge and every list mark
+  stay on the same pixel. `tools/check-fonts.mjs` fails if a rule reads
+  `--font-interface-theme` or `--font-monospace-theme`, if a heading or the
+  title reads the interface font, or if the body or the marks leave the body
+  face.
 
 ### Added
 - **The README lists the Obsidian settings Klartext treats differently**:

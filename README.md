@@ -100,18 +100,21 @@ setting lives in both.
 | Readable Line Width | 680px | Width of the text column. Read only while Settings → Editor → "Readable line length" is on; with it off the column spans the pane |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
-| Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |
+| Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the heading face (Fira Sans) to match the headings below it |
 | Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it. Assumes four spaces per level |
 
 ### Obsidian's own settings
 
 Most of Obsidian's appearance settings work as usual under Klartext: the accent
 colour, Appearance → Font size on the desktop, and Editor → "Readable line
-length". Four behave differently, and three of them on purpose:
+length". The rule for the fonts: **the interface and code are yours, the note's
+own type is the theme's.** The body, its marks and the headings are one
+designed pairing, JetBrains Mono with Fira Sans, and a font picked for the
+sidebars does not reach into the note. In detail:
 
 | Obsidian setting | Under Klartext |
 |---|---|
-| Appearance → Interface font | Followed: sidebars, tabs, headings and the note title set to the interface face. Fira Sans when it is empty |
+| Appearance → Interface font | Followed by the interface: sidebars, tabs, menus, dialogs, the status bar. Fira Sans when it is empty. **Not by the note's headings**, nor by a note title set to the heading face: those are the note's type, paired with the body, and stay Fira Sans |
 | Appearance → Monospace font | Followed: inline code, code blocks and math source. JetBrains Mono when it is empty |
 | Appearance → Text font | **Ignored.** The body stays JetBrains Mono, because every mark (the dash, the number, the checkbox, the heading badge) is placed on one character cell of the body face; a proportional face would pull them off the text edge |
 | Appearance → Font size | Followed on the desktop. **On a phone or tablet Mobile Body Text Size replaces it**, because the slider syncs with the vault and one value cannot serve both screens |

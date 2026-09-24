@@ -11,9 +11,14 @@
 // (--klartext-cell, 0.6em: JetBrains Mono's advance), so the body and the marks
 // read --font-text-theme and ignore Appearance → Text font. The README says so.
 //
+// The headings, and the note title when set to the sans face, are the note's
+// type too: Fira Sans, paired with that body, through --klartext-heading-font.
+// A font picked under Appearance → Interface font is picked for the sidebars
+// and dialogs; it does not restyle every note.
+//
 // This guard fails if a rule reads --font-interface-theme or
-// --font-monospace-theme again (defining them is fine: that is the theme's
-// layer), or if the body stops reading --font-text-theme.
+// --font-monospace-theme, if a heading or the sans title reads anything but
+// --klartext-heading-font, or if the body stops reading --font-text-theme.
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-fonts.mjs
@@ -40,6 +45,21 @@ const reads = (selector, value) =>
 for (const sel of [".cm-content", ".markdown-preview-view"]) {
   if (!reads(sel, "var(--font-text-theme)")) {
     failures.push(`${sel} no longer reads --font-text-theme: the marks are laid out on that face's cell`);
+  }
+}
+// The headings and the sans title: the note's type, paired with the body. An
+// interface font chosen for the sidebars must not restyle every note.
+for (let n = 1; n <= 6; n++) {
+  if (!new RegExp(`--h${n}-font:\\s*var\\(--klartext-heading-font\\)`).test(bare)) {
+    failures.push(`--h${n}-font does not read --klartext-heading-font: the interface font would restyle the note's headings`);
+  }
+}
+if (!reads("body.klartext-title-sans", "--inline-title-font: var(--klartext-heading-font)")) {
+  failures.push("the sans note title does not read --klartext-heading-font: it would follow the interface font, not the headings below it");
+}
+for (const [, sel, body] of bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+  if (/\.cm-header\b|\bh[1-6]\b|inline-title/.test(sel) && /var\(--font-interface\)/.test(body)) {
+    failures.push(`${sel.trim().split(/\s*,\s*/)[0]}…: a heading reads --font-interface`);
   }
 }
 if (!/--klartext-mark-font:\s*'Klartext Marks',\s*var\(--font-text-theme\)/.test(bare)) {

@@ -65,13 +65,13 @@ settings:
         value: '4'
   - id: klartext-title-font
     title: Note Title Font
-    description: The note's own title, above the text. Monospace matches the body it sits on; the interface face matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
+    description: The note's own title, above the text. Monospace matches the body it sits on; the heading face (Fira Sans) matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
     type: class-select
     default: klartext-title-mono
     options:
       - label: Body monospace
         value: klartext-title-mono
-      - label: Interface sans
+      - label: Heading sans
         value: klartext-title-sans
   - id: klartext-space-indent
     title: Lists Indented With Spaces
@@ -373,8 +373,8 @@ body {
   --h4-line-height: 1.3;  --h5-line-height: 1.3; --h6-line-height: 1.3;
   --h1-letter-spacing: -0.03em; --h2-letter-spacing: -0.02em; --h3-letter-spacing: -0.02em;
   --h4-letter-spacing: -0.02em; --h5-letter-spacing: -0.02em; --h6-letter-spacing: -0.02em;
-  --h1-font: var(--font-interface); --h2-font: var(--font-interface); --h3-font: var(--font-interface);
-  --h4-font: var(--font-interface); --h5-font: var(--font-interface); --h6-font: var(--font-interface);
+  --h1-font: var(--klartext-heading-font); --h2-font: var(--klartext-heading-font); --h3-font: var(--klartext-heading-font);
+  --h4-font: var(--klartext-heading-font); --h5-font: var(--klartext-heading-font); --h6-font: var(--klartext-heading-font);
 
   /* Shared vertical accent-rule width — callouts, quotes, blockquotes */
   --klartext-rule-width:    1px;
@@ -394,12 +394,17 @@ body {
   /* Obsidian combines each of these with the user's own choice (Appearance →
      Interface font / Monospace font) into --font-interface and
      --font-monospace, and the rules read only those, so a font picked there
-     wins. The body is the exception: it reads --font-text-theme directly,
-     because every mark and gutter is laid out on its 0.6em cell
-     (--klartext-cell), and a proportional text font would break them.
-     tools/check-fonts.mjs holds this. */
+     wins in the interface and in code.
+     The note's own type is the theme's, like the page colour: the body and
+     every mark read --font-text-theme, because each mark and gutter is laid
+     out on its 0.6em cell (--klartext-cell) and a proportional text font
+     would break them; the headings and the sans note title read
+     --klartext-heading-font, the face paired with that body, which an
+     interface font chosen for the sidebars must not reach. The interface
+     defaults to the same face. tools/check-fonts.mjs holds all of this. */
+  --klartext-heading-font:  'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-text-theme:        'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
-  --font-interface-theme:   'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-interface-theme:   var(--klartext-heading-font);
   --font-monospace-theme:   'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
 
   --line-height-normal:     var(--klartext-line-height);   /* Obsidian's own leading token */
@@ -758,12 +763,12 @@ body.is-mobile {
    INLINE TITLE
    ------------------------------------------------------------------ */
 /* The note's own title. Obsidian ties it to the H1 tokens by default, so
-   untouched it would be a second headline in the interface face at the full
+   untouched it would be a second headline in the heading face at the full
    h1 size, directly above the one the document may already carry. Klartext
    gives it the h1 SIZE and WEIGHT — it is the document's headline, and a
    note that opens with an h1 should not put its biggest type under a
    smaller name — but keeps its own face as a Style Settings choice
-   (klartext-title-font): the body monospace by default, the interface face
+   (klartext-title-font): the body monospace by default, the heading face
    for anyone who wants the top of the page to read as one typographic
    family. The hairline rule under it stays, which is what still separates
    a title from a heading.
@@ -778,7 +783,7 @@ body.klartext-title-mono {
   --inline-title-font: var(--font-text-theme);
 }
 body.klartext-title-sans {
-  --inline-title-font: var(--font-interface);
+  --inline-title-font: var(--klartext-heading-font);
 }
 /* stylelint-disable-next-line no-duplicate-selectors */
 body {
@@ -808,7 +813,7 @@ body {
 .markdown-preview-view h4,
 .markdown-preview-view h5,
 .markdown-preview-view h6 {
-  font-family: var(--font-interface);   /* belt-and-braces; --hN-font is the source */
+  font-family: var(--klartext-heading-font);   /* belt-and-braces; --hN-font is the source */
   color: var(--text-normal);
 }
 

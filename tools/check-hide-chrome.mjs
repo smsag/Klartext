@@ -32,6 +32,14 @@
 //     pane has a strip too, hundreds of pixels down the window, and Obsidian
 //     marks the real ones `mod-top`.
 //
+// And one check per defect a review found by running the switches, each of
+// them invisible in a diff: the window-button rules must carry Obsidian's own
+// frame condition; the header must take over the strip's drag region; the
+// sidebar toggles must move with the row; scroll bars must be hidden through
+// the standard property Chromium honours, never ::-webkit-scrollbar; tooltips
+// must spare the error tooltip; the counts must name the search pane; the
+// vault profile must be hidden through Obsidian's token.
+//
 // Static, so it runs without Obsidian:
 //     node tools/check-hide-chrome.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
@@ -182,8 +190,90 @@ if (suggestRule === undefined) {
 const countRule = bare.split("}").find((b) => b.includes("klartext-hide-search-counts"));
 if (countRule === undefined) {
   failures.push("klartext-hide-search-counts has no rule");
-} else if (!countRule.includes(".search-result-file-title")) {
-  failures.push("the search count rule must be scoped to .search-result-file-title — .tree-item-flair is also the tag pane's per-tag count, and this switch never mentions tags");
+} else {
+  if (!countRule.includes(".search-result-file-title")) {
+    failures.push("the search count rule must be scoped to .search-result-file-title — .tree-item-flair is also the tag pane's per-tag count, and this switch never mentions tags");
+  }
+  if (!countRule.includes('[data-type="search"]')) {
+    failures.push("the search count rule must name the search pane, [data-type=\"search\"] — the backlinks pane draws its rows with the same .search-result-file-title markup, and its counts vanished under the unscoped rule");
+  }
+}
+
+// --- what the review found: each check fails without its fix ---
+
+/** Every rule block whose selector names `.cls`, as [selectorArms, body]. */
+const keyedOn = (cls) =>
+  bare
+    .split("}")
+    .filter((b) => b.includes("{") && b.slice(0, b.indexOf("{")).includes(`.${cls}`))
+    .map((b) => [
+      b.slice(0, b.indexOf("{")).split(",").map((x) => x.trim()).filter(Boolean),
+      b.slice(b.indexOf("{") + 1),
+    ]);
+
+// The window-button rules apply only where Obsidian's own reservation does:
+// `.is-hidden-frameless:not(.is-fullscreen)`. With a titlebar above the
+// workspace, or in fullscreen, there are no buttons in the row; the inset and
+// the drop applied there anyway (measured in all four frame states).
+const frameRules = [
+  ...keyedOn(ALIGN),
+  ...keyedOn("klartext-hide-tab-bar").filter(([, body]) => /padding-left|app-region/.test(body)),
+];
+for (const [arms] of frameRules) {
+  for (const arm of arms) {
+    if (!arm.includes(".is-hidden-frameless") || !arm.includes(":not(.is-fullscreen)")) {
+      failures.push(`\`${arm}\` must carry Obsidian's own condition, .is-hidden-frameless:not(.is-fullscreen): with the native or Obsidian frame, or in fullscreen, there are no window buttons in the top row`);
+    }
+  }
+}
+
+// The strip was the window's drag handle; hidden, 0 of 52 points along the
+// top edge could move the window. The header takes the job, off while a tab
+// is dragged, and its title and breadcrumb stay clickable.
+const dragRule = keyedOn("klartext-hide-tab-bar").find(([, body]) => /-webkit-app-region:\s*drag/.test(body));
+if (dragRule === undefined) {
+  failures.push("hiding the tab strip must make the note header the window's drag region — the strip was the only one, and a hidden strip left none");
+} else {
+  for (const arm of dragRule[0]) {
+    if (!arm.includes(".view-header")) failures.push(`the drag region must be the note header, and \`${arm}\` is not`);
+    if (!arm.includes(":not(.is-grabbing)")) failures.push(`\`${arm}\` must be off while a tab is dragged (:not(.is-grabbing)), as Obsidian's own strip is, or the region swallows the drop`);
+  }
+}
+const noDrag = keyedOn("klartext-hide-tab-bar").find(([arms, body]) =>
+  /-webkit-app-region:\s*no-drag/.test(body) && arms.some((a) => a.includes(".view-header-title-container")));
+if (noDrag === undefined) {
+  failures.push("the header's title and breadcrumb must be -webkit-app-region: no-drag — Obsidian never exempted them, because no drag region sat under them before, and a click on either opens something");
+}
+
+// The two sidebar toggles are pinned to the window's top edge (absolute in the
+// ribbon, fixed in the root strip), so no strip padding reaches them; they
+// stayed at 20 while the row went to 23-24.
+const toggleRule = keyedOn(ALIGN).find(([arms]) => arms.some((a) => a.includes(".sidebar-toggle-button")));
+if (toggleRule === undefined || !/translate:\s*0\s+var\(--klartext-titlebar-drop\)/.test(toggleRule[1])) {
+  failures.push("the sidebar toggles must move with the drop (translate: 0 var(--klartext-titlebar-drop)) — Obsidian pins them to the window's top edge, so the strips' padding leaves them 3.5px above their own row");
+}
+
+// Chromium ignores ::-webkit-scrollbar on any element with a standard
+// scrollbar-width or scrollbar-color, and Obsidian sets both — on macOS, where
+// it never adds `styled-scrollbars`, the pseudo-element rule computed
+// `display: none` and left a 15px scroll bar on screen.
+const scrollRules = keyedOn("klartext-hide-scrollbars");
+if (!scrollRules.some(([, body]) => /--scrollbar-native-width:\s*none/.test(body))) {
+  failures.push("hiding scroll bars must set Obsidian's --scrollbar-native-width: none; its * { scrollbar-width } rule is what Chromium honours");
+}
+if (scrollRules.some(([arms]) => arms.some((a) => a.includes("::-webkit-scrollbar")))) {
+  failures.push("hiding scroll bars must not go through ::-webkit-scrollbar: Chromium ignores it wherever a standard scrollbar property is set, which on macOS is every element — it computes none and paints a bar");
+}
+
+// Obsidian draws its validation errors in the tooltip element too.
+const tipRule = keyedOn("klartext-hide-tooltips")[0];
+if (tipRule === undefined || !tipRule[0].every((a) => a.includes(":not(.mod-error)"))) {
+  failures.push("hiding tooltips must spare .tooltip.mod-error — it is how Obsidian says a rename, a property or a tag was refused; hidden, the refusal is silent");
+}
+
+// The vault profile sets its display from a token at (0,4,1); a class rule loses.
+if (!keyedOn("klartext-hide-vault-name").some(([, body]) => /--vault-profile-display:\s*none/.test(body))) {
+  failures.push("hiding the vault name must set Obsidian's --vault-profile-display: none — its own rule sets display from it at (0,4,1), which a class rule loses to");
 }
 
 // Only the window's own strip, never a sidebar's — that is a different choice.

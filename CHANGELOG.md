@@ -8,28 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Eight switches for hiding Obsidian's furniture**, in Style Settings, every
-  one **off by default**: the tab strip, the status bar, the vault profile,
+- **Twelve Style Settings switches for Obsidian's furniture**, every one **off
+  by default**, so a vault that wants a quiet window does not need a plugin for
+  it. Eleven hide something: the tab strip, the status bar, the vault profile,
   scroll bars, the sidebar toggle buttons, tooltips, the file explorer's button
-  row, and properties in Reading view. All eight are a `display: none`, and a
-  `display: none` is a theme's business — a vault that wants a quiet window
-  should not need a plugin for it.
+  row, properties in Reading view, the search options panel, the per-file match
+  counts in the search pane, and the keyboard hints at the foot of a prompt.
+  The twelfth, **Align Top Row With Window Buttons**, drops the window's top row
+  4px onto the axis of the macOS window buttons, sidebar toggles included.
 
-  Three of them hide the only visible way to reach something, so their
-  descriptions say how otherwise: the vault profile takes the settings gear and
-  the vault switcher with it, the sidebar buttons leave the hotkeys and the
-  drag edge, and hiding tooltips changes only what is drawn — the `aria-label`
-  behind each one is untouched, so a screen reader still reads it.
+  Several reach further than their names, so their descriptions say what goes
+  with them and how to get it back. Hiding the tab strip also takes the **+**
+  new tab button and the right sidebar button, and makes the note header the
+  handle for dragging the window, since the strip was the only one. Hiding the
+  vault profile takes the settings gear, the help button and the vault switcher
+  with it, and is desktop only.
 
-  **Hiding the tab strip does the rest of the job too.** The note header takes
-  the strip's place, so on macOS it inherits the strip's work of clearing the
-  window buttons — using Obsidian's own reservation, `calc(--size-4-2 +
-  --frame-left-space)`, which already accounts for the ribbon — and is dropped
-  4px onto their axis. That replaces the separate alignment toggle this branch
-  first carried: with the theme doing the hiding, it no longer has to ask.
+  Each rule is narrower than the class it hides, because Obsidian reuses them:
+  tooltips spare the error tooltip that says why a rename or a property was
+  refused, the match counts leave the backlinks and tag panes alone, and the
+  search options rule leaves the quick switcher and the editor's autocomplete
+  alone. Scroll bars are hidden through Obsidian's own `--scrollbar-native-width`,
+  which is what actually works on macOS; a `::-webkit-scrollbar` rule is ignored
+  there. The window-button inset and alignment apply only where Obsidian's own
+  reservation does, with the frame hidden and not in fullscreen.
 
-  Only the window's own tab strip is hidden, never a sidebar's — a sidebar's
-  strip is how its panes are switched, which is a different decision.
 ### Changed
 - **The list tree line is the theme's, from end to end.** It used to be a
   collaboration: Obsidian drew a guide on every indented line, and the theme

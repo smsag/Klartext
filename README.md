@@ -114,7 +114,7 @@ sidebars does not reach into the note. In detail:
 
 | Obsidian setting | Under Klartext |
 |---|---|
-| Appearance → Interface font | Followed by the interface: sidebars, tabs, menus, dialogs, the status bar. Fira Sans when it is empty. **Not by the note's headings**, nor by a note title set to the heading face: those are the note's type, paired with the body, and stay Fira Sans |
+| Appearance → Interface font | Followed by the interface: sidebars, tabs, menus, dialogs, the status bar. Fira Sans when it is empty. **Not by the note's headings**, callout titles, embed titles, or a note title set to the heading face: those are the note's type, paired with the body, and stay Fira Sans |
 | Appearance → Monospace font | Followed: inline code, code blocks and math source. JetBrains Mono when it is empty |
 | Appearance → Text font | **Ignored.** The body stays JetBrains Mono, because every mark (the dash, the number, the checkbox, the heading badge) is placed on one character cell of the body face; a proportional face would pull them off the text edge |
 | Appearance → Font size | Followed on the desktop. **On a phone or tablet Mobile Body Text Size replaces it**, because the slider syncs with the vault and one value cannot serve both screens |

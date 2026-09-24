@@ -398,8 +398,8 @@ body {
      The note's own type is the theme's, like the page colour: the body and
      every mark read --font-text-theme, because each mark and gutter is laid
      out on its 0.6em cell (--klartext-cell) and a proportional text font
-     would break them; the headings and the sans note title read
-     --klartext-heading-font, the face paired with that body, which an
+     would break them; the headings, the sans note title and the callout and
+     embed titles read --klartext-heading-font, the face paired with that body, which an
      interface font chosen for the sidebars must not reach. The interface
      defaults to the same face. tools/check-fonts.mjs holds all of this. */
   --klartext-heading-font:  'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -3008,7 +3008,7 @@ body.is-mobile .mobile-toolbar-floating-options {
   display: flex;
   align-items: center;
   gap: 0.4em;
-  font-family: var(--font-interface);
+  font-family: var(--klartext-heading-font);   /* a title in the note: the heading face, not the interface's */
   font-size: 0.78em;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -3208,7 +3208,7 @@ body.is-mobile .mobile-toolbar-floating-options {
 }
 
 .embed-title {
-  font-family: var(--font-interface);
+  font-family: var(--klartext-heading-font);   /* a title in the note: the heading face, not the interface's */
   font-size: var(--klartext-ui-sm);
   font-weight: 500;
   color: var(--text-subtle);

@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the sidebars, tabs, menus, dialogs and code; with nothing set, the look is
   unchanged. The note's own type does not follow: the body and its marks stay
   JetBrains Mono whatever Appearance → Text font says, because the marks are
-  placed on its character cell, and the headings, and a note title set to
-  the sans face, stay Fira Sans through a new `--klartext-heading-font`,
+  placed on its character cell, and the headings, callout and embed titles,
+  and a note title set to the sans face, stay Fira Sans through a new `--klartext-heading-font`,
   because they are paired with that body and an interface font chosen for the
   sidebars should not restyle every note. The Note Title Font option reads
   "Heading sans" instead of "Interface sans" for the same reason. Measured in

@@ -11,13 +11,13 @@
 // (--klartext-cell, 0.6em: JetBrains Mono's advance), so the body and the marks
 // read --font-text-theme and ignore Appearance → Text font. The README says so.
 //
-// The headings, and the note title when set to the sans face, are the note's
-// type too: Fira Sans, paired with that body, through --klartext-heading-font.
+// The headings, the callout and embed titles, and the note title when set to
+// the sans face, are the note's type too: Fira Sans, paired with that body, through --klartext-heading-font.
 // A font picked under Appearance → Interface font is picked for the sidebars
 // and dialogs; it does not restyle every note.
 //
 // This guard fails if a rule reads --font-interface-theme or
-// --font-monospace-theme, if a heading or the sans title reads anything but
+// --font-monospace-theme, if a heading or a title reads anything but
 // --klartext-heading-font, or if the body stops reading --font-text-theme.
 //
 // Static, so it runs without Obsidian:
@@ -52,6 +52,11 @@ for (const sel of [".cm-content", ".markdown-preview-view"]) {
 for (let n = 1; n <= 6; n++) {
   if (!new RegExp(`--h${n}-font:\\s*var\\(--klartext-heading-font\\)`).test(bare)) {
     failures.push(`--h${n}-font does not read --klartext-heading-font: the interface font would restyle the note's headings`);
+  }
+}
+for (const sel of [".callout-title", ".embed-title"]) {
+  if (!reads(sel, "font-family: var(--klartext-heading-font)")) {
+    failures.push(`${sel} does not read --klartext-heading-font: a title in the note would follow the interface font`);
   }
 }
 if (!reads("body.klartext-title-sans", "--inline-title-font: var(--klartext-heading-font)")) {

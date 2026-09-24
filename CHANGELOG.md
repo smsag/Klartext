@@ -35,6 +35,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   which step by one marker column).
 
 ### Fixed
+- **A line that continues a quote no longer sits under its bar.** Markdown
+  counts a line without `>` straight after a quote line as part of the quote,
+  and so does Obsidian: Reading view joins it into the quote's paragraph, and
+  Live Preview gives it the bar and the quote's italics. So is everything
+  after a line holding only `>`, footnotes and tags included, until a blank
+  line. Obsidian writes no hanging indent on such a line, though, because it
+  has no `> ` to measure, and Klartext's bar stands 5px inside the text edge,
+  so it ran through the line's first letter. Each lazy line now starts on
+  its quote's text edge, one column per level, the way Reading view has it.
+  Measured in Obsidian 1.13.7 at levels 1 to 3: 437, 456 and 475px, the same
+  as the `>` lines above them, wrapped or not, with or without the cursor on
+  them. `tools/check-quote-lazy.mjs` fails if a level loses its rule, and the
+  check note gained a lazy line.
 - **Readable Line Width points to the right switch.** The slider only takes
   effect while Obsidian's own "Readable line length" is on, and its
   description, the README and a comment all said that switch lives under

@@ -84,6 +84,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   field with a pointer put the boundary straight back under 3:1.
 
 ### Fixed
+- **Selecting across a heading no longer draws its `#` over the first
+  letter.** Live Preview keeps a heading's `#` in the text, transparent and
+  zero-width, and the theme's selection colour repainted it — so a selection
+  spanning "# Wochenplan" showed a `#` stamped on the W. The rule meant to keep
+  it hidden had been there all along and had never once won: the selection
+  colour is `!important`, and an important declaration beats every normal one
+  whatever the specificity. It is `!important` now too, and so is the matching
+  rule for quote marks. A new guard, `tools/check-hidden-marks.mjs`, fails if
+  either loses it again.
 - **The one gap in the heading gutter that was supposed to be constant came
   out three different sizes.** Live Preview reserves a column to the left of
   every heading and hangs the `#ₙ` badge back into it, so headings share a left

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Twelve Style Settings switches for Obsidian's furniture**, every one **off
+  by default**, so a vault that wants a quiet window does not need a plugin for
+  it. Eleven hide something: the tab strip, the status bar, the vault profile,
+  scroll bars, the sidebar toggle buttons, tooltips, the file explorer's button
+  row, properties in Reading view, the search options panel, the per-file match
+  counts in the search pane, and the keyboard hints at the foot of a prompt.
+  The twelfth, **Align Top Row With Window Buttons**, drops the window's top row
+  4px onto the axis of the macOS window buttons, sidebar toggles included.
+
+  Several reach further than their names, so their descriptions say what goes
+  with them and how to get it back. Hiding the tab strip also takes the **+**
+  new tab button and the right sidebar button, and makes the note header the
+  handle for dragging the window, since the strip was the only one. Hiding the
+  vault profile takes the settings gear, the help button and the vault switcher
+  with it, and is desktop only.
+
+  Each rule is narrower than the class it hides, because Obsidian reuses them:
+  tooltips spare the error tooltip that says why a rename or a property was
+  refused, the match counts leave the backlinks and tag panes alone, and the
+  search options rule leaves the quick switcher and the editor's autocomplete
+  alone. Scroll bars are hidden through Obsidian's own `--scrollbar-native-width`,
+  which is what actually works on macOS; a `::-webkit-scrollbar` rule is ignored
+  there. The window-button inset and alignment apply only where Obsidian's own
+  reservation does, with the frame hidden and not in fullscreen.
+
 ### Changed
 - **The list tree line is the theme's, from end to end.** It used to be a
   collaboration: Obsidian drew a guide on every indented line, and the theme

@@ -5,6 +5,31 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — 2026-09-24
+
+### Removed
+- **Thirteen settings moved to the [Klartext plugin](https://github.com/smsag/klartext-plugin).**
+  The theme now decides how Klartext looks, and the plugin decides which parts
+  of Obsidian are on screen, and when. No setting lives in both. What moved:
+  Hide View Header, Hide Tab Bar, Align Top Row With Window Buttons, and the ten
+  furniture switches (status bar, vault name, scroll bars, sidebar toggle
+  buttons, tooltips, file explorer buttons, properties in Reading view, search
+  suggestions, search match counts, prompt instructions).
+
+  Several of them needed code a theme cannot run. Hiding the tab strip takes
+  the window's drag handle with it, the window buttons are native macOS
+  controls, and macOS gives the page no mouse events over a drag handle, which
+  a hover-revealed header depends on. And a switch that hides furniture should
+  survive a change of theme. In the plugin, the hidden view header merges with
+  the plugin's own top row on hover; the window-button alignment now moves the
+  buttons through Obsidian's own `--traffic-lights-offset-y` instead of
+  lowering every row by 3.5px.
+
+  **Not migrated:** a switch turned on under 1.7.0 is off until it is turned on
+  again in the plugin. Nine settings remain here, all about the page's look.
+  `tools/check-look-only.mjs` replaces `tools/check-hide-chrome.mjs` and fails if
+  a furniture switch or window behaviour comes back into the theme.
+
 ## [1.7.0] — 2026-09-24
 
 ### Added

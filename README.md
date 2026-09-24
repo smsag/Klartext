@@ -78,12 +78,22 @@ Settings → Appearance.
 
 ## Options
 
-All of these live in Settings → Style Settings → Klartext.
+All of these live in Settings → Style Settings → Klartext. They are about how
+Klartext looks.
+
+What is on screen is a separate question, and the
+[Klartext plugin](https://github.com/smsag/klartext-plugin) answers it: the top
+row shown only while the pointer is at the top of the window, the macOS window
+buttons with it, and switches for the tab bar, status bar, vault profile, scroll
+bars, sidebar buttons, tooltips, the file explorer's buttons, Reading-view
+properties, search suggestions and counts, and prompt hints. They lived in this
+theme until 2.0.0 and moved because several needed code a theme cannot run, and
+because a switch that hides furniture should survive a change of theme. No
+setting lives in both.
 
 | Option | Default | What it does |
 |---|---|---|
 | Dotted Code & Header Fill | on | A faint dot-grid texture on code blocks and table headers |
-| Hide View Header | on | Lifts the note header out of the layout; hover the top edge to bring it back. Desktop only |
 | Center Mermaid Diagrams | on | Centres rendered diagrams in the text column |
 | Greyscale Mermaid Diagrams | on | Renders diagrams in the theme's greys instead of Mermaid's colours |
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size. The phone's interface text follows it one to one |

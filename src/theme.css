@@ -23,9 +23,44 @@ settings:
     description: Hides the note header (breadcrumb, back/forward, actions); move the mouse to the top edge of the note to reveal it. Desktop only
     type: class-toggle
     default: true
-  - id: klartext-titlebar-nudge
-    title: Align Header With macOS Window Buttons
-    description: "macOS only, and only useful when something hides the tab bar (the Hider plugin, a snippet) so the note header becomes the window's top row: drops that row 4px so its icons share an axis with the red/amber/green buttons, which macOS places and no theme can move. Leave off with the tab bar visible — there the header is a second row and has nothing to line up with"
+  - id: klartext-hide-tab-bar
+    title: Hide Tab Bar
+    description: "Hides the tab strip at the top of the window. The note header takes its place; on macOS it is inset clear of the window buttons and dropped 4px so its icons share an axis with them. Sidebar tab strips are left alone"
+    type: class-toggle
+    default: false
+  - id: klartext-hide-status-bar
+    title: Hide Status Bar
+    description: Hides the bar along the bottom — word count, character count, backlink count
+    type: class-toggle
+    default: false
+  - id: klartext-hide-vault-name
+    title: Hide Vault Name
+    description: "Hides the vault profile at the foot of the sidebar. WARNING: this also hides the settings gear and the vault switcher that sit beside it. Reach settings by hotkey or the command palette"
+    type: class-toggle
+    default: false
+  - id: klartext-hide-scrollbars
+    title: Hide Scroll Bars
+    description: Hides every scroll bar. Scrolling itself is unaffected
+    type: class-toggle
+    default: false
+  - id: klartext-hide-sidebar-toggles
+    title: Hide Sidebar Toggle Buttons
+    description: Hides both sidebar buttons. The sidebars still open by hotkey, by the command palette, and by dragging their edge
+    type: class-toggle
+    default: false
+  - id: klartext-hide-tooltips
+    title: Hide Tooltips
+    description: Hides every hover tooltip. The labels behind them stay readable to a screen reader
+    type: class-toggle
+    default: false
+  - id: klartext-hide-explorer-buttons
+    title: Hide File Explorer Buttons
+    description: Hides the row of buttons at the top of the file explorer — new note, new folder, sort, collapse
+    type: class-toggle
+    default: false
+  - id: klartext-hide-reading-properties
+    title: Hide Properties In Reading View
+    description: Hides the properties block above a note in Reading view. Live Preview and the properties pane are untouched
     type: class-toggle
     default: false
   - id: klartext-center-diagrams
@@ -2747,35 +2782,101 @@ body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content
   top: var(--header-height);
 }
 
-/* Align the note header with the macOS window buttons (Style Settings:
-   klartext-titlebar-nudge, off by default).
+/* ------------------------------------------------------------------
+   HIDING CHROME  (Style Settings, every one off by default)
 
-   macOS draws the red/amber/green buttons and Electron places them; no
-   stylesheet can move them. What a theme can move is Obsidian's own row,
-   down to meet them.
+   Eight switches for parts of Obsidian's furniture. They exist so a vault
+   that wants a quiet window does not need a plugin for it: all eight are a
+   `display: none` and a theme is where a `display: none` belongs.
 
-   MEASURED from a report, in CSS pixels below the window's top edge: the
-   buttons' centres at 23.5, the header's icons at 19.5. The row sits 4px
-   high. Confirmed on the reporter's Mac afterwards: both at 50.5, one axis.
+   Every one defaults to OFF, so a theme update never takes a person's
+   furniture away. Each hides a thing that can also be reached another way,
+   and where that is not obvious the setting's own description says how.
+   ------------------------------------------------------------------ */
 
-   NOT something this theme causes — the view header's box is identical here
-   and under Obsidian's default, top 40 and height 38 in both. Any theme shows
-   the same gap.
+/* The tab strip at the top of the window. Only the root split's: a sidebar's
+   own strip is how its panes are switched, and hiding that is a different
+   decision from hiding the window's. */
+body.klartext-hide-tab-bar .workspace-split.mod-root .workspace-tab-header-container {
+  display: none;
+}
 
-   OFF BY DEFAULT, and this is the point of the toggle rather than a plain
-   rule. The header only reaches that row when something has hidden the tab
-   bar above it — the Hider plugin, a snippet. With the tab bar visible, which
-   is Obsidian's default, the header is a SECOND row with no buttons beside it,
-   and the same nudge would drop it 4px for nothing. A stylesheet cannot ask
-   whether another element is being hidden, so the person says.
+/* With the strip gone the note header becomes the window's top row, and on
+   macOS it has to do the strip's job of clearing the window buttons.
 
-   The padding is TWICE the nudge because the row's contents are centred in a
-   fixed-height box: 8px above moves that centre down 4. The box keeps its own
-   height (measured 38 → 38.4), so nothing below it moves. */
-body.klartext-titlebar-nudge.mod-macos .mod-root .workspace-tabs.mod-top-left-space .workspace-leaf-content > .view-header {
+   Obsidian reserves that room on the TAB CONTAINER
+   (`padding-left: calc(var(--size-4-2) + var(--frame-left-space))`), so
+   hiding the container takes the reservation with it and the header's back
+   button would sit under the buttons. Same formula, moved to the header.
+   --frame-left-space is 80px less the ribbon's width, so it is already right
+   whether or not the ribbon shows.
+
+   The 4px is the row's own alignment: macOS places the window buttons 23.5px
+   below the window's top edge and Obsidian's icons land at 19.5 (measured on
+   the reporting Mac, then confirmed at 50.5 for both afterwards). The padding
+   is twice the nudge because the row's contents are centred in a fixed-height
+   box, and box-sizing keeps the box from growing, so nothing below it moves.
+
+   macOS only: no other platform puts window buttons on the left, and on
+   Windows and Linux they are ordinary DOM elements in a titlebar this rule
+   never touches. */
+body.klartext-hide-tab-bar.mod-macos .workspace-split.mod-root .workspace-leaf-content > .view-header {
   --klartext-titlebar-nudge: 4px;
   box-sizing: border-box;
   padding-top: calc(var(--klartext-titlebar-nudge) * 2);
+  padding-left: calc(var(--size-4-2) + var(--frame-left-space));
+}
+
+/* The bar along the bottom. */
+body.klartext-hide-status-bar .status-bar {
+  display: none;
+}
+
+/* The vault profile at the foot of the sidebar. It carries the settings gear
+   and the vault switcher with it, which is why the description says so.
+
+   Through Obsidian's OWN token rather than a `display: none` of our own:
+   `body:not(.is-mobile) .workspace-split.mod-left-split
+   .workspace-sidedock-vault-profile` sets `display: var(--vault-profile-display)`
+   at (0,4,1), so a rule at (0,2,1) matches, computes, and loses — measured,
+   the profile stayed on screen. Out-specifying it would work and would be a
+   worse answer: the variable is the lever Obsidian provides, and it keeps
+   working if that selector changes. The drawer's copy on mobile has no such
+   token, so it is hidden directly. */
+body.klartext-hide-vault-name {
+  --vault-profile-display: none;
+}
+
+body.klartext-hide-vault-name .workspace-drawer-vault-actions {
+  display: none;
+}
+
+/* Every scroll bar. The theme styles these a few lines up; this switches them
+   off entirely, and scrolling is unaffected either way. */
+body.klartext-hide-scrollbars ::-webkit-scrollbar {
+  display: none;
+}
+
+/* Both sidebar buttons. The sidebars still open by hotkey and command. */
+body.klartext-hide-sidebar-toggles .sidebar-toggle-button {
+  display: none;
+}
+
+/* Hover tooltips. The aria-label behind each one is untouched, so what a
+   screen reader announces does not change — only what is drawn. */
+body.klartext-hide-tooltips .tooltip {
+  display: none;
+}
+
+/* The file explorer's button row: new note, new folder, sort, collapse. */
+body.klartext-hide-explorer-buttons .workspace-leaf-content[data-type="file-explorer"] .nav-buttons-container {
+  display: none;
+}
+
+/* Properties above a note in Reading view. Live Preview keeps its own, and so
+   does the properties pane — this is the reading surface only. */
+body.klartext-hide-reading-properties .markdown-reading-view .metadata-container {
+  display: none;
 }
 
 /* Hidden view header (Style Settings: klartext-hide-view-header). The header

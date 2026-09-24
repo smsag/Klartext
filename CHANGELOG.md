@@ -8,23 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Align the note header with the macOS window buttons** — a new Style
-  Settings toggle, **off by default**. macOS places the red/amber/green buttons
-  and no stylesheet can move them; what a theme can move is Obsidian's own row,
-  down to meet them. Measured from the report: the buttons' centres sit 23.5px
-  below the window's top edge and the header's icons 19.5, so the row is 4px
-  high; confirmed afterwards on the reporting Mac, both at 50.5.
+- **Eight switches for hiding Obsidian's furniture**, in Style Settings, every
+  one **off by default**: the tab strip, the status bar, the vault profile,
+  scroll bars, the sidebar toggle buttons, tooltips, the file explorer's button
+  row, and properties in Reading view. All eight are a `display: none`, and a
+  `display: none` is a theme's business — a vault that wants a quiet window
+  should not need a plugin for it.
 
-  It is a toggle rather than a plain rule because the header only reaches that
-  row when **something has hidden the tab bar above it** — the Hider plugin, a
-  snippet. With the tab bar visible, which is Obsidian's default, the header is
-  a second row with no buttons beside it and the same nudge would drop it 4px
-  for nothing. A stylesheet cannot ask whether another element is being hidden,
-  so the person says.
+  Three of them hide the only visible way to reach something, so their
+  descriptions say how otherwise: the vault profile takes the settings gear and
+  the vault switcher with it, the sidebar buttons leave the hotkeys and the
+  drag edge, and hiding tooltips changes only what is drawn — the `aria-label`
+  behind each one is untouched, so a screen reader still reads it.
 
-  Not a fault of this theme, for the record: the view header's box is identical
-  here and under Obsidian's default — top 40, height 38 in both.
+  **Hiding the tab strip does the rest of the job too.** The note header takes
+  the strip's place, so on macOS it inherits the strip's work of clearing the
+  window buttons — using Obsidian's own reservation, `calc(--size-4-2 +
+  --frame-left-space)`, which already accounts for the ribbon — and is dropped
+  4px onto their axis. That replaces the separate alignment toggle this branch
+  first carried: with the theme doing the hiding, it no longer has to ask.
 
+  Only the window's own tab strip is hidden, never a sidebar's — a sidebar's
+  strip is how its panes are switched, which is a different decision.
 ### Changed
 - **The list tree line is the theme's, from end to end.** It used to be a
   collaboration: Obsidian drew a guide on every indented line, and the theme

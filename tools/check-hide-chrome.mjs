@@ -16,12 +16,20 @@
 //     nothing; a rule with no setting is a permanent change wearing a
 //     toggle's name. Both halves are checked, in both directions.
 //
-// The tab strip carries two extra conditions because hiding it moves the note
-// header into the window's top row: on macOS that row has to clear the window
-// buttons, using Obsidian's own reservation formula, and sit on their axis.
-// Obsidian reserves the room on the TAB CONTAINER, so hiding the container
-// takes the reservation with it — miss that and the header's back button ends
-// up underneath the buttons.
+// Two more conditions sit on top of those, both about the window's top row on
+// macOS, and both about SCOPE — each one has already been got wrong once by
+// selecting too widely:
+//
+//   * THE INSET. Hiding the strip moves the note header into the top row, and
+//     Obsidian reserves the room for the window buttons on the TAB CONTAINER,
+//     so hiding the container takes the reservation with it. The header needs
+//     it back — but only the ONE header the buttons actually overlap, which
+//     Obsidian marks `mod-top-left-space`. Scoping by `.mod-root` instead
+//     insets every pane's header, sidebar open or not.
+//   * THE DROP. `klartext-align-window-buttons` lowers the top row onto the
+//     buttons' axis. Only rows that ARE the top row: a stacked split's lower
+//     pane has a strip too, hundreds of pixels down the window, and Obsidian
+//     marks the real ones `mod-top`.
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-hide-chrome.mjs
@@ -39,7 +47,7 @@ const declared = [...settings.matchAll(/- id: (klartext-hide-[a-z-]+)\b([\s\S]*?
 
 /** Every hiding toggle the stylesheet actually acts on. */
 const used = new Set(
-  [...bare.matchAll(/body\.(klartext-hide-[a-z-]+)/g)].map((m) => m[1])
+  [...bare.matchAll(/\.(klartext-hide-[a-z-]+)/g)].map((m) => m[1])
 );
 
 const failures = [];
@@ -76,26 +84,83 @@ for (const id of used) {
   }
 }
 
-// --- the tab strip's two extra conditions ---
-const tabRule = bare
+// --- the inset: only the header the window buttons overlap ---
+const insetRule = bare
   .split("}")
   .find((b) => b.includes("klartext-hide-tab-bar") && b.includes("padding-left"));
 
-if (tabRule === undefined) {
+if (insetRule === undefined) {
   failures.push("hiding the tab strip must also inset the note header on macOS, or its back button sits under the window buttons");
 } else {
-  const selector = tabRule.slice(0, tabRule.indexOf("{"));
+  const selector = insetRule.slice(0, insetRule.indexOf("{"));
   if (!selector.includes(".mod-macos")) {
     failures.push("the header inset must be macOS-only: no other platform puts window buttons on the left");
   }
-  if (!/padding-left:\s*calc\(var\(--size-4-2\)\s*\+\s*var\(--frame-left-space\)\)/.test(tabRule)) {
+  if (!selector.includes(".mod-top-left-space")) {
+    failures.push("the inset must be scoped to .workspace-tabs.mod-top-left-space — Obsidian's own marker for the strip the window buttons overlap. Without it every pane's header is inset, sidebar open or not");
+  }
+  if (!/padding-left:\s*calc\(var\(--size-4-2\)\s*\+\s*var\(--frame-left-space\)\)/.test(insetRule)) {
     failures.push("the inset must reuse Obsidian's own reservation, calc(--size-4-2 + --frame-left-space), which already accounts for the ribbon");
   }
-  if (!/padding-top:\s*calc\(var\(--klartext-titlebar-nudge\)\s*\*\s*2\)/.test(tabRule)) {
-    failures.push("the padding must be twice --klartext-titlebar-nudge: the contents are centred, so the centre moves half of what is added");
+}
+
+// --- the drop: the top row onto the window buttons' axis ---
+const ALIGN = "klartext-align-window-buttons";
+const alignDecl = /- id: klartext-align-window-buttons\b([\s\S]*?)(?=\n {2}- id: |$)/.exec(settings)?.[1];
+
+if (alignDecl === undefined) {
+  failures.push(`${ALIGN} must be offered in @settings — the drop is a choice, not something to impose`);
+} else {
+  if (!/type:\s*class-toggle/.test(alignDecl)) {
+    failures.push(`${ALIGN} must be a class-toggle: the rules key on the body class it adds`);
   }
-  if (!/box-sizing:\s*border-box/.test(tabRule)) {
+  if (!/default:\s*false/.test(alignDecl)) {
+    failures.push(`${ALIGN} must default to false — it moves a row for everyone who has the theme, most of them not on macOS`);
+  }
+  if (!/description:/.test(alignDecl)) {
+    failures.push(`${ALIGN} needs a description saying it is macOS-only`);
+  }
+}
+
+const dropRule = bare
+  .split("}")
+  .find((b) => b.includes(ALIGN) && b.includes("padding-top"));
+
+if (dropRule === undefined) {
+  failures.push(`${ALIGN} is offered but no rule drops anything, so the switch does nothing`);
+} else {
+  // Every selector in the list, not the list as one string: a comma list where
+  // only one arm is scoped reads as scoped, and the unscoped arm is the bug.
+  const selectors = dropRule
+    .slice(0, dropRule.indexOf("{"))
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  for (const selector of selectors) {
+    if (!selector.includes(".mod-macos")) {
+      failures.push(`the drop must be macOS-only, and \`${selector}\` is not: no other platform puts window buttons on the left`);
+    }
+    if (!selector.includes(".workspace-tabs.mod-top")) {
+      failures.push(`the drop must select through .workspace-tabs.mod-top — Obsidian's marker for a strip on the window's top row — and \`${selector}\` does not. A bare .workspace-tab-header-container also matches a stacked split's lower pane, hundreds of pixels down the window`);
+    }
+  }
+  if (!/padding-top:\s*calc\(var\(--klartext-titlebar-drop\)\s*\*\s*2\)/.test(dropRule)) {
+    failures.push("the padding must be twice --klartext-titlebar-drop: the contents are centred, so the centre moves half of what is added");
+  }
+  if (!/box-sizing:\s*border-box/.test(dropRule)) {
     failures.push("box-sizing must stay border-box, or the padding grows the row and pushes the note down");
+  }
+}
+
+const dropDef = bare.split("}").find((b) => b.includes("--klartext-titlebar-drop:"));
+if (dropDef === undefined) {
+  failures.push("--klartext-titlebar-drop must be defined, not inlined at each use");
+} else {
+  if (!dropDef.includes("var(--header-height)")) {
+    failures.push("the drop must be derived from --header-height, not typed as a pixel count: it is the distance from the row's own centre to the buttons' axis, and the row can be resized");
+  }
+  if (!/max\(\s*0px/.test(dropDef)) {
+    failures.push("the drop must be clamped with max(0px, …), or a header taller than the axis lifts the row above the buttons instead of onto them");
   }
 }
 
@@ -110,4 +175,4 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.log(`chrome switches: ${GOVERNED.length} toggles, all opt-in, all acted on.`);
+console.log(`chrome switches: ${GOVERNED.length} hiding toggles plus the window-button drop, all opt-in, all acted on.`);

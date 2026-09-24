@@ -25,7 +25,12 @@ settings:
     default: true
   - id: klartext-hide-tab-bar
     title: Hide Tab Bar
-    description: "Hides the tab strip at the top of the window. The note header takes its place; on macOS it is inset clear of the window buttons and dropped 4px so its icons share an axis with them. Sidebar tab strips are left alone"
+    description: "Hides the tab strip at the top of the window. The note header takes its place, and on macOS it is inset clear of the window buttons. Sidebar tab strips are left alone"
+    type: class-toggle
+    default: false
+  - id: klartext-align-window-buttons
+    title: Align Top Row With Window Buttons
+    description: "macOS only. Obsidian's top row sits a few pixels above the red/yellow/green window buttons; this drops every strip on that row onto their axis, and the note header with them where Hide Tab Bar has taken the strip away. No effect on Windows, Linux or mobile"
     type: class-toggle
     default: false
   - id: klartext-hide-status-bar
@@ -2811,20 +2816,56 @@ body.klartext-hide-tab-bar .workspace-split.mod-root .workspace-tab-header-conta
    --frame-left-space is 80px less the ribbon's width, so it is already right
    whether or not the ribbon shows.
 
-   The 4px is the row's own alignment: macOS places the window buttons 23.5px
-   below the window's top edge and Obsidian's icons land at 19.5 (measured on
-   the reporting Mac, then confirmed at 50.5 for both afterwards). The padding
-   is twice the nudge because the row's contents are centred in a fixed-height
-   box, and box-sizing keeps the box from growing, so nothing below it moves.
+   Only ONE header needs it, and Obsidian says which: it marks that strip's
+   `.workspace-tabs` with `mod-top-left-space`, and moves the marker to the
+   root split when the left sidebar collapses. Measured both ways. Scoping by
+   `.mod-root` alone would inset every pane's header in a split, including
+   ones nowhere near the buttons.
 
    macOS only: no other platform puts window buttons on the left, and on
    Windows and Linux they are ordinary DOM elements in a titlebar this rule
    never touches. */
-body.klartext-hide-tab-bar.mod-macos .workspace-split.mod-root .workspace-leaf-content > .view-header {
-  --klartext-titlebar-nudge: 4px;
-  box-sizing: border-box;
-  padding-top: calc(var(--klartext-titlebar-nudge) * 2);
+body.klartext-hide-tab-bar.mod-macos .workspace-tabs.mod-top-left-space .workspace-leaf-content > .view-header {
   padding-left: calc(var(--size-4-2) + var(--frame-left-space));
+}
+
+/* ------------------------------------------------------------------
+   The window's top row, on the macOS window-button axis
+   ------------------------------------------------------------------
+
+   macOS centres the window buttons 23.5px below the window's top edge.
+   That is a constant of the platform, not of Obsidian, and no stylesheet
+   can move them — so the row moves instead. Obsidian's top row is a strip
+   of --header-height starting at the window's edge, so at the default 40px
+   its contents centre at 20 and sit 4px high. Measured in the running app,
+   and on the reporting Mac twice.
+
+   EVERY split has such a row, so every split is off by that same amount:
+   the left sidedock's strip, the right's, and the root split's — or, where
+   `klartext-hide-tab-bar` has taken that one away, the note header standing
+   in its place. Which is why this is its own switch rather than part of
+   that one: the sidebar strips are misaligned whether or not the window's
+   strip is hidden.
+
+   `mod-top` is Obsidian's own marker for a strip on the window's top row.
+   A stacked split's lower pane has a strip too, 400px down the window in
+   the layout this was measured in, and it does NOT carry the class — which
+   is the whole reason for selecting on it rather than on the strip itself.
+
+   The drop is derived, never typed: half the distance from the row's own
+   centre to the axis, doubled into padding because the contents are centred
+   in a fixed-height box. `max()` keeps a taller --header-height from lifting
+   the row above the buttons instead of onto them, and border-box keeps the
+   box from growing, so nothing below it moves. */
+body.klartext-align-window-buttons.mod-macos {
+  --klartext-window-button-axis: 23.5px;
+  --klartext-titlebar-drop: max(0px, var(--klartext-window-button-axis) - var(--header-height) / 2);
+}
+
+body.klartext-align-window-buttons.mod-macos .workspace-tabs.mod-top > .workspace-tab-header-container,
+body.klartext-align-window-buttons.klartext-hide-tab-bar.mod-macos .workspace-tabs.mod-top .workspace-leaf-content > .view-header {
+  box-sizing: border-box;
+  padding-top: calc(var(--klartext-titlebar-drop) * 2);
 }
 
 /* The bar along the bottom. */

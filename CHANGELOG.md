@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   face.
 
 ### Added
+- **A Release workflow.** Actions → Release → Run workflow with a version
+  publishes it: it checks that the version matches `manifest.json` and is not
+  tagged yet, runs every guard and stylelint, checks that `theme.css` is built
+  from `src/theme.css`, and uses the version's CHANGELOG section as the notes
+  (`tools/release-notes.mjs`). Releases were made by hand before, and 2.0.0 was
+  never released.
 - **The README lists the Obsidian settings Klartext treats differently**:
   the text font (ignored), the font size on a phone (replaced by Mobile Body
   Text Size) and Editor → "Tab indent size" (not applied to list levels,

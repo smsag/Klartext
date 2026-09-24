@@ -198,6 +198,22 @@ repository so the embedded fonts can be rebuilt or re-subsetted without hunting
 for the originals. Nothing else belongs here; backups of earlier versions are
 git history, not files.
 
+## Releasing
+
+A release is cut by the **Release** workflow (Actions → Release → Run
+workflow, on `main`, with the version). Before that, on `main`:
+
+1. set the version in `manifest.json`;
+2. rename `## [Unreleased]` in `CHANGELOG.md` to `## [x.y.z] — date`.
+
+The workflow refuses, before anything is published, if the version is not
+`x.y.z`, differs from `manifest.json` or is already tagged; if a guard or
+stylelint fails; or if `theme.css` is not what `fonts/embed.py` builds from
+`src/theme.css`. Otherwise it tags the commit with the bare version, as
+Obsidian expects, attaches `theme.css` and `manifest.json`, and uses the
+version's CHANGELOG section as the notes (`node tools/release-notes.mjs x.y.z`
+prints them locally).
+
 ## Credits
 
 By [Steffen Seitz](https://smsag.de), under the [MIT License](LICENSE).

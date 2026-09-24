@@ -39,7 +39,7 @@ settings:
     format: px
   - id: klartext-line-width
     title: Readable Line Width
-    description: Width of the text column, in px. Read only while Obsidian's Appearance → "Readable line length" is on; with that switch off the column spans the pane and this slider does nothing
+    description: Width of the text column, in px. Read only while Obsidian's Settings → Editor → "Readable line length" is on; with that switch off the column spans the pane and this slider does nothing
     type: variable-number-slider
     default: 680
     min: 400
@@ -65,13 +65,13 @@ settings:
         value: '4'
   - id: klartext-title-font
     title: Note Title Font
-    description: The note's own title, above the text. Monospace matches the body it sits on; the interface face matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
+    description: The note's own title, above the text. Monospace matches the body it sits on; the heading face (Fira Sans) matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
     type: class-select
     default: klartext-title-mono
     options:
       - label: Body monospace
         value: klartext-title-mono
-      - label: Interface sans
+      - label: Heading sans
         value: klartext-title-sans
   - id: klartext-space-indent
     title: Lists Indented With Spaces
@@ -245,7 +245,7 @@ body {
      without compounding. */
   --klartext-diagram-font-scale: 0.9;
   --klartext-diagram-font-size:  calc(var(--klartext-font-size) * var(--klartext-diagram-font-scale));
-  /* The text column when Obsidian's Appearance → Readable line length is on;
+  /* The text column when Obsidian's Settings → Editor → Readable line length is on;
      with it off the column spans the pane and this is never read. Style
      Settings writes a slider's value to a variable named after the setting's
      id — a `variable:` key in the schema is not part of the plugin — so the
@@ -302,8 +302,8 @@ body {
   --klartext-indent-unit:   var(--list-indent);
   /* The font stack for a marker token: the companion face first, so its
      empty glyphs hide the source characters, JetBrains Mono for the digits. */
-  --klartext-mark-font:     'Klartext Marks', var(--font-monospace-theme);
-  --klartext-mark-font-quote: 'Klartext Marks Quote', var(--font-monospace-theme);   /* blanks only the ">": for a callout header's combined token */
+  --klartext-mark-font:     'Klartext Marks', var(--font-text-theme);
+  --klartext-mark-font-quote: 'Klartext Marks Quote', var(--font-text-theme);   /* blanks only the ">": for a callout header's combined token */
   /* The narrow column (2ch = 1.2em) is what the mobile page padding and the
      <details> mark still use: what "- " measures in the body. */
   --klartext-marker-width:  calc(var(--klartext-font-size) * 1.2);
@@ -373,8 +373,8 @@ body {
   --h4-line-height: 1.3;  --h5-line-height: 1.3; --h6-line-height: 1.3;
   --h1-letter-spacing: -0.03em; --h2-letter-spacing: -0.02em; --h3-letter-spacing: -0.02em;
   --h4-letter-spacing: -0.02em; --h5-letter-spacing: -0.02em; --h6-letter-spacing: -0.02em;
-  --h1-font: var(--font-interface-theme); --h2-font: var(--font-interface-theme); --h3-font: var(--font-interface-theme);
-  --h4-font: var(--font-interface-theme); --h5-font: var(--font-interface-theme); --h6-font: var(--font-interface-theme);
+  --h1-font: var(--klartext-heading-font); --h2-font: var(--klartext-heading-font); --h3-font: var(--klartext-heading-font);
+  --h4-font: var(--klartext-heading-font); --h5-font: var(--klartext-heading-font); --h6-font: var(--klartext-heading-font);
 
   /* Shared vertical accent-rule width — callouts, quotes, blockquotes */
   --klartext-rule-width:    1px;
@@ -391,8 +391,20 @@ body {
   --blockquote-border-thickness: var(--klartext-rule-width);
   --blockquote-border-color:     var(--interactive-accent);
 
+  /* Obsidian combines each of these with the user's own choice (Appearance →
+     Interface font / Monospace font) into --font-interface and
+     --font-monospace, and the rules read only those, so a font picked there
+     wins in the interface and in code.
+     The note's own type is the theme's, like the page colour: the body and
+     every mark read --font-text-theme, because each mark and gutter is laid
+     out on its 0.6em cell (--klartext-cell) and a proportional text font
+     would break them; the headings, the sans note title and the callout and
+     embed titles read --klartext-heading-font, the face paired with that body, which an
+     interface font chosen for the sidebars must not reach. The interface
+     defaults to the same face. tools/check-fonts.mjs holds all of this. */
+  --klartext-heading-font:  'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-text-theme:        'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
-  --font-interface-theme:   'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-interface-theme:   var(--klartext-heading-font);
   --font-monospace-theme:   'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
 
   --line-height-normal:     var(--klartext-line-height);   /* Obsidian's own leading token */
@@ -538,7 +550,7 @@ body.klartext-space-indent {
 body,
 body.is-mobile {
   background-color: var(--background-primary) !important;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
@@ -599,7 +611,7 @@ body.is-mobile {
 .nav-folder,
 .nav-files-container {
   background-color: var(--background-secondary);
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-font-size);
 }
 
@@ -629,7 +641,7 @@ body.is-mobile {
 }
 
 .workspace-tab-header {
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-sm);
   color: var(--text-subtle);
 }
@@ -751,12 +763,12 @@ body.is-mobile {
    INLINE TITLE
    ------------------------------------------------------------------ */
 /* The note's own title. Obsidian ties it to the H1 tokens by default, so
-   untouched it would be a second headline in the interface face at the full
+   untouched it would be a second headline in the heading face at the full
    h1 size, directly above the one the document may already carry. Klartext
    gives it the h1 SIZE and WEIGHT — it is the document's headline, and a
    note that opens with an h1 should not put its biggest type under a
    smaller name — but keeps its own face as a Style Settings choice
-   (klartext-title-font): the body monospace by default, the interface face
+   (klartext-title-font): the body monospace by default, the heading face
    for anyone who wants the top of the page to read as one typographic
    family. The hairline rule under it stays, which is what still separates
    a title from a heading.
@@ -771,7 +783,7 @@ body.klartext-title-mono {
   --inline-title-font: var(--font-text-theme);
 }
 body.klartext-title-sans {
-  --inline-title-font: var(--font-interface-theme);
+  --inline-title-font: var(--klartext-heading-font);
 }
 /* stylelint-disable-next-line no-duplicate-selectors */
 body {
@@ -801,7 +813,7 @@ body {
 .markdown-preview-view h4,
 .markdown-preview-view h5,
 .markdown-preview-view h6 {
-  font-family: var(--font-interface-theme);   /* belt-and-braces; --hN-font is the source */
+  font-family: var(--klartext-heading-font);   /* belt-and-braces; --hN-font is the source */
   color: var(--text-normal);
 }
 
@@ -906,7 +918,7 @@ body {
       the caret is full height; transparent, so the overlapping glyphs are
       unseen. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-header {
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-text-theme);
   font-size: inherit !important;
   letter-spacing: -1ch !important;
   color: transparent;
@@ -924,7 +936,7 @@ body {
   padding-right: var(--klartext-cell);                       /* the gap to the heading text: one cell, the same gap every list mark keeps */
   text-align: right;                                         /* marker against the text */
   vertical-align: baseline;                                  /* on the headline's baseline */
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-text-theme);
   font-size: var(--klartext-font-size);                     /* body-text size, not heading size */
   font-weight: 400;
   letter-spacing: 0;
@@ -1154,7 +1166,7 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
 code,
 .cm-inline-code,
 .markdown-preview-view code {
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-monospace);
   font-size: 0.88em;
   background-color: var(--code-bg);
   color: var(--code-text);
@@ -1214,7 +1226,7 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
   border-radius: var(--radius-m);
   box-shadow: none;
   color: var(--text-normal);
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--font-ui-small);
   padding: 0.6em 0.9em;
 }
@@ -1257,7 +1269,7 @@ body {
   height: var(--klartext-code-btn) !important;
   display: inline-flex !important;
   align-items: center !important;
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
   font-size: 0.72em !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
@@ -1289,7 +1301,7 @@ body {
   height: var(--klartext-code-btn);
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: 0.72em;
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -1887,7 +1899,7 @@ hr,
 }
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul::before {
   content: "\2013";
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-text-theme);
   margin-inline-end: var(--klartext-cell);
   color: var(--text-faint);
 }
@@ -2194,7 +2206,7 @@ hr,
 .markdown-source-view.mod-cm6 th:focus-within {
   background-color: var(--table-header-bg) !important;
   border-bottom: 1px solid var(--border);   /* one step darker than the body gridlines; later than the cell rule, so it wins */
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-weight: 500;
   color: var(--text-normal);
 }
@@ -2303,14 +2315,14 @@ a.tag {
   padding: var(--tag-padding-y) var(--tag-padding-x);
   font-size: var(--tag-size);
   font-weight: var(--tag-weight);
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   text-decoration: none;
 }
 
 .tag:hover {
   color: var(--interactive-accent) !important;
 }
-.cm-hashtag { font-family: var(--font-interface-theme); }
+.cm-hashtag { font-family: var(--font-interface); }
 .cm-hashtag:hover { color: var(--interactive-accent); }
 
 /* ------------------------------------------------------------------
@@ -2330,7 +2342,7 @@ a.tag {
   border-top: 1px solid var(--border);
   margin-top: 2em;
   font-size: 0.75em;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
 }
 
 .embedded-backlinks .backlink-pane,
@@ -2340,7 +2352,7 @@ a.tag {
 .embedded-backlinks .search-result-container,
 .embedded-backlinks .search-empty-state {
   font-size: 1em !important;
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
 }
 
 /* ------------------------------------------------------------------
@@ -2438,7 +2450,7 @@ a.tag {
 }
 
 .search-result-file-title {
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-weight: 500;
   font-size: var(--klartext-ui-sm);
 }
@@ -2466,7 +2478,7 @@ a.tag {
 .prompt-input {
   background-color: var(--background-primary) !important;
   border-bottom: 1px solid var(--klartext-field-rule) !important;
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
   font-size: var(--klartext-ui-lg) !important;
   color: var(--text-normal) !important;
 }
@@ -2483,7 +2495,7 @@ a.tag {
 }
 
 .suggestion-item {
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-md);
   border-radius: var(--radius-m);
   color: var(--text-muted);
@@ -2509,7 +2521,7 @@ a.tag {
 .modal-content,
 .vertical-tab-content {
   background-color: var(--background-primary) !important;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
 }
 
 /* font-family inherited from .modal-content */
@@ -2636,7 +2648,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 .status-bar {
   background-color: var(--background-secondary);
   border-top: 1px solid var(--border);
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-xs);
   color: var(--text-subtle);
 }
@@ -2652,7 +2664,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
      property rows inside it use, so box and rows agree. */
   border-radius: var(--klartext-radius-block);
   margin-bottom: 1.5em;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-font-size);
 }
 
@@ -2711,7 +2723,7 @@ body.is-mobile .view-header {
      behind: the header's background when docked, the note when floating. */
   border-bottom: 1px solid transparent;
   box-shadow: none;
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
 }
 
 /* Soft scroll edge. The header's own border is invisible; what still reads
@@ -2996,7 +3008,7 @@ body.is-mobile .mobile-toolbar-floating-options {
   display: flex;
   align-items: center;
   gap: 0.4em;
-  font-family: var(--font-interface-theme);
+  font-family: var(--klartext-heading-font);   /* a title in the note: the heading face, not the interface's */
   font-size: 0.78em;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -3196,7 +3208,7 @@ body.is-mobile .mobile-toolbar-floating-options {
 }
 
 .embed-title {
-  font-family: var(--font-interface-theme);
+  font-family: var(--klartext-heading-font);   /* a title in the note: the heading face, not the interface's */
   font-size: var(--klartext-ui-sm);
   font-weight: 500;
   color: var(--text-subtle);
@@ -3396,7 +3408,7 @@ a.footnote-ref {
 }
 
 .canvas-node-label {
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
   font-size: var(--klartext-ui-sm) !important;
   color: var(--text-muted) !important;
 }
@@ -3553,7 +3565,7 @@ body.klartext-greyscale-diagrams .mermaid svg .cluster text {
 .mermaid svg,
 svg[aria-roledescription] {
   font-size: var(--klartext-diagram-font-size) !important;
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
 }
 .mermaid svg .nodeLabel,
 .mermaid svg .edgeLabel,
@@ -3566,7 +3578,7 @@ svg[aria-roledescription] .label,
 svg[aria-roledescription] text,
 svg[aria-roledescription] tspan {
   font-size: var(--klartext-diagram-font-size);
-  font-family: var(--font-interface-theme) !important;
+  font-family: var(--font-interface) !important;
 }
 
 /* Rendered-block rhythm + geometry (independent of the toggles):
@@ -3661,7 +3673,7 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
   margin-left: calc(-1 * var(--klartext-marker-width));   /* == -width → net advance 0 */
   padding-right: 0.4em;                                    /* the gap to the title */
   text-align: right;
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-text-theme);
   font-weight: 400;
   color: var(--text-faint);
   user-select: none;
@@ -3713,7 +3725,7 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
 }
 .cm-s-obsidian span.cm-math,
 .cm-s-obsidian span.hmd-fold-math-placeholder {
-  font-family: var(--font-monospace-theme);
+  font-family: var(--font-monospace);
   font-style: normal;
   font-size: 1em;
   color: var(--text-muted);
@@ -3748,7 +3760,7 @@ body {
    references keep their own rule. */
 kbd,
 .markdown-rendered kbd {
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: 0.82em;
   font-weight: 500;
   color: var(--text-muted);
@@ -3796,7 +3808,7 @@ body {
   --menu-shadow:         var(--klartext-shadow-panel);
 }
 .menu {
-  font-family: var(--font-interface-theme);
+  font-family: var(--font-interface);
   font-size: var(--klartext-ui-font-size);
 }
 

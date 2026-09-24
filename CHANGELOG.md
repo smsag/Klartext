@@ -5,6 +5,43 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Your interface and monospace fonts win; the note's own type stays.**
+  Appearance → Interface font and Monospace font did nothing under Klartext:
+  every rule read the theme's own Fira Sans and JetBrains Mono directly, past
+  the value Obsidian builds from the user's choice. The interface and code now
+  read `--font-interface` and `--font-monospace`, so a font set there paints
+  the sidebars, tabs, menus, dialogs and code; with nothing set, the look is
+  unchanged. The note's own type does not follow: the body and its marks stay
+  JetBrains Mono whatever Appearance → Text font says, because the marks are
+  placed on its character cell, and the headings, callout and embed titles,
+  and a note title set to the sans face, stay Fira Sans through a new `--klartext-heading-font`,
+  because they are paired with that body and an interface font chosen for the
+  sidebars should not restyle every note. The Note Title Font option reads
+  "Heading sans" instead of "Interface sans" for the same reason. Measured in
+  Obsidian 1.13.7 with Georgia and Courier New set: the interface and code
+  follow, the headings stay Fira Sans, the heading badge and every list mark
+  stay on the same pixel. `tools/check-fonts.mjs` fails if a rule reads
+  `--font-interface-theme` or `--font-monospace-theme`, if a heading or the
+  title reads the interface font, or if the body or the marks leave the body
+  face.
+
+### Added
+- **The README lists the Obsidian settings Klartext treats differently**:
+  the text font (ignored), the font size on a phone (replaced by Mobile Body
+  Text Size) and Editor → "Tab indent size" (not applied to list levels,
+  which step by one marker column).
+
+### Fixed
+- **Readable Line Width points to the right switch.** The slider only takes
+  effect while Obsidian's own "Readable line length" is on, and its
+  description, the README and a comment all said that switch lives under
+  Appearance. It lives under **Settings → Editor**, next to "Show inline
+  title" (read from Obsidian 1.13.7's own settings code). The 1.5.1 entry
+  below repeats the old path; it stays as it was released.
+
 ## [2.0.0] — 2026-09-24
 
 ### Removed

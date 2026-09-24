@@ -1,10 +1,11 @@
 // The chrome switches stay opt-in, and each one still has a rule.
 //
-// Eight Style Settings toggles hide parts of Obsidian's furniture — the tab
+// Eleven Style Settings toggles hide parts of Obsidian's furniture — the tab
 // strip, the status bar, the vault profile, scroll bars, the sidebar buttons,
-// tooltips, the file explorer's button row, and properties in Reading view.
-// They exist so a vault that wants a quiet window does not need a plugin for
-// it.
+// tooltips, the file explorer's button row, properties in Reading view, the
+// search options panel, the search match counts, and a prompt's keyboard
+// hints. They exist so a vault that wants a quiet window does not need a
+// plugin for it.
 //
 // Two things must stay true of every one of them, and neither is visible by
 // reading a diff:
@@ -56,7 +57,7 @@ const failures = [];
 // default, so it is not one of the switches this guard governs.
 const GOVERNED = declared.filter((s) => s.id !== "klartext-hide-view-header");
 
-const EXPECTED = 8;
+const EXPECTED = 11;
 if (GOVERNED.length < EXPECTED) {
   failures.push(`only ${GOVERNED.length} chrome toggles are declared, expected ${EXPECTED}`);
 }
@@ -162,6 +163,27 @@ if (dropDef === undefined) {
   if (!/max\(\s*0px/.test(dropDef)) {
     failures.push("the drop must be clamped with max(0px, …), or a header taller than the axis lifts the row above the buttons instead of onto them");
   }
+}
+
+// --- two more scopes, each one a class Obsidian reuses elsewhere ---
+
+// `.suggestion-container` is also the quick switcher's result list and the
+// editor's [[link]] and tag autocomplete. Unscoped, this switch stops typing
+// working rather than quietening anything.
+const suggestRule = bare.split("}").find((b) => b.includes("klartext-hide-search-suggestions"));
+if (suggestRule === undefined) {
+  failures.push("klartext-hide-search-suggestions has no rule");
+} else if (!suggestRule.includes(".mod-search-suggestion")) {
+  failures.push("the search suggestions rule must name .mod-search-suggestion — a bare .suggestion-container is also the quick switcher's results and the editor's autocomplete");
+}
+
+// `.tree-item-flair` is a general badge, and the tag pane uses it for each
+// tag's count. Measured: three in the tag pane against three in the results.
+const countRule = bare.split("}").find((b) => b.includes("klartext-hide-search-counts"));
+if (countRule === undefined) {
+  failures.push("klartext-hide-search-counts has no rule");
+} else if (!countRule.includes(".search-result-file-title")) {
+  failures.push("the search count rule must be scoped to .search-result-file-title — .tree-item-flair is also the tag pane's per-tag count, and this switch never mentions tags");
 }
 
 // Only the window's own strip, never a sidebar's — that is a different choice.

@@ -68,6 +68,21 @@ settings:
     description: Hides the properties block above a note in Reading view. Live Preview and the properties pane are untouched
     type: class-toggle
     default: false
+  - id: klartext-hide-search-suggestions
+    title: Hide Search Suggestions
+    description: "Hides the \u201cSearch options\u201d panel that drops out of a search field listing path:, file:, tag: and the rest. The operators keep working when typed"
+    type: class-toggle
+    default: false
+  - id: klartext-hide-search-counts
+    title: Hide Search Match Counts
+    description: "Hides the little number beside each file in the search results saying how many matches it holds. The \u201cN results\u201d line above them stays, and so do the tag pane\u2019s counts"
+    type: class-toggle
+    default: false
+  - id: klartext-hide-prompt-instructions
+    title: Hide Prompt Instructions
+    description: "Hides the keyboard hints along the foot of the quick switcher, the command palette and every other prompt. The shortcuts themselves are unchanged"
+    type: class-toggle
+    default: false
   - id: klartext-center-diagrams
     title: Center Mermaid Diagrams
     description: Centers rendered Mermaid diagrams in the text column (off = left-aligned)
@@ -2917,6 +2932,36 @@ body.klartext-hide-explorer-buttons .workspace-leaf-content[data-type="file-expl
 /* Properties above a note in Reading view. Live Preview keeps its own, and so
    does the properties pane — this is the reading surface only. */
 body.klartext-hide-reading-properties .markdown-reading-view .metadata-container {
+  display: none;
+}
+
+/* The "Search options" panel that drops out of a search field — the list of
+   path:, file:, tag: and the rest. `mod-search-suggestion` is Obsidian's own
+   name for it, and the scope has to stay: a bare `.suggestion-container` is
+   also the quick switcher's result list and the editor's [[link]] and tag
+   autocomplete, and hiding those would break typing rather than quieten it.
+   The operators keep working; only the reminder goes. */
+body.klartext-hide-search-suggestions .suggestion-container.mod-search-suggestion {
+  display: none;
+}
+
+/* The match count beside each file in the search results.
+
+   Scoped to `.search-result-file-title`, and it must be: `.tree-item-flair`
+   is a general badge, and the TAG PANE uses it for each tag's count —
+   measured, three of them there against three in the results. An unscoped
+   rule would blank those too, from a switch that never mentions tags.
+
+   The "N results" line above the list is a different number and stays. */
+body.klartext-hide-search-counts .search-result-file-title .tree-item-flair-outer {
+  display: none;
+}
+
+/* The keyboard hints along the foot of a prompt — "↑↓ to navigate", "↵ to
+   open". Every prompt, not only the quick switcher: the command palette
+   carries the same row, measured, and a switch that quietened one and left
+   the other would read as a bug. The shortcuts themselves are untouched. */
+body.klartext-hide-prompt-instructions .prompt-instructions {
   display: none;
 }
 

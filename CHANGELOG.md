@@ -5,7 +5,7 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.7.0] — 2026-09-24
 
 ### Added
 - **Twelve Style Settings switches for Obsidian's furniture**, every one **off
@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   which is what actually works on macOS; a `::-webkit-scrollbar` rule is ignored
   there. The window-button inset and alignment apply only where Obsidian's own
   reservation does, with the frame hidden and not in fullscreen.
+- `tools/check-highlight.mjs` fails if the marker-pen stroke changes shape: the
+  seven numbers that are the geometry, and the three properties the rule states
+  as `none` / `0` because each has been re-added by hand before — a
+  border-radius (which makes the end read as a chip), a text-shadow halo (which
+  inverts between light and dark) and a box-shadow.
 
 ### Changed
 - **The list tree line is the theme's, from end to end.** It used to be a
@@ -53,7 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Nesting is drawn to six levels; deeper items simply get no line rather than a
   wrong one.
-### Changed
 - **A search field now has an edge you can see.** The field at the top of the
   search, tag and backlinks panes was drawn as a filled box with a border, and
   the border was `--background-modifier-border` — a hairline meant for the seam
@@ -82,6 +86,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and focus for this field at a specificity a plain rule loses to, so both are
   restated here at its own and win on source order. Without that, crossing the
   field with a pointer put the boundary straight back under 3:1.
+- The HIGHLIGHT / MARK rule's comment now states the stroke's own reasoning: the
+  geometry, the measured ink strength (this ink sits 70 from the page, Euclidean
+  RGB distance sampled over the flat middle of the stroke; 60-140 is the band
+  where a mark on prose reads as a mark), and the three things not to add. It
+  previously pointed at a file outside the theme for half of that.
+
+### Removed
+- **`kit/highlight.css` and `tools/check-highlight-kit.mjs`.** The theme had
+  started carrying a copy of its own stroke for other projects to take, and a
+  guard that failed when the two drifted. That made the theme a dependency of
+  things that must work under any theme, and it made a change here a red build
+  elsewhere. The stroke stays exactly as it is; it is simply the theme's own
+  again, documented in the rule rather than in a file written for someone else.
 
 ### Fixed
 - **Selecting across a heading no longer draws its `#` over the first
@@ -128,28 +145,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bare `button` again. `.mod-cta` is exempt — that is Obsidian's own dialog
   chrome. It reads the selector's SUBJECT, so a rule that merely mentions a
   button in `:has()` is not flagged.
-
-### Added
-- `tools/check-highlight.mjs` fails if the marker-pen stroke changes shape: the
-  seven numbers that are the geometry, and the three properties the rule states
-  as `none` / `0` because each has been re-added by hand before — a
-  border-radius (which makes the end read as a chip), a text-shadow halo (which
-  inverts between light and dark) and a box-shadow.
-
-### Changed
-- The HIGHLIGHT / MARK rule's comment now states the stroke's own reasoning: the
-  geometry, the measured ink strength (this ink sits 70 from the page, Euclidean
-  RGB distance sampled over the flat middle of the stroke; 60-140 is the band
-  where a mark on prose reads as a mark), and the three things not to add. It
-  previously pointed at a file outside the theme for half of that.
-
-### Removed
-- **`kit/highlight.css` and `tools/check-highlight-kit.mjs`.** The theme had
-  started carrying a copy of its own stroke for other projects to take, and a
-  guard that failed when the two drifted. That made the theme a dependency of
-  things that must work under any theme, and it made a change here a red build
-  elsewhere. The stroke stays exactly as it is; it is simply the theme's own
-  again, documented in the rule rather than in a file written for someone else.
 
 ## [1.6.3] — 2026-09-19
 

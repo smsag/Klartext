@@ -23,6 +23,11 @@ settings:
     description: Hides the note header (breadcrumb, back/forward, actions); move the mouse to the top edge of the note to reveal it. Desktop only
     type: class-toggle
     default: true
+  - id: klartext-titlebar-nudge
+    title: Align Header With macOS Window Buttons
+    description: "macOS only, and only useful when something hides the tab bar (the Hider plugin, a snippet) so the note header becomes the window's top row: drops that row 4px so its icons share an axis with the red/amber/green buttons, which macOS places and no theme can move. Leave off with the tab bar visible — there the header is a second row and has nothing to line up with"
+    type: class-toggle
+    default: false
   - id: klartext-center-diagrams
     title: Center Mermaid Diagrams
     description: Centers rendered Mermaid diagrams in the text column (off = left-aligned)
@@ -2740,6 +2745,37 @@ body .workspace-leaf-content[data-type="markdown"] .view-content::before {
    down with it. */
 body.klartext-hide-view-header:not(.is-mobile) .mod-root .workspace-leaf-content[data-type="markdown"] .view-content::before {
   top: var(--header-height);
+}
+
+/* Align the note header with the macOS window buttons (Style Settings:
+   klartext-titlebar-nudge, off by default).
+
+   macOS draws the red/amber/green buttons and Electron places them; no
+   stylesheet can move them. What a theme can move is Obsidian's own row,
+   down to meet them.
+
+   MEASURED from a report, in CSS pixels below the window's top edge: the
+   buttons' centres at 23.5, the header's icons at 19.5. The row sits 4px
+   high. Confirmed on the reporter's Mac afterwards: both at 50.5, one axis.
+
+   NOT something this theme causes — the view header's box is identical here
+   and under Obsidian's default, top 40 and height 38 in both. Any theme shows
+   the same gap.
+
+   OFF BY DEFAULT, and this is the point of the toggle rather than a plain
+   rule. The header only reaches that row when something has hidden the tab
+   bar above it — the Hider plugin, a snippet. With the tab bar visible, which
+   is Obsidian's default, the header is a SECOND row with no buttons beside it,
+   and the same nudge would drop it 4px for nothing. A stylesheet cannot ask
+   whether another element is being hidden, so the person says.
+
+   The padding is TWICE the nudge because the row's contents are centred in a
+   fixed-height box: 8px above moves that centre down 4. The box keeps its own
+   height (measured 38 → 38.4), so nothing below it moves. */
+body.klartext-titlebar-nudge.mod-macos .mod-root .workspace-tabs.mod-top-left-space .workspace-leaf-content > .view-header {
+  --klartext-titlebar-nudge: 4px;
+  box-sizing: border-box;
+  padding-top: calc(var(--klartext-titlebar-nudge) * 2);
 }
 
 /* Hidden view header (Style Settings: klartext-hide-view-header). The header

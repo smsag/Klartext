@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Align the note header with the macOS window buttons** — a new Style
+  Settings toggle, **off by default**. macOS places the red/amber/green buttons
+  and no stylesheet can move them; what a theme can move is Obsidian's own row,
+  down to meet them. Measured from the report: the buttons' centres sit 23.5px
+  below the window's top edge and the header's icons 19.5, so the row is 4px
+  high; confirmed afterwards on the reporting Mac, both at 50.5.
+
+  It is a toggle rather than a plain rule because the header only reaches that
+  row when **something has hidden the tab bar above it** — the Hider plugin, a
+  snippet. With the tab bar visible, which is Obsidian's default, the header is
+  a second row with no buttons beside it and the same nudge would drop it 4px
+  for nothing. A stylesheet cannot ask whether another element is being hidden,
+  so the person says.
+
+  Not a fault of this theme, for the record: the view header's box is identical
+  here and under Obsidian's default — top 40, height 38 in both.
+
 ### Changed
 - **The list tree line is the theme's, from end to end.** It used to be a
   collaboration: Obsidian drew a guide on every indented line, and the theme

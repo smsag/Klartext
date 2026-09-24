@@ -5,6 +5,16 @@ All notable changes to the Klartext theme are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Readable Line Width points to the right switch.** The slider only takes
+  effect while Obsidian's own "Readable line length" is on, and its
+  description, the README and a comment all said that switch lives under
+  Appearance. It lives under **Settings → Editor**, next to "Show inline
+  title" (read from Obsidian 1.13.7's own settings code). The 1.5.1 entry
+  below repeats the old path; it stays as it was released.
+
 ## [2.0.0] — 2026-09-24
 
 ### Removed

@@ -97,7 +97,7 @@ setting lives in both.
 | Center Mermaid Diagrams | on | Centres rendered diagrams in the text column |
 | Greyscale Mermaid Diagrams | on | Renders diagrams in the theme's greys instead of Mermaid's colours |
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size. The phone's interface text follows it one to one |
-| Readable Line Width | 680px | Width of the text column. Read only while Appearance → "Readable line length" is on; with it off the column spans the pane |
+| Readable Line Width | 680px | Width of the text column. Read only while Settings → Editor → "Readable line length" is on; with it off the column spans the pane |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
 | Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |

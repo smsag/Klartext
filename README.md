@@ -103,6 +103,20 @@ setting lives in both.
 | Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the interface face to match the headings below it |
 | Lists Indented With Spaces | off | Turn on if Editor → "Indent using tabs" is off. Only the list tree line needs to know, and CSS cannot see it. Assumes four spaces per level |
 
+### Obsidian's own settings
+
+Most of Obsidian's appearance settings work as usual under Klartext: the accent
+colour, Appearance → Font size on the desktop, and Editor → "Readable line
+length". Four behave differently, and three of them on purpose:
+
+| Obsidian setting | Under Klartext |
+|---|---|
+| Appearance → Interface font | Followed: sidebars, tabs, headings and the note title set to the interface face. Fira Sans when it is empty |
+| Appearance → Monospace font | Followed: inline code, code blocks and math source. JetBrains Mono when it is empty |
+| Appearance → Text font | **Ignored.** The body stays JetBrains Mono, because every mark (the dash, the number, the checkbox, the heading badge) is placed on one character cell of the body face; a proportional face would pull them off the text edge |
+| Appearance → Font size | Followed on the desktop. **On a phone or tablet Mobile Body Text Size replaces it**, because the slider syncs with the vault and one value cannot serve both screens |
+| Editor → Tab indent size | Applies to code and plain indented lines, **not to list levels**: a nested item steps in by one marker column whatever the tab size (`--list-indent` changes that step) |
+
 After editing `theme.css` by hand, Style Settings keeps its cached parse until it
 re-reads the file. Switching theme away and back, or restarting Obsidian, refreshes it.
 

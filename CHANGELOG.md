@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Your interface and monospace fonts win.** Appearance → Interface font and
+  Monospace font did nothing under Klartext: every rule read the theme's own
+  Fira Sans and JetBrains Mono directly, past the value Obsidian builds from
+  the user's choice. They now read `--font-interface` and `--font-monospace`,
+  so a font set there paints the sidebars, tabs, headings and code; with
+  nothing set, the look is unchanged. The body stays JetBrains Mono whatever
+  Appearance → Text font says, because the marks are placed on its character
+  cell; the README now says so. Measured in Obsidian 1.13.7 with Georgia and
+  Courier New set: the interface and code follow, the heading badge and every
+  list mark stay on the same pixel. `tools/check-fonts.mjs` fails if a rule
+  reads `--font-interface-theme` or `--font-monospace-theme` again, or if the
+  body or the marks leave the body face.
+
+### Added
+- **The README lists the Obsidian settings Klartext treats differently**:
+  the text font (ignored), the font size on a phone (replaced by Mobile Body
+  Text Size) and Editor → "Tab indent size" (not applied to list levels,
+  which step by one marker column).
+
 ### Fixed
 - **Readable Line Width points to the right switch.** The slider only takes
   effect while Obsidian's own "Readable line length" is on, and its

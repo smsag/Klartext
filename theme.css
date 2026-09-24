@@ -1744,6 +1744,23 @@ blockquote,
   box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color);
 }
 
+/* A lazy line: text without ">" straight after a quote line, which Markdown
+   counts as part of the quote (Reading view joins it into the quote's
+   paragraph). Obsidian marks it .HyperMD-quote-lazy but writes no hanging
+   indent on it, because there is no "> " token to measure, so its text began
+   on the paragraph edge and the bar, which stands on the marker axis inside
+   that edge, ran through its first letter. One column per level puts it on
+   the quote's text edge, where Reading view has it. */
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy {
+  padding-inline-start: var(--klartext-col);
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2.HyperMD-quote-lazy {
+  padding-inline-start: calc(2 * var(--klartext-col));
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy {
+  padding-inline-start: calc(3 * var(--klartext-col));
+}
+
 /* No vertical padding on the first/last quote line: the bar spans the
    quote's line boxes exactly, flush like a callout's rule. */
 

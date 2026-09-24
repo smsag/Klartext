@@ -1,0 +1,90 @@
+# Publish a release of the theme: Actions → Release → Run workflow, with the
+# version to release. Obsidian's convention: the tag is the bare version
+# (2.1.0, not v2.1.0), and the release carries theme.css and manifest.json.
+#
+# It refuses, before anything is published, unless:
+#   - it runs on the default branch;
+#   - the version is x.y.z, equals manifest.json's, and has no tag yet;
+#   - every tools/check-*.mjs guard and stylelint pass;
+#   - theme.css is what fonts/embed.py builds from src/theme.css;
+#   - CHANGELOG.md has a non-empty "## [x.y.z]" section, which becomes the notes.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, as in manifest.json (for example 2.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run on the default branch only
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]; then
+            echo "::error::Releases are cut from $DEFAULT_BRANCH, not $GITHUB_REF_NAME."
+            exit 1
+          fi
+
+      - name: Version is x.y.z, matches manifest.json, and is not tagged yet
+        run: |
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::\"$VERSION\" is not x.y.z (Obsidian tags carry no v)."
+            exit 1
+          fi
+          manifest="$(node -p "require('./manifest.json').version")"
+          if [ "$manifest" != "$VERSION" ]; then
+            echo "::error::manifest.json says $manifest, not $VERSION. Bump it on $GITHUB_REF_NAME first."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null; then
+            echo "::error::Tag $VERSION already exists."
+            exit 1
+          fi
+
+      - name: Guards
+        run: for guard in tools/check-*.mjs; do node "$guard"; done
+
+      - name: Stylelint
+        run: npx --yes stylelint@17 src/theme.css
+
+      - name: theme.css is built from src/theme.css
+        run: |
+          python3 fonts/embed.py
+          if ! git diff --quiet -- theme.css; then
+            echo "::error::theme.css is stale. Run python3 fonts/embed.py and commit it."
+            exit 1
+          fi
+
+      - name: Release notes from CHANGELOG.md
+        run: node tools/release-notes.mjs "$VERSION" "$RUNNER_TEMP/notes.md"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION" theme.css manifest.json \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"

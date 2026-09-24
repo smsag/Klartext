@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-09-24
+
+**The first release since 1.7.0, so it also carries 2.0.0** (its entry is in CHANGELOG.md). From 1.7.0
+that means: **thirteen settings moved to the
+[Klartext plugin](https://github.com/smsag/klartext-plugin)** (the tab bar,
+status bar, vault name, scroll bars, sidebar buttons, tooltips, the file
+explorer's buttons, Reading-view properties, search suggestions and counts,
+prompt hints, the view header and the window-button alignment). They are not
+migrated: install the plugin and switch on again what you had on.
+
 ### Changed
 - **Your interface and monospace fonts win; the note's own type stays.**
   Appearance → Interface font and Monospace font did nothing under Klartext:

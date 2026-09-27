@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-09-27
+
 ### Changed
 
 - **Code blocks are frameless, with a header row.** No fill, no corners and no dashed box: a hairline above and below, and inside the top one a row with the mark `</>`, the language and, on the right, the copy control, shown while the pointer is on the block and always on a phone. The code starts on the text edge, as the prose around it does. The same in Live Preview and Reading view; in Live Preview the row is Obsidian's own label on the fence line, so it copies as it always did, and while the cursor is in the block the fence shows as typed. The mark is three characters in the code face, not an icon, like the theme's other marks.

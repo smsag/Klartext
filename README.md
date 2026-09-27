@@ -23,8 +23,8 @@ one file and follow Obsidian's own light/dark setting.
   hung in the margin. A list item takes a dash, whichever of `-`, `*` or `+` was
   typed; an ordered item takes its number alone, without the dot. A task takes its
   box, a quote its bar. A collapsible section opens with `+` and closes with `−`. A
-  code block's language is a lowercase word. None of these are images, so they scale
-  with your text size and match the body face.
+  code block is headed by `</>` and its language as typed, between two hairlines.
+  None of these are images, so they scale with your text size and match the body face.
 - **One left edge.** Headings and prose start on the paragraph edge, and every mark
   sits right there, in the text flow: the dash, the number, the checkbox, the quote
   bar. Their text starts one marker column further in — the same edge for lists,
@@ -93,7 +93,7 @@ setting lives in both.
 
 | Option | Default | What it does |
 |---|---|---|
-| Dotted Code & Header Fill | on | A faint dot-grid texture on code blocks and table headers |
+| Dotted Table Header Fill | on | A faint dot-grid texture on table headers |
 | Center Mermaid Diagrams | on | Centres rendered diagrams in the text column |
 | Greyscale Mermaid Diagrams | on | Renders diagrams in the theme's greys instead of Mermaid's colours |
 | Mobile Body Text Size | 14px | Body text on phone and tablet, independent of Appearance → Font size. The phone's interface text follows it one to one |

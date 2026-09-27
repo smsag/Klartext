@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Code blocks are frameless, with a header row.** No fill, no corners and no dashed box: a hairline above and below, and inside the top one a row with the mark `</>`, the language and, on the right, the copy control, shown while the pointer is on the block and always on a phone. The code starts on the text edge, as the prose around it does. The same in Live Preview and Reading view; in Live Preview the row is Obsidian's own label on the fence line, so it copies as it always did, and while the cursor is in the block the fence shows as typed. The mark is three characters in the code face, not an icon, like the theme's other marks.
+- **The language is read from the block.** Reading view names it from the block's `language-…` class, set in the code face with the nine characters of "language-" indented out of view, so every language reads as it was typed: `py` as `py`, a language no list knows as itself. The list of 45 languages the old badge knew is gone.
+- **Dotted Code & Header Fill is Dotted Table Header Fill.** A frameless code block has no surface to texture. The setting keeps its id, so an existing choice carries over.
+
+### Fixed
+
+- **No language glued to the code in Pythia.** The old badge was drawn on every rendered code block, including in plugin views that draw their own header; in Pythia's answers it landed in the flow of the code and the first line read `pydef`. The header is now drawn only in a note: Reading view, an embed, a hover preview. `tools/check-code-header.mjs` fails if it spreads again.
+
 ## [2.1.0] — 2026-09-24
 
 **The first release since 1.7.0, so it also carries 2.0.0** (its entry is in CHANGELOG.md). From 1.7.0

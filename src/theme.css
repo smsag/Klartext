@@ -14,8 +14,8 @@ name: Klartext
 id: klartext
 settings:
   - id: klartext-dotted-bg
-    title: Dotted Code & Header Fill
-    description: Gives code blocks and table headers a subtle dot-grid texture
+    title: Dotted Table Header Fill
+    description: Gives table headers a subtle dot-grid texture
     type: class-toggle
     default: true
   - id: klartext-center-diagrams
@@ -138,7 +138,7 @@ body.theme-dark {
 
   --code-bg:               #f4f4f2;
   --code-text:             #1a1a1a;
-  --code-border:           #d4d4d0;   /* dashed code-fence border — visible but soft */
+  --code-border:           #d4d4d0;   /* a soft line: greyscale diagrams outline their nodes with it */
   --table-header-bg:       var(--surface-muted);
   --table-stripe-bg:       rgba(0,0,0,0.025);   /* zebra rows — a hair darker than the page */
   --klartext-dot-color:    rgba(0,0,0,0.05);   /* paper dot-grid — faint */
@@ -197,7 +197,7 @@ body.theme-dark {
 
   --code-bg:               #222222;
   --code-text:             #d4d4d0;
-  --code-border:           #3a3a3a;   /* dashed code-fence border — visible but soft */
+  --code-border:           #3a3a3a;   /* a soft line: greyscale diagrams outline their nodes with it */
   --table-header-bg:       var(--surface-muted);
   --table-stripe-bg:       rgba(255,255,255,0.03);   /* zebra rows — a hair lighter than the page */
   --klartext-dot-color:    rgba(255,255,255,0.045);   /* paper dot-grid — faint */
@@ -1175,17 +1175,28 @@ code,
   border: none;
 }
 
-pre,
-.markdown-preview-view pre {
+/* A code block is frameless: no fill, no corners, a hairline above and
+   below, and a header row inside the top one that names the language
+   (see CODE BLOCK HEADER). The code starts on the text edge, as the prose
+   around it does, and the top padding is the header row's height plus the
+   air around it. Only in a note (Reading view, an embed, a hover preview): a
+   code block a plugin renders into a view of its own keeps the plugin's look
+   and its own header, if it has one.
+     On `.markdown-preview-view pre`, which ties Obsidian's own
+   `.markdown-rendered pre` (0,1,1) and wins by loading later: a bare `pre`
+   loses to it, and Obsidian's padding and zero-width border stayed. */
+pre {
   position: relative;
-  background-color: var(--code-bg);
-  border: 1px dashed var(--code-border);
-  border-radius: var(--klartext-radius-block);
-  /* Top padding is the control row's full height (inset, button, inset), so
-     the first line of code starts BELOW the copy button and the language
-     label rather than running under them; on mobile Obsidian keeps the
-     button shown at all times, so any overlap is visible there. */
-  padding: calc(var(--klartext-code-inset) * 2 + var(--klartext-code-btn)) 1.2em 1.1em;
+}
+
+.markdown-preview-view pre {
+  background-color: transparent;
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  border-bottom: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  padding: calc(var(--klartext-code-btn) + var(--klartext-code-inset) * 2) 0
+    calc(var(--klartext-code-inset) * 2);
 }
 
 pre code,
@@ -1198,11 +1209,9 @@ pre code,
 
 /* ------------------------------------------------------------------
    DOTTED FILL  (Style Settings: klartext-dotted-bg)
-   Textures the code-block and table-header surfaces only — layered
+   Textures the table-header surface only — layered
    over their solid fill via background-image, so the base color shows.
    ------------------------------------------------------------------ */
-body.klartext-dotted-bg pre,
-body.klartext-dotted-bg .markdown-preview-view pre,
 body.klartext-dotted-bg .markdown-rendered th,
 body.klartext-dotted-bg .markdown-source-view.mod-cm6 th,
 body.klartext-dotted-bg .markdown-rendered thead tr > *,
@@ -1240,126 +1249,78 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
 }
 
 /* ------------------------------------------------------------------
-   CODE FENCE MARKERS
+   CODE BLOCK HEADER
+
+   One row inside the block's top hairline: the mark `</>`, the language as
+   it was typed, and on the right the copy control, shown under the pointer.
+   The mark is three characters in the code face, not an icon, like every
+   other mark of this theme; it scales with the text and needs no image.
    ------------------------------------------------------------------ */
 
-/* Geometry for the two controls that sit in a code block's top-right corner:
-   the copy button and the language label. Copy button in the corner, label
-   to its left, in both modes.
-     Lengths are computed from the editor font size, NOT written in em. An
-   absolute offset in em resolves against the element's OWN font size, and
-   the label is set at 0.72em while the button is not — em tokens would put
-   the two on different scales and the gap between them would drift. */
+/* Geometry, computed from the body size, not written in em: an absolute
+   offset in em resolves against the element's OWN font size, and the header
+   is set smaller than the code under it. */
 /* stylelint-disable-next-line no-duplicate-selectors */
 body {
-  --klartext-code-btn:    calc(var(--klartext-font-size) * 1.3);   /* the button's box */
-  --klartext-code-inset:  calc(var(--klartext-font-size) * 0.3);   /* corner to control */
-  --klartext-code-gap:    calc(var(--klartext-font-size) * 0.45);  /* button to label */
-  /* Where the label sits when a copy button shares the corner with it. */
-  --klartext-code-label-x: calc(var(--klartext-code-inset) + var(--klartext-code-btn) + var(--klartext-code-gap));
+  --klartext-code-btn:   calc(var(--klartext-font-size) * 1.3);   /* the header row, and the copy control's box */
+  --klartext-code-inset: calc(var(--klartext-font-size) * 0.3);   /* hairline to header, header to code */
+  --klartext-code-head:  calc(var(--klartext-font-size) * 0.72);  /* the header's type size */
 }
 
-/* Language badge — Live Preview (Obsidian renders .code-block-flair here).
-   Boxed to the button's height and centred in it, so label and icon share
-   one baseline however long the language name is. */
-.code-block-flair {
-  position: absolute !important;
-  top: var(--klartext-code-inset) !important;
-  right: var(--klartext-code-inset) !important;
-  height: var(--klartext-code-btn) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  font-family: var(--font-interface) !important;
-  font-size: 0.72em !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.01em !important;
-  text-transform: lowercase !important;
-  color: var(--text-faint) !important;
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-}
+/* Reading view. Obsidian renders `<pre class="language-python">` and nothing
+   that names the language in words, so the header is drawn from the block
+   itself: the mark as ::before, the language as ::after.
 
-/* …shifted left of the button only when this block actually has one, so a
-   block with no copy control keeps its label in the corner. All three
-   shapes the control takes across versions are matched, and all as a DIRECT
-   child of the block: a control nested inside the flair itself travels with
-   the label and must not push it sideways. */
-.cm-preview-code-block:has(> .copy-code-button) .code-block-flair,
-.cm-preview-code-block:has(> .clickable-icon) .code-block-flair,
-.cm-preview-code-block:has(> button) .code-block-flair {
-  right: var(--klartext-code-label-x) !important;
-}
+   The language is the class, read with attr(). It reads "language-python";
+   the header is set in the code face, where "language-" is exactly nine
+   characters of equal width, so a -9ch indent moves those nine out of the
+   clipped box and leaves the word that was typed. No list of languages to
+   keep: `weirdlang` reads as typed. Only a pre with that one class gets a
+   label; with a second class (a plugin's) the class string is not a
+   language, and the block keeps the mark alone.
 
-/* Language badge — Reading view. Obsidian shows no label here by default,
-   so we synthesize one from the Prism `language-*` class on <pre>.
-   Shared visual style (no content); the language rules below supply the text. */
-.markdown-rendered pre[class*="language-"]::before {
+   Only in `.markdown-preview-view`, which is a note being read, an embed or
+   a hover preview. A plugin that renders markdown into a view of its own,
+   Pythia for one, draws its own code header, and a second one here printed
+   the language straight into its code ("pydef"). */
+.markdown-preview-view pre::before,
+.markdown-preview-view pre[class^="language-"]:not([class*=" "])::after {
   position: absolute;
   top: var(--klartext-code-inset);
-  right: var(--klartext-code-inset);
   height: var(--klartext-code-btn);
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-interface);
-  font-size: 0.72em;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  text-transform: lowercase;
+  font-family: var(--font-monospace);
+  font-size: var(--klartext-code-head);
+  line-height: var(--klartext-code-btn);
   color: var(--text-faint);
+  white-space: nowrap;
   pointer-events: none;
 }
 
-/* …and left of the button when the block carries one. Obsidian hides the
-   button until hover on desktop but keeps it mounted, so the label holds one
-   position instead of sliding sideways under the cursor. */
-.markdown-rendered pre[class*="language-"]:has(> .copy-code-button)::before {
-  right: var(--klartext-code-label-x);
+.markdown-preview-view pre::before {
+  content: "</>";
+  left: 0;
 }
 
-/* Common languages → label text. Unlisted languages simply show no badge. */
-pre.language-md::before,       pre.language-markdown::before      { content: "md"; }
-pre.language-js::before,       pre.language-javascript::before    { content: "js"; }
-pre.language-jsx::before                                          { content: "jsx"; }
-pre.language-ts::before,       pre.language-typescript::before    { content: "ts"; }
-pre.language-tsx::before                                          { content: "tsx"; }
-pre.language-py::before,       pre.language-python::before        { content: "py"; }
-pre.language-rb::before,       pre.language-ruby::before          { content: "rb"; }
-pre.language-go::before                                           { content: "go"; }
-pre.language-rs::before,       pre.language-rust::before          { content: "rs"; }
-pre.language-c::before                                            { content: "c"; }
-pre.language-cpp::before,      pre.language-cxx::before           { content: "cpp"; }
-pre.language-cs::before,       pre.language-csharp::before        { content: "c#"; }
-pre.language-java::before                                         { content: "java"; }
-pre.language-kotlin::before,   pre.language-kt::before            { content: "kotlin"; }
-pre.language-swift::before                                        { content: "swift"; }
-pre.language-php::before                                          { content: "php"; }
-pre.language-bash::before,     pre.language-sh::before,
-pre.language-shell::before,    pre.language-zsh::before           { content: "bash"; }
-pre.language-json::before                                         { content: "json"; }
-pre.language-yaml::before,     pre.language-yml::before           { content: "yaml"; }
-pre.language-toml::before                                         { content: "toml"; }
-pre.language-ini::before                                          { content: "ini"; }
-pre.language-css::before                                          { content: "css"; }
-pre.language-scss::before,     pre.language-sass::before          { content: "scss"; }
-pre.language-html::before                                         { content: "html"; }
-pre.language-xml::before                                          { content: "xml"; }
-pre.language-sql::before                                          { content: "sql"; }
-pre.language-diff::before                                         { content: "diff"; }
-pre.language-dataview::before                                     { content: "dataview"; }
-pre.language-dataviewjs::before                                   { content: "dataviewjs"; }
+/* The word starts one character after the mark: the mark is three
+   characters of the same face, so the same unit places it. It stops short
+   of the copy control, and a name too long for the row ends in an ellipsis. */
+.markdown-preview-view pre[class^="language-"]:not([class*=" "])::after {
+  content: attr(class);
+  left: 4ch;
+  max-width: calc(100% - 4ch - var(--klartext-code-btn) * 2);
+  overflow: hidden;
+  text-indent: -9ch;
+  text-overflow: ellipsis;
+}
 
-/* Copy button — pinned to the top-right corner in BOTH modes, with the
-   language label to its left (rules above). The button owns the corner and
-   the label is placed off the button's box, so the gap between them does not
-   depend on the label's length ("js" against "dataviewjs").
-     Sized down to one square of --klartext-code-btn with the glyph inside
-   it, rather than Obsidian's text-button padding. */
-.markdown-rendered pre .copy-code-button,
-.markdown-source-view.mod-cm6 .copy-code-button {
+/* The copy control: Obsidian's own button, which it shows only while the
+   pointer is on the block and keeps shown on a phone. Moved into the header
+   row at its right end, and sized down to one square of the row's height
+   with the glyph inside it, rather than Obsidian's text-button padding. */
+.markdown-rendered pre .copy-code-button {
   top: var(--klartext-code-inset);
-  right: var(--klartext-code-inset);
-  inset-inline-end: var(--klartext-code-inset);
+  right: 0;
+  inset-inline-end: 0;
   width: var(--klartext-code-btn);
   height: var(--klartext-code-btn);
   min-width: 0;
@@ -1368,82 +1329,45 @@ pre.language-dataviewjs::before                                   { content: "da
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72em;
   color: var(--text-faint);
   background: transparent;
   border: none;
   box-shadow: none;
 }
 
-/* Mobile keeps the button mounted at all times and widens it back to `auto`
-   from `.is-mobile .markdown-rendered button.copy-code-button` (0,3,1),
-   which out-ranks the rule above (0,2,1), so the box would collapse to the
-   glyph and the label's offset no longer match it. Restated at equal
-   specificity; theme.css loads later, so this wins the tie. */
+/* Mobile widens the button back to `auto` from `.is-mobile .markdown-rendered
+   button.copy-code-button` (0,3,1), which out-ranks the rule above (0,2,1).
+   Restated at equal specificity; theme.css loads later, so this wins. */
 body.is-mobile .markdown-rendered .copy-code-button {
   width: var(--klartext-code-btn);
 }
 
-/* The Lucide glyph inside it. Obsidian sizes icons from --icon-size, which
-   is set per context and is far larger than this button; pinned to the
-   button's own box so the icon can never outgrow it. */
-.markdown-rendered pre .copy-code-button .svg-icon,
-.markdown-source-view.mod-cm6 .copy-code-button .svg-icon {
-  width: calc(var(--klartext-code-btn) * 0.62);
-  height: calc(var(--klartext-code-btn) * 0.62);
-}
-
-/* …and the same cap keyed off the BLOCK rather than the button, so the icon
-   is sized whatever Obsidian calls the control that holds it. Live Preview
-   builds its code-block corner differently from Reading view and the class
-   there has changed between versions; the rule above only bites if the
-   control is a .copy-code-button. Every Lucide glyph reads its box from
-   --icon-size on `svg.svg-icon` (0,1,1), so both a token on the container
-   and a direct match on the glyph are set here — the token covers icons
-   that size themselves, the direct match covers any that are pinned
-   elsewhere. Scoped to code blocks, so nothing else on the page moves. */
-.markdown-source-view.mod-cm6 .cm-preview-code-block,
-.markdown-source-view.mod-cm6 .code-block-flair,
+/* Every Lucide glyph reads its box from --icon-size; pinned to the row so
+   the copy glyph cannot outgrow it. */
 .markdown-rendered pre {
   --icon-size: calc(var(--klartext-code-btn) * 0.62);
   --icon-stroke: 2px;
 }
-.markdown-source-view.mod-cm6 .cm-preview-code-block svg.svg-icon,
-.markdown-source-view.mod-cm6 .code-block-flair svg.svg-icon,
 .markdown-rendered pre svg.svg-icon {
   width: calc(var(--klartext-code-btn) * 0.62);
   height: calc(var(--klartext-code-btn) * 0.62);
 }
 
-/* The control's own box in Live Preview, for the same reason: pin whatever
-   sits in that corner to the button's square so it cannot overrun the top
-   padding and land on the first line of code. Restricted to a direct child
-   of the block wrapper or of the flair, so a button a plugin renders INSIDE
-   the code block's content is left alone. */
-.markdown-source-view.mod-cm6 .cm-preview-code-block > .clickable-icon,
-.markdown-source-view.mod-cm6 .cm-preview-code-block > button,
-.markdown-source-view.mod-cm6 .code-block-flair > .clickable-icon,
-.markdown-source-view.mod-cm6 .code-block-flair > button {
-  width: var(--klartext-code-btn);
-  height: var(--klartext-code-btn);
-  min-width: 0;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-faint);
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
+/* Live Preview. Here the block is lines of the editor, and the fence line
+   is the header: while the cursor is elsewhere, Obsidian replaces the
+   ```python on it with its "flair", a span holding the language's name
+   ("Python") that copies the block when pressed. While the cursor is in the
+   block the fence shows as typed and the flair is gone, so the header never
+   sits on top of the source.
 
-/* Fence lines in live preview — continuous dashed border down both sides,
-   closed off top and bottom on the begin/end delimiter lines. */
+   The lines lose their fill and side borders; the fence lines carry the two
+   hairlines. !important because Obsidian paints these lines from
+   `.cm-s-obsidian div.HyperMD-codeblock-bg` and its begin/end variants. */
 .HyperMD-codeblock {
-  background: var(--code-bg) !important;
-  border-left: 1px dashed var(--code-border) !important;
-  border-right: 1px dashed var(--code-border) !important;
+  background: transparent !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-radius: 0 !important;
 }
 
 .HyperMD-codeblock-begin,
@@ -1451,38 +1375,93 @@ body.is-mobile .markdown-rendered .copy-code-button {
   color: var(--text-faint) !important;
 }
 
-/* The two ends of the fence. The side borders run down every code line
-   (above); these close the box, top and bottom, and carry the block radius
-   on the corners that actually have one. !important because Obsidian paints
-   the codeblock lines from its own rules at a higher specificity. The air
-   inside those ends is a separate rule, further down — it has to carry a
-   longer selector than these do, for the reason given there. */
 .HyperMD-codeblock-begin {
-  border-top: 1px dashed var(--code-border) !important;
-  border-radius: var(--klartext-radius-block) var(--klartext-radius-block) 0 0 !important;
+  position: relative;
+  border-top: 1px solid var(--background-modifier-border) !important;
 }
 
 .HyperMD-codeblock-end {
-  border-bottom: 1px dashed var(--code-border) !important;
-  border-radius: 0 0 var(--klartext-radius-block) var(--klartext-radius-block) !important;
+  border-bottom: 1px solid var(--background-modifier-border) !important;
 }
 
-/* Air inside the fence. Obsidian gives code lines a padding-inline-start and
-   nothing vertical, so the opening ``` would sit directly on the border drawn
-   above it. Padded on the two delimiter lines rather than on
-   .HyperMD-codeblock, so it lands once at each end instead of on every line
-   of code. Both ends get the same amount: the top is what reads as wrong,
-   but padding only the top would leave the block visibly lopsided.
-   The selector carries Obsidian's own `.markdown-source-view.mod-cm6
-   .cm-line` prefix because that rule zeroes padding as a SHORTHAND at
-   (0,3,0) — the plain class above is (0,1,0) and loses to it, which is why
-   a short selector here does nothing at all. Derived from the editor font,
-   so it tracks the text size. */
+/* The code on the text edge, as in Reading view and as the header's mark.
+   Obsidian indents every code line by --size-4-4; restated at its own
+   selector, which loads earlier. A code block inside a list item keeps the
+   indent, which Obsidian computes differently there. */
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock:not(.HyperMD-list-line) {
+  padding-inline-start: 0;
+}
+
+/* Air between the hairlines and the code. Obsidian zeroes a line's padding
+   as a shorthand at (0,3,0) (`.markdown-source-view.mod-cm6 .cm-line`), so the
+   selector carries that prefix; a plain class loses to it and does nothing. */
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock-begin {
-  padding-top: calc(var(--klartext-font-size) * 0.35);
+  padding-top: var(--klartext-code-inset);
 }
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock-end {
-  padding-bottom: calc(var(--klartext-font-size) * 0.35);
+  padding-bottom: var(--klartext-code-inset);
+}
+
+/* The flair becomes the header: the whole row, from the code's own left edge
+   to the line's end, with the mark, the name in lowercase, and the copy
+   glyph at the far end. The row lets presses through to the line beneath,
+   so a press on the name puts the cursor on the fence as it would without
+   the header; only the copy glyph takes them, and a press there is a press
+   on the flair, which is Obsidian's copy. !important because Obsidian's own
+   flair rule places it in the top-right corner at a higher specificity. */
+.markdown-source-view.mod-cm6 .code-block-flair {
+  position: absolute !important;
+  top: var(--klartext-code-inset) !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: var(--klartext-code-btn) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1ch;
+  padding: 0 !important;
+  font-family: var(--font-monospace) !important;
+  font-size: var(--klartext-code-head) !important;
+  font-weight: 400 !important;
+  text-transform: lowercase !important;
+  color: var(--text-faint) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  pointer-events: none;
+}
+
+.markdown-source-view.mod-cm6 .code-block-flair::before {
+  content: "</>";
+}
+
+/* A block without a language: Obsidian puts a copy glyph in the flair where
+   the name would be. The copy control at the row's end does that job. */
+.markdown-source-view.mod-cm6 .code-block-flair > svg {
+  display: none;
+}
+
+.markdown-source-view.mod-cm6 .code-block-flair::after {
+  content: "";
+  margin-left: auto;
+  width: var(--klartext-code-btn);
+  height: var(--klartext-code-btn);
+  background-color: var(--text-faint);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>") center / 62% no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>") center / 62% no-repeat;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Shown while the pointer is anywhere on its block, as Reading view does,
+   and always where there is no pointer. A block is lines, so "on its block"
+   is: this fence line is hovered, or a code line after it is, but not one
+   after its own closing fence, which belongs to a later block. The editor
+   draws only the lines in view, so the sibling scan is short. */
+@media (hover: hover) {
+  .markdown-source-view.mod-cm6 .HyperMD-codeblock-begin:not(:hover):not(:has(~ .HyperMD-codeblock:hover)) .code-block-flair::after,
+  .markdown-source-view.mod-cm6 .HyperMD-codeblock-begin:has(~ .HyperMD-codeblock-end ~ .HyperMD-codeblock:hover):not(:hover) .code-block-flair::after {
+    visibility: hidden;
+  }
 }
 
 /* Syntax tokens — CM6 (live preview & editor) */

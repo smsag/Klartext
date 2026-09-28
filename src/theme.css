@@ -646,6 +646,63 @@ body.is-mobile {
   color: var(--text-subtle);
 }
 
+/* A SIDEBAR'S TAB STRIP IS PART OF ITS PANEL. The panels under it are on
+   `--background-primary` (see the note above `.nav-folder`), so a strip in the
+   bar colour read as a grey patch in the corner of the window — the only one,
+   for anyone who hides the editor's tab bar. The strip takes the panel's
+   ground instead, and its border the same colour, so the layout stays put.
+     With the strip white, a white active tab would say nothing, so the active
+   tab is marked the way the sidebar's rows already are: its icon in the text
+   colour, the others muted, and a 2px accent rule under it. Obsidian's
+   rounded curves and outline are what joined the active tab to the panel
+   below; on one ground they have nothing to join, so they go. The editor's
+   tab bar is left as it is. `tools/check-sidebar-tabs.mjs` guards this. */
+.workspace-split.mod-sidedock .workspace-tab-header-container {
+  background-color: var(--background-primary);
+  border-bottom-color: var(--background-primary);
+}
+
+.workspace-split.mod-sidedock .workspace-tab-header.is-active {
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+.workspace-split.mod-sidedock .workspace-tab-header .workspace-tab-header-inner-icon {
+  color: var(--text-muted);
+}
+
+.workspace-split.mod-sidedock .workspace-tab-header.is-active .workspace-tab-header-inner-icon {
+  color: var(--text-normal);
+}
+
+.workspace-split.mod-sidedock .workspace-tab-header.is-active::before {
+  content: none;
+}
+
+/* Obsidian hides this pseudo-element in the right sidebar; it is the rule. */
+.workspace-split.mod-sidedock .workspace-tab-header.is-active::after {
+  content: "";
+  display: block;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  width: auto;
+  height: 2px;
+  border-radius: 1px;
+  clip-path: none;
+  box-shadow: none;
+  background-color: var(--color-accent);
+}
+
+/* The window buttons at the right end of the top row (Windows and Linux; on
+   macOS they sit on the left and have no ground) carried the title bar's grey
+   into the same corner. Transparent, they stand on whatever strip is below:
+   the sidebar's, now white, or the editor's tab bar when the sidebar is shut. */
+.is-hidden-frameless:not(.is-fullscreen) .titlebar-button-container.mod-right,
+.is-hidden-frameless:not(.is-fullscreen).is-focused .titlebar-button-container.mod-right {
+  background-color: transparent;
+}
+
 /* ------------------------------------------------------------------
    EDITOR — SOURCE & LIVE PREVIEW
    ------------------------------------------------------------------ */

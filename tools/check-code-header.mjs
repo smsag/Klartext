@@ -19,9 +19,10 @@
 //
 //     node tools/check-code-header.mjs
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
   arms: m[1].split(",").map((s) => s.trim()).filter(Boolean),
   body: m[2],
@@ -29,7 +30,10 @@ const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
 
 const failures = [];
 
-const onPre = rules.filter((r) => r.arms.some((a) => /\bpre\b[^\s>+~]*::(before|after)/.test(a)));
+// Attribute values are blanked before the test: `[class*=" "]` holds a space,
+// which the combinator test below would read as the end of the compound.
+const compound = (a) => a.replace(/\[[^\]]*\]/g, "[]");
+const onPre = rules.filter((r) => r.arms.some((a) => /\bpre\b[^\s>+~]*::(before|after)/.test(compound(a))));
 for (const r of onPre) {
   for (const a of r.arms) {
     if (!a.startsWith(".markdown-preview-view ")) failures.push(`"${a}" draws on a <pre> outside a note`);

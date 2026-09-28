@@ -27,10 +27,11 @@
 //     node tools/check-tree-line.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const FILE = "src/theme.css";
 const css = readFileSync(FILE, "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 /** The declarations of the rule a selector opens. */
 function ruleBody(selector) {
@@ -44,7 +45,7 @@ function ruleBody(selector) {
 
 const failures = [];
 
-const LINE = ".markdown-source-view.mod-cm6.is-live-preview .cm-line[class*=\"HyperMD-list-line-\"]";
+const LINE = ".markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line {";
 const columns = ruleBody(LINE);
 if (columns === null) {
   failures.push("the ancestor-column rule is missing from the stylesheet");

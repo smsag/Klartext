@@ -73,11 +73,6 @@ settings:
         value: klartext-title-mono
       - label: Heading sans
         value: klartext-title-sans
-  - id: klartext-space-indent
-    title: Lists Indented With Spaces
-    description: Turn this on if Obsidian's Editor → "Indent using tabs" is OFF. A tab is rendered at exactly one marker column, spaces at their own width, so the two are not the same distance — and a stylesheet cannot see which one a vault types. Only the list tree line depends on knowing; everything else follows Obsidian either way. Assumes Obsidian's default of four spaces per level; another Tab indent size takes a one-line snippet on the --klartext-tab-size token, see the README
-    type: class-toggle
-    default: false
 */
 
 /* ------------------------------------------------------------------
@@ -287,18 +282,14 @@ body {
   --klartext-col:           calc(var(--klartext-font-size) * 0.6 * var(--klartext-marker-column));
   --klartext-cell:          calc(var(--klartext-font-size) * 0.6);   /* one character cell of the body face */
   /* ONE INDENT LEVEL, as it is actually rendered. Obsidian sets `tab-size`
-     to a LENGTH on list lines, so a tab is exactly --list-indent wide;
-     spaces cannot be, so a space-indented level renders at its own width
-     instead — the number of spaces times one character cell, floored by the
-     --list-indent minimum Obsidian puts on the indent span. Obsidian's own
-     indentation guides ride on those spans and are right either way; the
-     theme's list tree line is the one thing that has to know the width
-     without an element to measure, and CSS cannot read the indent
-     characters — hence the Style Settings toggle rather than detection.
-     The cell, not `ch`: `ch` would resolve against whatever font the
-     element carries, and this token is read on `body`, where that is the
-     interface face. */
-  --klartext-tab-size:      4;        /* spaces per level when Lists Indented With Spaces is on; Obsidian's default, overridable by snippet */
+     to a LENGTH on list lines, so a tab is exactly --list-indent wide; the
+     theme sizes a space in a list indent to one --klartext-tab-size-th of
+     that (see LISTS), so a level written with spaces is the same width. The
+     list tree line reads this one unit either way. It used to take a Style
+     Settings toggle ("Lists Indented With Spaces") to switch the tree line to
+     a space's natural width; with spaces sized to the unit, that toggle would
+     only have drawn the line twice as far out, and it is gone. */
+  --klartext-tab-size:      4;        /* spaces per level; Obsidian's default Tab indent size, overridable by snippet */
   --klartext-indent-unit:   var(--list-indent);
   /* The font stack for a marker token: the companion face first, so its
      empty glyphs hide the source characters, JetBrains Mono for the digits. */
@@ -331,11 +322,14 @@ body {
      offset is the axis minus that pixel, and the line lands ON the axis. */
   --indentation-guide-editing-indent: calc(var(--klartext-marker-axis) - 1px);
   --readability-blockquote-spacing: var(--klartext-block-gap);
+  /* The gap BELOW a block in Reading view: the paragraph gap, one length for
+     the whole block family (see READING VIEW). */
+  --klartext-block-bottom:  calc(var(--klartext-p-gap) * var(--klartext-blank-line));
   --section-spacing:        1.6em;      /* hr rhythm */
-  /* ONE vertical gap for every standalone block the theme spaces itself
+  /* ONE vertical gap ABOVE every standalone block the theme spaces itself
      (callouts, quotes, embeds, images, media, diagrams, math). Next to a
-     paragraph the larger paragraph gap collapses over it; between two
-     blocks this is the gap. */
+     paragraph the larger paragraph gap collapses over it. Below a block,
+     Reading view uses --klartext-block-bottom instead (see READING VIEW). */
   --klartext-block-gap:     1.5em;
   /* Corner radii. FOUR families, all at ONE value: content blocks (code,
      tables, embeds, images, media, the properties box), panels (modals,
@@ -514,13 +508,6 @@ body {
   --graph-node-attachment:  var(--text-muted);
 }
 
-/* Lists indented with spaces (Style Settings: klartext-space-indent). See
-   --klartext-indent-unit. `body.klartext-space-indent` (0,1,1) out-ranks the
-   `body` block the token is declared in. */
-body.klartext-space-indent {
-  --klartext-indent-unit: max(var(--list-indent), calc(var(--klartext-tab-size) * var(--klartext-cell)));
-}
-
 /* ------------------------------------------------------------------
    GLOBAL BASE
    ------------------------------------------------------------------ */
@@ -553,6 +540,7 @@ body.is-mobile {
   font-family: var(--font-interface);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
 }
 
@@ -797,7 +785,9 @@ body.is-mobile {
    draw its `#` on top of the first letter, a quote line its `>`.
    Restated as transparent under selection. Each selector mirrors the one
    that made the mark transparent in the first place (LIVE PREVIEW rule 2 and
-   BLOCKQUOTE).
+   BLOCKQUOTE). The quote's used to name `.hmd-inactive-line`, a CodeMirror 5
+   class that no line carries any more. An INCOMPLETE heading shows its hashes
+   on purpose (rule 4c), and gets its colour back under selection there.
 
    `!important` is not optional here. The rule above sets its colour with
    `!important`, and an important declaration beats every normal one
@@ -807,7 +797,7 @@ body.is-mobile {
    declarations specificity decides again, and these out-rank the bare
    `::selection`. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-header::selection,
-.hmd-inactive-line .cm-formatting-quote::selection {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-formatting-quote::selection {
   color: transparent !important;
 }
 
@@ -898,22 +888,39 @@ body {
    within 1px of Live Preview.
    The selectors restate Obsidian's own (0,2,3) — `div + div > hN`, for the
    3em gap it gives a heading that follows a block — so the theme's values
-   win on load order rather than by accident. */
+   win on load order rather than by accident.
+     Each level is its own selector rather than one `:is(h2, …, h6)`: a rule
+   whose last compound is a multi-argument `:is()` cannot be filed under a tag,
+   so Chromium tries it against every element on every style recalculation.
+   Written out, it is tried only against headings. */
 .markdown-preview-view h1,
 .markdown-preview-view.markdown-rendered div + div > h1,
 .markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h1 {
   margin-top: calc(var(--klartext-blank-line) + var(--klartext-font-size) * 0.125);
   margin-bottom: var(--klartext-blank-line);
 }
-.markdown-preview-view :is(h2, h3, h4, h5, h6),
-.markdown-preview-view.markdown-rendered div + div > :is(h2, h3, h4, h5, h6),
-.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + :is(h2, h3, h4, h5, h6) {
+.markdown-preview-view h2, .markdown-preview-view h3, .markdown-preview-view h4,
+.markdown-preview-view h5, .markdown-preview-view h6,
+.markdown-preview-view.markdown-rendered div + div > h2,
+.markdown-preview-view.markdown-rendered div + div > h3,
+.markdown-preview-view.markdown-rendered div + div > h4,
+.markdown-preview-view.markdown-rendered div + div > h5,
+.markdown-preview-view.markdown-rendered div + div > h6,
+.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h2,
+.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h3,
+.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h4,
+.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h5,
+.markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h6 {
   margin-top: var(--klartext-blank-line);
   margin-bottom: calc(var(--klartext-blank-line) + var(--klartext-font-size) * 0.12);
 }
 /* The block before a heading hands the gap to the heading, so one rule owns
-   it. Without this the paragraph's own bottom margin wins the collapse. */
-.markdown-preview-view div:has(+ div > :is(h1, h2, h3, h4, h5, h6)) > :is(p, ul, ol, blockquote, pre, table, .markdown-embed, .math-block, .mermaid) {
+   it. Without this the paragraph's own bottom margin wins the collapse.
+     Read off Obsidian's block wrappers (.el-p, .el-h2, …), which is how its
+   own heading rules find a heading. The argument of :has() decides what
+   Chromium re-checks when the page changes, and `+ div > h2` named every div
+   in the document; `+ .el-h2` names only a heading's wrapper. */
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > :is(p, ul, ol, blockquote, pre, table, .callout, .markdown-embed, .math-block, .mermaid) {
   margin-bottom: 0 !important;
 }
 .cm-header-6, .markdown-preview-view h6 { color: var(--text-muted); }
@@ -922,18 +929,13 @@ body {
   color: var(--text-faint);   /* source mode only — zero-width in Live Preview */
 }
 
-/* Live-Edit heading spacing — the SAME em values as the reading-view margins.
-   Obsidian sets font-size: var(--hN-size) on the heading LINE itself, so the
-   line is heading-sized and em here means what it means on h1–h6 in reading
-   view. Obsidian also gives every heading line `padding-top: var(--p-spacing)`;
-   it is zeroed here so these margins are the single source of the gap. */
+/* Live Preview heading spacing. Obsidian gives every heading line
+   `padding-top: var(--p-spacing)`; it is zeroed, so the gap around a heading
+   is the blank source lines beside it and nothing else (see VERTICAL RHYTHM).
+   A margin cannot add to it: Obsidian zeroes every .cm-content child's margin
+   with `margin: 0 !important`, so the heading margins that used to sit here
+   computed to 0 and are gone. */
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-header { padding-top: 0; }
-.HyperMD-header-1 { margin-top: 1.4em; margin-bottom: 0.35em; }
-.HyperMD-header-2 { margin-top: 1.6em; margin-bottom: 0.4em;  }
-.HyperMD-header-3 { margin-top: 1.4em; margin-bottom: 0.35em; }
-.HyperMD-header-4 { margin-top: 1.3em; margin-bottom: 0.3em;  }
-.HyperMD-header-5 { margin-top: 1.2em; margin-bottom: 0.3em;  }
-.HyperMD-header-6 { margin-top: 1.1em; margin-bottom: 0.3em;  }
 
 /* ------------------------------------------------------------------
    LIVE PREVIEW — HEADING MARKER + ONE SHARED LEFT EDGE
@@ -985,7 +987,7 @@ body {
       heading with a small gap, so it reads as part of the headline (like a
       numbered item's "1–"). The fold chevron, which Obsidian places at the
       line start, is moved to the far side of the marker (rule 4). */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]::before {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header::before {
   display: inline-block;
   box-sizing: border-box;
   width: var(--klartext-heading-prefix);
@@ -1021,7 +1023,7 @@ body {
       there and its margin never reaches the layout; that is what let a
       level-dependent length sit here unnoticed. `tools/check-heading-gutter.mjs`
       now refuses any unqualified `em` in these rules. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"] .cm-fold-indicator .collapse-indicator {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator {
   margin-inline-end: calc(var(--klartext-font-size) * 1.2 + var(--klartext-cell));
 }
 
@@ -1049,13 +1051,13 @@ body.is-mobile .markdown-reading-view > .markdown-preview-view {   /* the note i
   padding-left: calc(var(--file-margins-x) + var(--klartext-marker-width));
   padding-right: calc(var(--file-margins-x) + var(--klartext-marker-width));
 }
-body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]::before {
+body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header::before {
   padding-right: calc(var(--klartext-font-size) * 0.4);
 }
-body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"] .cm-fold-indicator .collapse-indicator {
+body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator {
   margin-inline-end: 0;
 }
-body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:has(> .cm-fold-indicator.is-collapsed)::before {
+body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-fold-indicator.is-collapsed)::before {
   visibility: hidden;
 }
 
@@ -1081,18 +1083,19 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
        If a build bundles the trailing space into the hash span, neither half
        fires until the first real character; CSS cannot read a span's text,
        so that degrades to the later jump rather than misfiring. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
   font-size: var(--klartext-font-size);
   font-weight: 400;
-  margin-top: 0;
-  margin-bottom: 0;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
   content: none;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header-"]:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
   letter-spacing: normal !important;
   color: var(--text-faint);
+}
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header::selection {
+  color: var(--text-normal) !important;   /* the hashes are shown here, so a selection must not hide them (see the ::selection rules under EDITOR) */
 }
 
 /* 5) Lists and quotes — the hanging indent is deliberately NOT overridden.
@@ -1112,23 +1115,22 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
        CodeMirror renders as a .cm-line holding only a <br>. That line gets
        a taller line-height (--klartext-p-gap × body line height), so
        paragraphs separate without touching the document. Blank lines
-       directly before/after a heading stay at one line height: the
-       heading's own margins already set that rhythm and must not double up.
+       directly before/after a heading stay at one line height, which with
+       the heading's own taller line is the gap the Reading-view margins in
+       HEADINGS are measured against.
        The same applies to blank lines directly before/after a LIST: a list
        belongs to the sentence that introduces it and to the block that
        follows it, so those blank lines stay at one line height too.
        Likewise around a horizontal RULE, whose own margins set its gap.
-     • LIST ITEMS — top-level items get a small margin-top so separate items
-       read as separate; wrapped lines inside an item (same .cm-line) and
-       nested items stay tight. A margin only, so Obsidian's own hanging
-       indent is untouched. The first item after a blank line drops that
-       margin: the blank line is the separation there.
+     • LIST ITEMS are spaced by Obsidian alone (--list-spacing, as padding).
+       A margin on a list line does not reach the editor, for the reason
+       given under HEADINGS; the 0.4em the theme once set here computed to 0.
    ------------------------------------------------------------------ */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):not([class*="HyperMD-codeblock"]):not([class*="HyperMD-frontmatter"]) {
   line-height: calc(var(--klartext-line-height) * var(--klartext-p-gap));
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-header"] + .cm-line:has(> br:only-child),
-.markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line[class*="HyperMD-header"]),
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header + .cm-line:has(> br:only-child),
+.markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-header),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line + .cm-line:has(> br:only-child),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-list-line),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-hr + .cm-line:has(> br:only-child),
@@ -1136,12 +1138,6 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
   line-height: var(--klartext-line-height);
 }
 
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1 {
-  margin-top: 0.4em;
-}
-.markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child) + .cm-line.HyperMD-list-line-1 {
-  margin-top: 0;
-}
 
 /* Fold chevron on list lines. Obsidian anchors the collapse icon just before
    the item's own column (its glyph's right edge lands at minus this margin,
@@ -1188,14 +1184,17 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="Hy
    against the 36px Live Preview gives them.
    So the block family states the paragraph gap explicitly on its bottom
    side. Same length the paragraph itself uses, so a block sits in the flow
-   exactly as a paragraph does, in both directions and in both modes. */
+   exactly as a paragraph does, in both directions and in both modes.
+     A callout is one of the family. Left out, it kept its own 1.5em below
+   and came out 24px short of the 36px Live Preview gives it (measured). */
 .markdown-preview-view blockquote,
+.markdown-preview-view .callout,
 .markdown-preview-view pre,
 .markdown-preview-view table,
 .markdown-preview-view .markdown-embed,
 .markdown-preview-view .math-block,
 .markdown-preview-view .mermaid {
-  margin-bottom: calc(var(--klartext-p-gap) * var(--klartext-blank-line)) !important;
+  margin-bottom: var(--klartext-block-bottom) !important;
 }
 
 .markdown-reading-view,
@@ -1271,9 +1270,8 @@ pre code,
    ------------------------------------------------------------------ */
 body.klartext-dotted-bg .markdown-rendered th,
 body.klartext-dotted-bg .markdown-source-view.mod-cm6 th,
-body.klartext-dotted-bg .markdown-rendered thead tr > *,
-body.klartext-dotted-bg .markdown-source-view.mod-cm6 thead tr > *,
-body.klartext-dotted-bg .markdown-source-view.mod-cm6 table > thead > tr > * {
+body.klartext-dotted-bg .markdown-rendered thead tr > td,
+body.klartext-dotted-bg .markdown-source-view.mod-cm6 thead tr > td {
   background-image: radial-gradient(var(--klartext-dot-color) 0.8px, transparent 1px);
   background-size: 7px 7px;
   background-position: 0 0;
@@ -1322,6 +1320,9 @@ body {
   --klartext-code-btn:   calc(var(--klartext-font-size) * 1.3);   /* the header row, and the copy control's box */
   --klartext-code-inset: calc(var(--klartext-font-size) * 0.3);   /* hairline to header, header to code */
   --klartext-code-head:  calc(var(--klartext-font-size) * 0.72);  /* the header's type size */
+  /* Lucide's copy glyph, the one Obsidian's own copy button draws; one
+     definition for the prefixed and the standard mask. */
+  --klartext-copy-icon:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>");
 }
 
 /* Reading view. Obsidian renders `<pre class="language-python">` and nothing
@@ -1503,8 +1504,8 @@ body.is-mobile .markdown-rendered .copy-code-button {
   width: var(--klartext-code-btn);
   height: var(--klartext-code-btn);
   background-color: var(--text-faint);
-  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>") center / 62% no-repeat;
-  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>") center / 62% no-repeat;
+  -webkit-mask: var(--klartext-copy-icon) center / 62% no-repeat;
+  mask: var(--klartext-copy-icon) center / 62% no-repeat;
   pointer-events: auto;
   cursor: pointer;
 }
@@ -1552,15 +1553,13 @@ body.is-mobile .markdown-rendered .copy-code-button {
 /* ------------------------------------------------------------------
    BOLD, ITALIC, LINKS
    ------------------------------------------------------------------ */
-strong, .cm-strong { font-weight: 700; color: var(--text-normal); }   /* real 700 — JetBrains Mono is embedded as a 400–700 variable face */
-/* …except inside a done or cancelled task, where the whole item is struck
-   and greyed: bold keeps its weight but takes the item's colour. */
-.task-list-item.is-checked strong,
-.task-list-item[data-task="-"] strong,
-.HyperMD-task-line[data-task="x"] .cm-strong,
-.HyperMD-task-line[data-task="X"] .cm-strong,
-.HyperMD-task-line[data-task="-"] .cm-strong { color: inherit !important; }
-em,     .cm-em     { font-style: italic; color: var(--text-normal); }
+/* Bold and italic change the weight and the slant and nothing else: they take
+   the colour of what they stand in. A fixed text colour here turned emphasis
+   dark inside everything the theme mutes — a Reading-view quote, a footnote,
+   an h6, a done or cancelled task — while Live Preview kept the quote's grey,
+   so the two modes disagreed. */
+strong, .cm-strong { font-weight: 700; color: inherit; }   /* real 700 — JetBrains Mono is embedded as a 400–700 variable face */
+em,     .cm-em     { font-style: italic; color: inherit; }
 del,    .cm-strikethrough { text-decoration: line-through; color: var(--text-subtle); }
 
 a,
@@ -1587,10 +1586,13 @@ a:hover,
    editor modes and Reading view. Anchors in the interface keep the
    undecorated style from the block above; a permanent underline on every
    settings link would be noise.
+     A link to a note that does not exist yet keeps Obsidian's dimmed colour
+   and no rule, in Reading view as in the editor: the rule says where a link
+   goes, and this one goes nowhere.
      The underline is permanent, so hover adds none. It changes colour, and
    an external link's dotted rule closes up to solid — the two states meet at
    the moment you are about to leave. */
-.internal-link,
+.internal-link:not(.is-unresolved),
 .markdown-source-view.mod-cm6 .cm-hmd-internal-link .cm-underline {
   text-decoration: underline solid currentColor !important;
   text-decoration-thickness: 1px !important;
@@ -1649,7 +1651,7 @@ blockquote,
      wins the collapse and comes out short of what Live Preview gives. Above,
      the paragraph's larger bottom margin still wins and the block gap is
      never seen. */
-  margin: var(--readability-blockquote-spacing) 0 calc(var(--klartext-p-gap) * var(--klartext-blank-line)) var(--klartext-marker-axis) !important;
+  margin: var(--readability-blockquote-spacing) 0 var(--klartext-block-bottom) var(--klartext-marker-axis) !important;
   padding: 0 0 0 calc(var(--klartext-col) - var(--klartext-marker-axis) - var(--klartext-rule-width));   /* text at the column's far edge, like list text; no vertical padding, so the bar spans the text's line boxes exactly like a callout's rule */
   color: var(--text-muted);
   font-size: calc(1em * var(--klartext-quote-scale));
@@ -1699,11 +1701,11 @@ blockquote,
   font-size: var(--klartext-quote-font-size);
 }
 
-.cm-line[class*="HyperMD-quote"] {
+.cm-line.HyperMD-quote {
   font-size: var(--klartext-quote-font-size);
 }
 
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-formatting-quote {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-formatting-quote {
   display: inline-block;
   box-sizing: border-box;
   width: var(--klartext-col);
@@ -1726,7 +1728,7 @@ blockquote,
    after "> " sits on the edge, so the hanging indent matches the body
    lines. The tag itself
    is faint (see the rule for .cm-hmd-barelink below). */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-formatting-quote.cm-hmd-callout {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-formatting-quote.cm-hmd-callout {
   display: inline;
   width: auto;
   min-width: 0;
@@ -1741,7 +1743,7 @@ blockquote,
    "[!note]" on the header line as a bare link (cm-hmd-barelink cm-link),
    which the LINKS section would underline dotted like an external link. It
    is a mark, not a link: faint, upright, undecorated. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-quote"] .cm-hmd-barelink {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-hmd-barelink {
   color: var(--text-faint);
   font-style: normal;
   text-decoration: none !important;
@@ -1916,7 +1918,8 @@ hr,
    and anything clipped or painted over hides the caret.
      Bulleted: no character of the token is visible, so the dash is drawn by
    a ::before followed by one cell of margin as the gap; end-aligned, it
-   lands in the column's third cell. One dash for "-", "*" and "+", since
+   lands in the column's last mark cell (the first at two cells, the third
+   at four). One dash for "-", "*" and "+", since
    Reading view cannot tell them apart either.
      Numbered: the digits are visible and right-align on their own; the dot
    (or parenthesis) keeps one cell of advance but no ink, so "10." ends on
@@ -1982,8 +1985,9 @@ hr,
   margin: 0;
 }
 
-/* Item spacing as in the editor: top-level items 0.4em apart, nested items
-   tight (the editor gives .HyperMD-list-line-1 a 0.4em top margin only). */
+/* Item spacing: top-level items 0.4em apart, nested items tight. (Live
+   Preview spaces its items by Obsidian's --list-spacing; the 0.4em margin the
+   theme once gave it there never reached the editor, see VERTICAL RHYTHM.) */
 .markdown-preview-view li      { margin-bottom: 0.4em; }
 .markdown-preview-view li li   { margin-bottom: 0; }
 
@@ -2067,9 +2071,25 @@ hr,
    NOT font-size, which would fix the width and then collapse the box: the
    indentation guide is .cm-indent's own ::before and takes its height, so
    shrinking the face to make four spaces fit drops the guide from 25.6px to
-   6.4px. Measured both. */
+   6.4px. Measured both.
+
+   WITHOUT INDENTATION GUIDES there is no .cm-indent at all. Obsidian emits
+   those boxes only while Editor → "Show indentation guides" is on; with it
+   off the indent is bare text in .cm-hmd-list-indent, there is no floor, and
+   a space-indented level painted two levels deep (measured: level 2 at 38px
+   with four spaces, 19px with a tab). So the indent itself sets each space to
+   one --klartext-tab-size-th of a level: --klartext-tab-size spaces are then
+   exactly one unit, like a tab, and a partial indent shrinks in proportion.
+   With guides on, the .cm-indent rule above replaces this inside each box,
+   and a remainder keeps Obsidian's own width, as before. */
+.markdown-source-view.mod-cm6 .cm-hmd-list-indent {
+  word-spacing: calc(var(--list-indent) / var(--klartext-tab-size) - var(--klartext-cell));
+}
 .markdown-source-view.mod-cm6 .cm-hmd-list-indent > .cm-indent {
   word-spacing: calc(var(--klartext-cell) * -1);
+}
+.markdown-source-view.mod-cm6 .cm-hmd-list-indent > .cm-indent-spacing {
+  word-spacing: normal;
 }
 
 /* The list tree line (Live Preview), drawn by the theme from end to end.
@@ -2090,7 +2110,7 @@ hr,
 
    The colour is --indentation-guide-color throughout, so a vault that restyles
    guides restyles this, and the print block's `transparent` still removes it. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line[class*="HyperMD-list-line-"] {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line {
   /* Where the 1px band sits inside its unit. Obsidian's own guide is a box
      with the border on its END side, so the band lands one width past the
      inset; matching it keeps the line where readers already expect it. */
@@ -2162,11 +2182,14 @@ hr,
 }
 
 /* The cursor's own level, where Obsidian marks it. Only reachable while its
-   setting is on, which is why the active guide above is left painting. */
+   setting is on, which is why the active guide above is left painting.
+   Obsidian puts every level's .cm-indent inside ONE .cm-hmd-list-indent
+   wrapper, so the n-th level is `.cm-hmd-list-indent > .cm-indent:nth-child(n)`;
+   written as a child of the line, levels 2 to 4 never matched. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent.cm-active-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 > .cm-indent:nth-child(2).cm-active-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 > .cm-indent:nth-child(3).cm-active-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-indent:nth-child(4).cm-active-indent)::after {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 > .cm-hmd-list-indent > .cm-indent:nth-child(2).cm-active-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 > .cm-hmd-list-indent > .cm-indent:nth-child(3).cm-active-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-hmd-list-indent > .cm-indent:nth-child(4).cm-active-indent)::after {
   width: var(--indentation-guide-width-active);
   background-color: var(--indentation-guide-color-active);
 }
@@ -2214,8 +2237,9 @@ hr,
    above reaches the editor through `.markdown-source-view.mod-cm6 th`, also
    (0,2,1) and later in the cascade, so it would win that tie there and
    left-align every column however the delimiter row was written.
-   Restated for both modes at (0,3,1), above the theme's own default and
-   above Obsidian's, so the markup decides in either view. `start`/`end`
+   Restated for both modes, above the theme's own default and Obsidian's —
+   the editor arms at (0,3,1), the Reading arms at (0,2,1), which tie
+   Obsidian's and win by loading later — so the markup decides in either view. `start`/`end`
    rather than `left`/`right`, matching Obsidian and staying correct in RTL. */
 .markdown-rendered th[align="left"],
 .markdown-rendered td[align="left"],
@@ -2246,16 +2270,16 @@ hr,
 .markdown-source-view.mod-cm6 tr:last-child td { border-bottom: none; }
 
 /* Header row — subtle fill on EVERY header cell (including empty ones),
-   medium weight, no forced uppercase. `thead tr > *` catches the Live-Preview
-   table editor's trailing empty header cells; :focus-within keeps the fill
-   while a header cell is being edited (Obsidian otherwise paints it white). */
+   medium weight, no forced uppercase. `thead tr > td` catches a header row
+   written with td cells; :focus-within keeps the fill while a header cell is
+   being edited (Obsidian otherwise paints it white). Cells are named rather
+   than `thead tr > *`: a rule ending in `*` is tried against every element
+   on every style recalculation, and a table row holds nothing but cells. */
 .markdown-rendered th,
 .markdown-source-view.mod-cm6 th,
-.markdown-rendered thead tr > *,
-.markdown-source-view.mod-cm6 thead tr > *,
-.markdown-source-view.mod-cm6 thead tr > *:focus,
-.markdown-source-view.mod-cm6 thead tr > *:focus-within,
-.markdown-source-view.mod-cm6 th:focus,
+.markdown-rendered thead tr > td,
+.markdown-source-view.mod-cm6 thead tr > td,
+.markdown-source-view.mod-cm6 thead tr > td:focus-within,
 .markdown-source-view.mod-cm6 th:focus-within {
   background-color: var(--table-header-bg) !important;
   border-bottom: 1px solid var(--border);   /* one step darker than the body gridlines; later than the cell rule, so it wins */
@@ -2266,8 +2290,8 @@ hr,
 
 /* Header cell content wrapper stays transparent — including while focused —
    so the cell's grey fill shows through instead of Obsidian's white edit bg. */
-.markdown-source-view.mod-cm6 thead tr > * .table-cell-wrapper,
-.markdown-source-view.mod-cm6 thead tr > * .table-cell-wrapper:focus,
+.markdown-source-view.mod-cm6 thead td .table-cell-wrapper,
+.markdown-source-view.mod-cm6 thead td .table-cell-wrapper:focus,
 .markdown-source-view.mod-cm6 thead th .table-cell-wrapper,
 .markdown-source-view.mod-cm6 thead th .table-cell-wrapper:focus {
   background: transparent;
@@ -2276,13 +2300,15 @@ hr,
 /* Zebra striping — every 2nd BODY row gets a whisper of grey, in both modes.
    Counting inside <tbody> leaves the header row (own fill) untouched; body row
    1 stays plain so it reads as continuous with the header.
-   `:is(td, th)` rather than `*`: Obsidian alternates COLUMN backgrounds with
+   `td` and `th` rather than `*`: Obsidian alternates COLUMN backgrounds with
    `.markdown-rendered tbody tr > td:nth-child(2n+2)` (specificity 0,2,3),
    which out-ranks the `> *` form (0,2,2) and would leave every even column
    of a striped row unpainted in Reading view. Equal specificity here; theme.css
    loads later and wins. */
-.markdown-rendered tbody tr:nth-child(even) > :is(td, th),
-.markdown-source-view.mod-cm6 tbody tr:nth-child(even) > :is(td, th) {
+.markdown-rendered tbody tr:nth-child(even) > td,
+.markdown-rendered tbody tr:nth-child(even) > th,
+.markdown-source-view.mod-cm6 tbody tr:nth-child(even) > td,
+.markdown-source-view.mod-cm6 tbody tr:nth-child(even) > th {
   background-color: var(--table-stripe-bg);
 }
 
@@ -2630,7 +2656,10 @@ button:not(.mod-cta):focus-visible {
    ------------------------------------------------------------------ */
 input[type="checkbox"] { accent-color: var(--interactive-accent); }
 
-.task-list-item-checkbox        { border-color: var(--border) !important; }
+/* The box's edge is a control boundary, held to WCAG 1.4.11's 3:1 like the
+   search field (see --klartext-field-rule). --border is a hairline between
+   surfaces and measured 1.23:1 on white: an empty task box all but vanished. */
+.task-list-item-checkbox        { border-color: var(--klartext-field-rule) !important; }
 .task-list-item-checkbox:checked {
   background-color: var(--interactive-accent) !important;
   border-color: var(--interactive-accent) !important;
@@ -2658,21 +2687,26 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   color: var(--text-normal);
 }
 
-/* Cancelled task `- [-]`, which Obsidian leaves as a plain open box. One
-   step lighter than done: struck through in the
+/* Cancelled task `- [-]`. One step lighter than done: struck through in the
    faint grey, and the box carries a short dash on a neutral fill instead of
-   a checkmark. Same treatment on editor lines and rendered items. */
+   a checkmark. Same treatment on editor lines and rendered items.
+     Obsidian counts any character in the box as done: a cancelled item is
+   `.is-checked` and its box `:checked`. So the done rules above reach it, and
+   they carry !important — measured, a cancelled task rendered exactly as a
+   done one, accent box and checkmark included, and the dash below was drawn
+   through the checkmark's mask. Everything here is therefore !important too,
+   and wins on specificity. */
 .markdown-rendered li.task-list-item[data-task="-"],
 .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="-"] {
-  color: var(--text-faint);
+  color: var(--text-faint) !important;
   text-decoration: line-through;
 }
 .markdown-rendered li.task-list-item[data-task="-"] > .task-list-item-checkbox,
 .markdown-rendered li.task-list-item[data-task="-"] > p > .task-list-item-checkbox,
 .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="-"] .task-list-item-checkbox {
   position: relative;
-  background-color: var(--surface-muted);
-  border-color: var(--border);
+  background-color: var(--surface-muted) !important;
+  border-color: var(--klartext-field-rule) !important;
 }
 .markdown-rendered li.task-list-item[data-task="-"] > .task-list-item-checkbox::after,
 .markdown-rendered li.task-list-item[data-task="-"] > p > .task-list-item-checkbox::after,
@@ -2682,9 +2716,12 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   left: 3px;
   right: 3px;
   top: calc(50% - 1px);
+  width: auto;
   height: 2px;
   border-radius: 1px;
   background-color: var(--text-subtle);
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* ------------------------------------------------------------------
@@ -2824,8 +2861,7 @@ body.is-phone .view-header-title {
    MOBILE SPECIFIC
    ------------------------------------------------------------------ */
 body.is-mobile {
-  /* Prevent WebKit from auto-inflating font sizes in narrow viewports */
-  -webkit-text-size-adjust: 100%;
+  /* WebKit's auto-inflation of narrow viewports is switched off in GLOBAL BASE. */
 
   /* BODY TEXT SIZE — mobile takes its own, off Appearance → Font size.
      That slider is stored in the vault's app.json, which syncs to every
@@ -3022,7 +3058,7 @@ body.is-mobile .mobile-toolbar-floating-options {
 }
 /* Live Preview: Obsidian zeroes every callout margin inside the editor
    (`.markdown-source-view.mod-cm6 .callout { margin: 0 }`, specificity
-   0,2,0), which would cancel the axis margin above and put the rule on the
+   0,3,0), which would cancel the axis margin above and put the rule on the
    text edge while the quote bars sit on the axis. Same specificity here, later
    in the cascade; only the start margin, the widget keeps its own rhythm. */
 .markdown-source-view.mod-cm6 .callout {
@@ -3100,7 +3136,7 @@ body.is-mobile .mobile-toolbar-floating-options {
   margin-bottom: var(--klartext-blank-line);
 }
 .callout-content > :last-child {
-  margin-bottom: 0;
+  margin-bottom: 0 !important;   /* the block family's bottom gap is !important too (READING VIEW); a callout ending in a quote or a code block kept 36px at its foot */
 }
 
 /* ------------------------------------------------------------------
@@ -3241,12 +3277,10 @@ body.is-mobile .mobile-toolbar-floating-options {
   overflow-y: auto;
 }
 
-/* The first block inside an embed drops its top margin: a heading would
-   carry its full blank-line margin and open the box with 60px of air against
-   11px at the bottom. Obsidian already zeroes the last block's bottom margin. */
-.markdown-embed .markdown-preview-sizer > div:first-child > :first-child {
-  margin-top: 0;
-}
+/* An embed's first block needs no rule to drop its top margin: Obsidian's own
+   `.markdown-preview-pusher + div:not(.mod-ui) > :first-child` does it (an
+   embedded note opening with a heading measured 0px). The theme's rule for it
+   named `div:first-child`, which is the empty pusher, and matched nothing. */
 
 .markdown-embed-link {
   color: var(--text-faint);
@@ -3406,8 +3440,7 @@ mark code,
   color: var(--text-muted);
 }
 
-.footnote-ref,
-a.footnote-ref {
+.footnote-ref {   /* Obsidian's <sup>; the link inside it is a.footnote-link */
   color: var(--interactive-accent);
   font-size: 0.75em;
   vertical-align: super;
@@ -3415,8 +3448,8 @@ a.footnote-ref {
   border-bottom: none;
 }
 
-/* The generic `.markdown-preview-view a` colour rule (0,1,1, and later in
-   the file) out-ranks the bare class and would paint the arrow in the accent;
+/* The generic `.markdown-preview-view a` colour rule (0,1,1, in LINKS)
+   out-ranks the bare class and would paint the arrow in the accent;
    (0,2,1) here wins regardless of order. */
 .markdown-preview-view a.footnote-backref,
 .footnote-backref {
@@ -3450,9 +3483,11 @@ a.footnote-ref {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.08) !important;
 }
 
+@media screen {   /* like every dark rule: a dark-mode print is light (see the light block) */
 .theme-dark .canvas-node.is-focused,
 .theme-dark .canvas-node.is-selected {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.12) !important;
+}
 }
 
 .canvas-node-container {
@@ -3576,7 +3611,9 @@ body.klartext-greyscale-diagrams .mermaid svg rect.labelBkg {
   fill: var(--background-primary) !important;
 }
 body.klartext-greyscale-diagrams .mermaid svg .edgeLabel,
-body.klartext-greyscale-diagrams .mermaid svg .edgeLabel *,
+body.klartext-greyscale-diagrams .mermaid svg .edgeLabel div,
+body.klartext-greyscale-diagrams .mermaid svg .edgeLabel span,
+body.klartext-greyscale-diagrams .mermaid svg .edgeLabel p,
 body.klartext-greyscale-diagrams .mermaid svg .labelBkg {
   background-color: var(--background-primary) !important;
   box-shadow: 0 0 0 0.3em var(--background-primary);
@@ -3635,8 +3672,8 @@ svg[aria-roledescription] tspan {
 }
 
 /* Rendered-block rhythm + geometry (independent of the toggles):
-     • the block sits in the page rhythm with the same 1.5em margins as
-       callouts; the svg keeps its own aspect ratio (no flex stretch), so
+     • the block sits in the page rhythm like every other block (1.5em
+       above; below, the Reading-view block gap); the svg keeps its own aspect ratio (no flex stretch), so
        the only air left is what Mermaid's own diagramPadding leaves;
      • node and subgraph corners read the theme's flat radius — CSS geometry
        properties win over Mermaid's rx/ry attributes;
@@ -3648,7 +3685,6 @@ svg[aria-roledescription] tspan {
        something CSS can grow.)
      • subgraph titles read as titles: medium weight (colour is set with the
        greyscale rules). */
-.markdown-source-view.mod-cm6 .cm-preview-code-block,
 .markdown-preview-view .mermaid {
   margin: var(--klartext-block-gap) 0;
 }
@@ -3755,9 +3791,13 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
    and diagrams. Inline math at body size in the text colour. Editor: the
    `$` delimiters are faint like other formatting, source math is the body
    monospace and not italic, and the display-math source keeps body size. */
+.markdown-preview-view .math-block {
+  margin: var(--klartext-block-gap) 0;
+}
+/* In the editor the block is a widget, a child of .cm-content, whose margins
+   Obsidian zeroes (see HEADINGS): only the alignment reaches it. */
 .markdown-preview-view .math-block,
 .markdown-source-view.mod-cm6 .math-block {
-  margin: var(--klartext-block-gap) 0;
   text-align: start;
 }
 .markdown-rendered .math-block > mjx-container[display="true"],
@@ -3913,10 +3953,10 @@ body {
     widows: 2;
   }
 
-  /* Screen-only decoration off: the dot grid on code fills and table heads
-     (declared !important, hence !important here), the panel shadow. */
-  body.klartext-dotted-bg .print :is(pre, th, thead tr > *) {
-    background-image: none !important;
+  /* Screen-only decoration off: the dot grid on table heads (see DOTTED
+     FILL), the panel shadow. */
+  body.klartext-dotted-bg .print :is(th, thead tr > td) {
+    background-image: none;
   }
   .print .markdown-preview-view :is(pre, .callout, table) {
     box-shadow: none !important;

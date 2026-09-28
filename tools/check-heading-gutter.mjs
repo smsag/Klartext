@@ -19,8 +19,8 @@ const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
 
 /** The rules that build the column, by a selector fragment each one carries. */
 const GUTTER = [
-  'HyperMD-header-"]::before',
-  'HyperMD-header-"] .cm-fold-indicator .collapse-indicator'
+  '.cm-line.HyperMD-header::before',
+  '.cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator'
 ];
 
 /** A length is body-relative when it is a var(), a px, or a plain multiplier. */

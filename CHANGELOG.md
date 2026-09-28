@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A cancelled task (`- [-]`) looks cancelled again.** Obsidian counts any character in the box as done, so the done rules reached it: it rendered exactly like a done task, with an accent box and a checkmark, and the theme's dash was drawn through the checkmark's shape. It now shows the faint strike and a neutral box with a dash, in both modes.
+- **A link to a note that does not exist has no underline in Reading view**, as in the editor and as the theme intends: the rule says where a link goes, and this one goes nowhere.
+- **Bold and italic keep the colour of what they stand in.** They were forced to the text colour, so emphasis turned dark inside a Reading-view quote, a footnote, an h6 or a done task, while Live Preview kept the quote's grey.
+- **The gap below a callout matches Live Preview**: 36px, like a quote or a code block, where Reading view gave it 24px. A callout that ends in a quote or a code block no longer keeps 36px of air at its foot.
+- **Lists indented with spaces sit at the same depth as tabbed ones with indentation guides off.** Without guides Obsidian draws no indent boxes, so the theme's correction never applied and a space-indented level painted two levels deep. A space in a list indent is now one quarter of a level (`--klartext-tab-size`), with guides on or off.
+- **The cursor's level is marked on the parent's tree segment at every depth.** The selectors for levels 2 to 4 named an element structure Obsidian does not build, and never matched.
+- **A task box's edge is visible.** It was drawn in the hairline colour, 1.23:1 on white; it now takes the field rule, above WCAG's 3:1 for a control's boundary.
+- **An incomplete heading's hashes stay visible when selected.**
+
+### Removed
+
+- **The Lists Indented With Spaces setting.** With spaces sized to the indent unit, it would only have drawn the tree line twice as far out.
+
+### Changed
+
+- **Less style work per page.** Selectors that ended in `:is(…)` or `*` (heading margins, table cells, the zebra, diagram labels) are written out per element, so Chromium no longer tries them against every element on every style recalculation, and attribute tests on `class` (`[class*="HyperMD-…"]`) are Obsidian's own base classes. The rule that hands a heading its gap reads Obsidian's block wrappers (`.el-h2`) instead of `div + div > h2`. Measured on a 3,000-line note, a full style recalculation takes about a tenth less; the dominant cost of a window resize is Obsidian's own.
+- **Dead rules are gone**: Live Preview heading and list margins that Obsidian's `margin: 0 !important` had always zeroed, the editor margins of code-preview and math widgets, an embed rule that matched an empty element, and selectors for CodeMirror 5 and footnote markup that no longer exists. Their comments, which still described them as working, are corrected.
+
+### Tooling
+
+- **The guards see rules inside `@media`.** They split the stylesheet on `}`, so the first rule of every `@media` block carried the prelude as its selector and was never checked: `@media screen { button:hover { … !important } }` passed the guard written to stop it. `tools/lib/stylesheet.mjs` unwraps conditional rules for every guard that splits the file.
+- **`check-code-header` reads selectors with attribute values in them**, whose spaces it took for combinators. **`check-list-indent`** also holds the guide-less space sizing, and **`check-sidebar-tabs`** says when it passes.
+- **CI** runs every guard, stylelint and the theme.css rebuild on each push and pull request, not only at release.
+
 ## [2.2.1] — 2026-09-28
 
 ### Changed

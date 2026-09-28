@@ -1,0 +1,38 @@
+# The release's gate, on every push and pull request: every tools/check-*.mjs
+# guard, stylelint, and theme.css rebuilt from src/theme.css. The guards used
+# to run only in the pre-commit hook (which each clone has to switch on) and in
+# the release itself, so a broken guard could first be found by a release.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Guards
+        run: for guard in tools/check-*.mjs; do node "$guard"; done
+      - name: Stylelint
+        run: npx --yes stylelint@17 src/theme.css
+      - name: theme.css is built from src/theme.css
+        run: |
+          python3 fonts/embed.py
+          if ! git diff --quiet -- theme.css; then
+            echo "::error::theme.css is stale. Run python3 fonts/embed.py and commit it."
+            exit 1
+          fi

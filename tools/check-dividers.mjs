@@ -10,12 +10,13 @@
 //     node tools/check-dividers.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const FILE = "src/theme.css";
 const css = readFileSync(FILE, "utf8");
 
 // Strip comments so a selector quoted in prose cannot fail the check.
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 // Selectors for the sidebar/editor seam. The handle is exempt: it is the one
 // element allowed to paint the line.

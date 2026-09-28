@@ -20,10 +20,11 @@
 //     node tools/check-button-hover.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const FILE = "src/theme.css";
 const css = readFileSync(FILE, "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 const fail = (...msg) => {
   console.error(`${FILE}: ${msg.join("\n  ")}`);

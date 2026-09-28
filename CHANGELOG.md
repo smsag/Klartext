@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The cursor's level is marked on the parent's tree segment at every depth.** The selectors for levels 2 to 4 named an element structure Obsidian does not build, and never matched.
 - **A task box's edge is visible.** It was drawn in the hairline colour, 1.23:1 on white; it now takes the field rule, above WCAG's 3:1 for a control's boundary.
 - **An incomplete heading's hashes stay visible when selected.**
+- **List items stand as close in Reading view as in Live Preview.** Reading view added 0.4em below every top-level item, so the same list stepped 34px a line there and 28px in the editor, where that gap had never taken effect. Both are 28px now.
 
 ### Removed
 

@@ -1985,11 +1985,11 @@ hr,
   margin: 0;
 }
 
-/* Item spacing: top-level items 0.4em apart, nested items tight. (Live
-   Preview spaces its items by Obsidian's --list-spacing; the 0.4em margin the
-   theme once gave it there never reached the editor, see VERTICAL RHYTHM.) */
-.markdown-preview-view li      { margin-bottom: 0.4em; }
-.markdown-preview-view li li   { margin-bottom: 0; }
+/* Item spacing: none of the theme's own, in either mode. Live Preview spaces
+   its items by Obsidian's --list-spacing alone (a margin never reaches the
+   editor, see VERTICAL RHYTHM), and Reading view follows it. It used to add
+   0.4em below each top-level item, so the same list stood 34px a line in
+   Reading view and 28px in Live Preview. */
 
 /* A callout or a quote INSIDE a list item takes that item gap too, not the
    prose block gap. Both blocks carry generous vertical margins (see
@@ -2004,8 +2004,8 @@ hr,
    the marker sitting 25px above the line it numbers; a quote turned a 24px
    block into 84px (22.32 above, 35.84 below). A three-item sublist came out
    184px tall against the 91px its content needs.
-   Same 0.4em as between items, so a block in an item is spaced like an item,
-   and the marker lands on its first line. !important because the blockquote
+   0.4em above and below, a small fixed step, so the block reads as part of
+   its item and the marker lands on its first line. !important because the blockquote
    rule this overrides carries one; the selector out-ranks both base rules on
    specificity in any case. Live Preview needs nothing: Obsidian does not
    build a callout widget for one written inside a list item, so those lines

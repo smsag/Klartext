@@ -19,8 +19,8 @@ const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
 
 /** The rules that build the column, by a selector fragment each one carries. */
 const GUTTER = [
-  'HyperMD-header-"]::before',
-  'HyperMD-header-"] .cm-fold-indicator .collapse-indicator'
+  '.cm-line.HyperMD-header::before',
+  '.cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator'
 ];
 
 /** A length is body-relative when it is a var(), a px, or a plain multiplier. */
@@ -43,6 +43,22 @@ for (const fragment of GUTTER) {
   }
   if (found === 0) {
     problems.push(`${fragment}\n      no rule with this selector any more; update this guard`);
+  }
+}
+
+// Hide Heading Level Marks takes the badge and the chevron's shift away and
+// nothing else: the column stays, or every block edge moves with the switch.
+const HIDE = "body.klartext-no-heading-marks";
+const hideRules = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].includes(HIDE));
+if (!hideRules.some((m) => m[1].includes("HyperMD-header::before") && /content:\s*none/.test(m[2]))) {
+  problems.push(`${HIDE}\n      no rule removes the badge`);
+}
+if (!hideRules.some((m) => m[1].includes(".collapse-indicator") && /margin-inline-end:\s*0/.test(m[2]))) {
+  problems.push(`${HIDE}\n      no rule returns the fold chevron to Obsidian's place`);
+}
+for (const m of hideRules) {
+  if (/padding|--klartext-heading-prefix/.test(m[2])) {
+    problems.push(`${HIDE}\n      touches the prefix column; the column must stay so no block edge moves`);
   }
 }
 

@@ -19,10 +19,11 @@
 //     node tools/check-list-indent.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const FILE = "src/theme.css";
 const css = readFileSync(FILE, "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 const fail = (...msg) => {
   console.error(`${FILE}: ${msg.join("\n  ")}`);
@@ -85,6 +86,24 @@ for (const block of bare.split("}")) {
   }
 }
 
+// Without indentation guides Obsidian emits no .cm-indent at all: the indent
+// is bare text in .cm-hmd-list-indent, with no floor, and only the space's own
+// width can be corrected. Measured: four spaces painted two levels deep.
+let sized = false;
+for (const block of bare.split("}")) {
+  const brace = block.indexOf("{");
+  if (brace === -1 || !/\.cm-hmd-list-indent\s*$/.test(block.slice(0, brace).trim())) continue;
+  const body = block.slice(brace + 1);
+  if (/word-spacing\s*:\s*calc\(\s*var\(--list-indent\)\s*\/\s*var\(--klartext-tab-size\)\s*-\s*var\(--klartext-cell\)\s*\)/.test(body)) sized = true;
+}
+if (tabSize > markerColumn && !sized) {
+  fail(
+    "with indentation guides off there is no .cm-indent floor, so a space in a list",
+    "indent must be sized to one --klartext-tab-size-th of a level on .cm-hmd-list-indent:",
+    "`word-spacing: calc(var(--list-indent) / var(--klartext-tab-size) - var(--klartext-cell))`.",
+  );
+}
+
 if (tabSize > markerColumn && !neutralised) {
   fail(
     `a space-indented level is ${tabSize} cells wide against a ${markerColumn}-cell unit,`,
@@ -99,5 +118,5 @@ if (tabSize > markerColumn && !neutralised) {
 console.log(
   `${FILE}: one level = one indent unit for tabs and spaces ` +
     `(${tabSize} cells vs ${markerColumn}-cell unit, ` +
-    `${neutralised ? "advance neutralised" : "floor sufficient"}) — ok`,
+    `${neutralised ? "advance neutralised" : "floor sufficient"}, ${sized ? "spaces sized without guides" : "no guide-less sizing needed"}) — ok`,
 );

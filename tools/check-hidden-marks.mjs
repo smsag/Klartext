@@ -17,9 +17,10 @@
 //
 //     node tools/check-hidden-marks.mjs
 import { readFileSync } from "node:fs";
+import { flatten } from "./lib/stylesheet.mjs";
 
 const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 /** Every rule as [selectorArms, body]. Flat enough for this stylesheet's selection rules. */
 const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [

@@ -12,10 +12,10 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-sidebar-tabs.mjs
 // The pre-commit hook and the release workflow run every tools/check-*.mjs.
-import { readFileSync } from "node:fs";
+import { readStylesheet } from "./lib/stylesheet.mjs";
 
 const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+const css = readStylesheet();
 
 /** Every declaration of the rules whose selector list contains `selector`. */
 function declarations(selector) {
@@ -69,3 +69,4 @@ if (failures.length) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
+console.log("sidebar tabs: the strip is on the panel's ground, and the active tab carries its rule.");

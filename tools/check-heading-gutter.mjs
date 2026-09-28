@@ -46,6 +46,22 @@ for (const fragment of GUTTER) {
   }
 }
 
+// Hide Heading Level Marks takes the badge and the chevron's shift away and
+// nothing else: the column stays, or every block edge moves with the switch.
+const HIDE = "body.klartext-no-heading-marks";
+const hideRules = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].includes(HIDE));
+if (!hideRules.some((m) => m[1].includes("HyperMD-header::before") && /content:\s*none/.test(m[2]))) {
+  problems.push(`${HIDE}\n      no rule removes the badge`);
+}
+if (!hideRules.some((m) => m[1].includes(".collapse-indicator") && /margin-inline-end:\s*0/.test(m[2]))) {
+  problems.push(`${HIDE}\n      no rule returns the fold chevron to Obsidian's place`);
+}
+for (const m of hideRules) {
+  if (/padding|--klartext-heading-prefix/.test(m[2])) {
+    problems.push(`${HIDE}\n      touches the prefix column; the column must stay so no block edge moves`);
+  }
+}
+
 if (problems.length) {
   console.error("check-heading-gutter: a length in the gutter is not body-relative.\n");
   for (const p of problems) console.error(`  - ${p}`);

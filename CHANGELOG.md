@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **An incomplete heading's hashes stay visible when selected.**
 - **List items stand as close in Reading view as in Live Preview.** Reading view added 0.4em below every top-level item, so the same list stepped 34px a line there and 28px in the editor, where that gap had never taken effect. Both are 28px now.
 
+### Added
+
+- **Hide Heading Level Marks** (Style Settings). Turns off the `#₁`…`#₆` marks in Live Preview's margin and returns the fold arrow to Obsidian's own place. The margin column stays, so lists, quotes and callouts keep their edge, and the typed hashes stay hidden, so a heading still never shifts.
+
 ### Removed
 
 - **The Lists Indented With Spaces setting.** With spaces sized to the indent unit, it would only have drawn the tree line twice as far out.

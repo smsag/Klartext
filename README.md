@@ -100,6 +100,7 @@ setting lives in both.
 | Readable Line Width | 680px | Width of the text column. Read only while Settings → Editor → "Readable line length" is on; with it off the column spans the pane |
 | Line Height | 1.6 | Body leading |
 | Marker Column | Two characters | Width of the column that holds the marks. Two: a dash or a single digit is flush with the text edge, numbers from 10 hang into the margin. Four: three digits fit inside, right-aligned |
+| Hide Heading Level Marks | off | Removes the `#₁`…`#₆` marks from Live Preview's margin and puts the fold arrow back where Obsidian has it. The margin column stays, so nothing else moves |
 | Note Title Font | Body monospace | The note's own title, which carries the h1 size and weight: the body face, or the heading face (Fira Sans) to match the headings below it |
 
 ### Obsidian's own settings

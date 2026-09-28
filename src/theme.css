@@ -63,6 +63,11 @@ settings:
         value: '2'
       - label: Four characters
         value: '4'
+  - id: klartext-no-heading-marks
+    title: Hide Heading Level Marks
+    description: Live Preview draws a heading's level as a small #₁…#₆ in the margin, and hides the typed hashes so a heading never shifts. On, the marks go and the fold arrow returns to where Obsidian puts it; the column they hang in stays, so every block keeps its left edge, and the typed hashes stay hidden
+    type: class-toggle
+    default: false
   - id: klartext-title-font
     title: Note Title Font
     description: The note's own title, above the text. Monospace matches the body it sits on; the heading face (Fira Sans) matches the headings below it. Size and weight are unchanged either way, so the title stays quieter than an H1
@@ -1025,6 +1030,21 @@ body {
       now refuses any unqualified `em` in these rules. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator {
   margin-inline-end: calc(var(--klartext-font-size) * 1.2 + var(--klartext-cell));
+}
+
+/* 4a) Style Settings: Hide Heading Level Marks. The badge goes, and the fold
+       chevron returns to Obsidian's own place (its margin is 0 there, measured
+       with no theme: the chevron's right edge on the line start). The prefix
+       column stays: lists, quotes and callouts share its edge, and taking it
+       away would move every block, not only the headings. The raw hashes stay
+       zero-width, so a focused heading still does not shift.
+       `body.klartext-no-heading-marks` out-ranks rules 3 and 4 and the
+       per-level content rules by one class and one type. */
+body.klartext-no-heading-marks .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header::before {
+  content: none;
+}
+body.klartext-no-heading-marks .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator {
+  margin-inline-end: 0;
 }
 
 /* 4b) Mobile: a small SYMMETRIC column instead of the 2.6em strip. On a

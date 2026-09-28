@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] — 2026-09-28
+
 ### Fixed
 
 - **A cancelled task (`- [-]`) looks cancelled again.** Obsidian counts any character in the box as done, so the done rules reached it: it rendered exactly like a done task, with an accent box and a checkmark, and the theme's dash was drawn through the checkmark's shape. It now shows the faint strike and a neutral box with a dash, in both modes.

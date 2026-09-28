@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] — 2026-09-28
+
+### Changed
+
+- **A sidebar's tab strip is on its panel's ground.** It was drawn in the bar colour, a grey patch above a white panel in the corner of the window, and the only one for anyone who hides the editor's tab bar. It now takes the panel's colour, in light and dark. The editor's tab bar is unchanged.
+- **The open sidebar view is marked by its icon and an accent rule.** On one ground a white active tab says nothing, so the active tab's icon is in the text colour, the others muted, with a 2px accent rule under it. `tools/check-sidebar-tabs.mjs` fails if the strip loses its ground or the tab its marker.
+
+### Fixed
+
+- **The window buttons on Windows and Linux no longer sit on a grey block.** With the title bar hidden they carried its colour into the same corner. They now stand on whatever strip is below them.
+
 ## [2.2.0] — 2026-09-27
 
 ### Changed

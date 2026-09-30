@@ -1142,6 +1142,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
        belongs to the sentence that introduces it and to the block that
        follows it, so those blank lines stay at one line height too.
        Likewise around a horizontal RULE, whose own margins set its gap.
+       And the LAST line, when it is empty: it separates nothing, and what
+       comes after the note (a plugin's footer, the backlinks) sits right
+       under it. Taller, it moved all of that by the difference the moment
+       a character was typed into it, and back on Enter (measured on a
+       phone: 9px each way at a 14px body).
      • LIST ITEMS are spaced by Obsidian alone (--list-spacing, as padding).
        A margin on a list line does not reach the editor, for the reason
        given under HEADINGS; the 0.4em the theme once set here computed to 0.
@@ -1154,7 +1159,8 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line + .cm-line:has(> br:only-child),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-list-line),
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-hr + .cm-line:has(> br:only-child),
-.markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-hr) {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):has(+ .cm-line.HyperMD-hr),
+.markdown-source-view.mod-cm6.is-live-preview .cm-content > .cm-line:has(> br:only-child):last-child {
   line-height: var(--klartext-line-height);
 }
 

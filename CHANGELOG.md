@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **What follows a note no longer jumps while you type at its end.** An empty line is drawn taller than a text line, because blank lines are how paragraphs are spaced; so was the empty LAST line, which separates nothing. Whatever sits under the note (Schreibstube's Recommended, the backlinks) moved up by the difference the moment a character was typed into it and down again on Enter: 9px each way on a phone. The last line now keeps the normal height when it is empty.
+
 ## [2.3.0] — 2026-09-28
 
 ### Fixed

@@ -2803,7 +2803,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
    for a wide key column:
      • KEY COLUMN. Obsidian fixes it at 9em, which truncated three of this
        vault's key names (measured against every distinct key in it: at 9em
-       "Document Type", "excalidraw-plugin" and "schreibstubeLanguage" are
+       "excalidraw-plugin" and "schreibstubeLanguage" are
        all cut; 10em and 11em still cut two and one). 12.5em is the first
        width at which none of them truncate on EITHER platform — mobile
        needs the extra half em because Obsidian draws the property icon,

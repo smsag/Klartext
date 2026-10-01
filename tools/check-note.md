@@ -1,7 +1,6 @@
 ---
 title: Klartext refactor check
 tags: [klartext, check]
-Document Type: note
 ---
 
 # Heading one

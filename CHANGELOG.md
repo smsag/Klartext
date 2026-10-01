@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] — 2026-10-01
+
+### Added
+
+- **Align an image left, centre or right** by adding the word to its alt text: `![Map | center | 750](map.png)`, `![[map.png|right|750]]`, or without a width `![Map | center](map.png)`. The word goes before the width, because Obsidian reads the width only from the last segment (`| 750 | center` loses the width). An aligned image stands on its own line in both modes, at the same height as the image unaligned; a caption that merely ends in the word, `Population center`, is left alone.
+
 ## [2.3.1] — 2026-09-30
 
 ### Fixed

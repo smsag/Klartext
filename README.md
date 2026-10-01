@@ -32,6 +32,12 @@ one file and follow Obsidian's own light/dark setting.
   editing another line, or editing that very line. Wrapped lines return to that
   edge. Nested items step in by exactly one column, so a nested mark starts where
   its parent's text starts. Only the heading badge hangs outside the text.
+- **Images align from the alt text.** `![Map | center | 750](map.png)` centres the
+  image, `right` and `left` do what they say, and a wikilink embed takes the same
+  word: `![[map.png|center|750]]`. Put the word before the width — Obsidian reads
+  the width only from the last segment — or leave the width out:
+  `![Map | right](map.png)`. Same placement in Reading view, Live Preview and
+  Schreibstube's PDF export.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
 - **A highlight is a marker stroke.** Each line lands and lifts like a pen on paper,

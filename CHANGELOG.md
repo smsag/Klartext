@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.2] — 2026-10-02
+
 ### Fixed
 
 - **The band under the clock above an open phone drawer has the panel's colour in dark mode.** The theme paints every panel in the page colour, while the drawer behind it kept the sidebar colour and showed only in its top padding, the safe area: a lighter strip, #222222 over #1a1a1a, above the panel in both drawers (measured in Obsidian 1.13.7's phone emulation). The band is now painted in the panel's colour, over exactly that padding; the selector and the footer at the drawer's foot keep the drawer's colour. Light mode already matched (#ffffff in both).

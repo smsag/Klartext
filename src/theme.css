@@ -2967,6 +2967,24 @@ body.is-mobile .workspace-drawer {
   overflow-x: clip;
 }
 
+/* The band under the clock above an open drawer is the leaf's ground, not
+   the drawer's. The theme paints every leaf --background-primary (WORKSPACE
+   & LAYOUT), the drawer keeps --mobile-sidebar-background, and the drawer
+   shows only in its top padding, which Obsidian sizes to the safe area
+   (max(--size-4-2, --safe-area-inset-top) in app.css): a strip in another
+   colour above the panel, measured in Obsidian 1.13.7's phone emulation as
+   #222222 over #1a1a1a in dark, both drawers (reported on an iPhone). Light
+   only looked right: there the drawer's colour is #ffffff as well. Painted
+   here in the leaf's colour in both, so the two stay one if either moves, over
+   exactly that padding: the selector and the footer below keep the
+   drawer's. A phone only: a tablet's left drawer carries the ribbon down
+   its side, whose top would then not match it. */
+body.is-phone .workspace-drawer-inner {
+  background-image: linear-gradient(var(--background-primary), var(--background-primary));
+  background-size: 100% max(var(--size-4-2), var(--safe-area-inset-top));
+  background-repeat: no-repeat;
+}
+
 /* SELECT CHROME — Obsidian's. See CORNERS above: the switcher card, its
    rows, the collapsed selector and the drawer's search and filter fields
    keep the radii Obsidian gives them on the phone. */

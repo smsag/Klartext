@@ -182,7 +182,10 @@ the inline hanging indent and screenshots of the real editor can be read directl
 should not: it opens `tools/check-note.md`, records the computed style of every
 element in Live Preview and Reading view, light and dark, with and without the
 mobile body classes, and diffs two such snapshots. The header of the script shows
-the sequence; a refactor is done when the diff is empty.
+the sequence; a refactor is done when the diff is empty. `node tools/verify.mjs
+settings` opens Settings and measures every heading's name against the name of
+the row below it, in each tab, light and dark, desktop and mobile; it prints
+the worst offset per context and ends with `EVERY HEADING FLUSH WITH ITS ROWS`.
 
 `.stylelintrc.json` catches duplicate selectors, duplicate or shorthand-overridden
 declarations and empty blocks (`npx stylelint src/theme.css`). Its

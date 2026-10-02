@@ -2629,6 +2629,25 @@ a.tag {
   font-family: var(--font-interface);
 }
 
+/* A settings heading starts where the names of its rows start.
+   Obsidian pads a heading with --size-4-4 (16px, app.css .setting-item-heading
+   and .setting-group .setting-item-heading) but a row inside a group's
+   .setting-items with --setting-items-padding-x (20px, app.css
+   .setting-group .setting-item:not(.setting-item-heading)), so in every
+   grouped tab (Obsidian's own, and a plugin that uses its setting groups) the
+   heading's name began 4px LEFT of the names below it, measured in Obsidian
+   1.13.7: 273px against 277px on the desktop, 33px against 37px on a phone.
+   A row outside a group (a plugin's plain Setting rows, Schreibstube's among
+   them) is padded --size-4-4 like the heading and was already flush (273
+   against 273), so only the grouped heading is restated, in the rows' own
+   variable: it follows any change of that padding instead of a number. The
+   space above and the heading's look stay Obsidian's. After: 277 against
+   277 on the desktop, 37 against 37 on a phone, light and dark
+   (node tools/verify.mjs settings). */
+.setting-group > .setting-item.setting-item-heading {
+  padding-inline: var(--setting-items-padding-x);
+}
+
 /* font-family inherited from .modal-content */
 .vertical-tab-nav-item        { font-size: var(--klartext-ui-md); }
 .vertical-tab-nav-item.is-active {

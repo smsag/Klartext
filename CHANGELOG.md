@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] — 2026-10-02
+
+### Fixed
+
+- **A settings heading starts where the names of its rows start.** In every settings tab that groups its rows (Obsidian's own, and a plugin that uses Obsidian's setting groups) the heading's name began 4px left of the names below it: Obsidian pads a heading by 16px and a grouped row by 20px. Measured in Obsidian 1.13.7, the heading's name sat at 273px against 277px for the rows on the desktop and 33px against 37px on a phone; it now sits at 277 and 37, flush, in light and dark. The heading takes the rows' own padding variable, so it follows if Obsidian changes it. Tabs whose rows are not grouped, Schreibstube's among them, were already flush (273 against 273) and are unchanged.
+
 ## [2.4.0] — 2026-10-01
 
 ### Added

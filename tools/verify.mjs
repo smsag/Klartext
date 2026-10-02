@@ -19,6 +19,10 @@
 //   node tools/verify.mjs reload                app.customCss.requestLoadTheme()
 //   node tools/verify.mjs teardown              close the tab and delete the check note
 //   node tools/verify.mjs eval "<js>"           run an expression
+//   node tools/verify.mjs settings [tab ...]     open Settings and measure, for every heading in each
+//                                      tab, the left edge of its name against the name of the
+//                                      row below it (light/dark × desktop/mobile body classes);
+//                                      default tabs: editor, appearance and every plugin tab
 import { readFileSync } from "node:fs";
 
 const NOTE = "_klartext-check.md";
@@ -61,6 +65,42 @@ try {
       if (f) await app.vault.delete(f);
       delete window.__kxSnaps; return 'removed ' + path;
     })()`));
+  } else if (cmd === "settings") {
+    const tabs = process.argv.slice(3);
+    const out = await ev(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      app.setting.open(); await wait(600);
+      const asked = ${JSON.stringify(tabs)};
+      const ids = asked.length ? asked : ['editor', 'appearance', ...Object.keys(app.setting.pluginTabs ? Object.fromEntries(app.setting.pluginTabs.map(t => [t.id, 1])) : {})];
+      // Settings may open in a pop-out window: classes go on that window's body.
+      const body = app.setting.modalEl.ownerDocument.body;
+      const orig = [...body.classList];
+      const rows = [];
+      for (const id of ids) {
+        app.setting.openTabById(id); await wait(500);
+        for (const dark of [false, true]) for (const mobile of [false, true]) {
+          body.classList.toggle('theme-dark', dark); body.classList.toggle('theme-light', !dark);
+          for (const c of ['is-mobile', 'is-phone']) body.classList.toggle(c, mobile);
+          await wait(120);
+          const root = app.setting.modalEl.querySelector('.vertical-tab-content');
+          const items = [...root.querySelectorAll('.setting-item')].filter(e => e.getClientRects().length);
+          let worst = 0, n = 0;
+          items.forEach((h, i) => {
+            if (!h.classList.contains('setting-item-heading')) return;
+            const row = items.slice(i + 1).find(e => !e.classList.contains('setting-item-heading'));
+            if (!row) return;
+            const d = h.querySelector('.setting-item-name').getBoundingClientRect().left - row.querySelector('.setting-item-name').getBoundingClientRect().left;
+            n++; if (Math.abs(d) > Math.abs(worst)) worst = d;
+          });
+          if (n) rows.push(id.padEnd(16) + (dark ? 'dark ' : 'light') + ' ' + (mobile ? 'mobile ' : 'desktop') + '  ' + n + ' headings, worst offset ' + (Math.round(worst * 10) / 10) + 'px');
+        }
+      }
+      body.className = orig.join(' ');
+      return rows;
+    })()`);
+    console.log(out.join("\n"));
+    const off = out.filter((l) => !/worst offset -?0px$/.test(l));
+    console.log(off.length ? off.length + " contexts with a heading off its rows" : "EVERY HEADING FLUSH WITH ITS ROWS");
   } else if (cmd === "eval") {
     console.log(JSON.stringify(await ev(a1), null, 1));
   } else if (cmd === "snapshot") {

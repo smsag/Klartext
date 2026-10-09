@@ -60,7 +60,7 @@ try {
   } else if (cmd === "teardown") {
     console.log(await ev(`(async () => {
       const path = ${JSON.stringify(NOTE)};
-      app.workspace.iterateAllLeaves(l => { if (l.view?.file?.path === path) l.detach(); });
+      app.workspace.iterateAllLeaves(l => { if (l.view?.getViewType?.() === 'markdown' && l.view.file?.path === path) l.detach(); });
       const f = app.vault.getAbstractFileByPath(path);
       if (f) await app.vault.delete(f);
       delete window.__kxSnaps; return 'removed ' + path;
@@ -106,7 +106,9 @@ try {
   } else if (cmd === "snapshot") {
     console.log(await ev(`(async () => {
       const path = ${JSON.stringify(NOTE)};
-      let leaf = null; app.workspace.iterateAllLeaves(l => { if (l.view?.file?.path === path) leaf = l; });
+      // The markdown view only: the backlinks pane carries the same file, and
+      // as the last leaf iterated it won, so a snapshot measured the sidebar.
+      let leaf = null; app.workspace.iterateAllLeaves(l => { if (l.view?.getViewType?.() === 'markdown' && l.view.file?.path === path) leaf = l; });
       if (!leaf) throw new Error('check note not open');
       const wait = ms => new Promise(r => setTimeout(r, ms));
       // The leaf must be laid out: a background tab has no boxes and every

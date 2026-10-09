@@ -2,10 +2,7 @@
    Klartext — Obsidian Theme
    Inspired by iA Writer · JetBrains Mono + Fira Sans
    Supports: Light & Dark · Desktop & Mobile · Style Settings
-
-   The stylesheet is authored in src/theme.css. The theme.css at the
-   repository root is BUILT from it by fonts/embed.py, which appends the
-   embedded fonts; edit src/theme.css and run the script.
+   Edit src/theme.css; fonts/embed.py builds the root theme.css from it.
    ================================================================== */
 
 /* @settings
@@ -83,31 +80,18 @@ settings:
 /* ------------------------------------------------------------------
    FONTS
    ------------------------------------------------------------------ */
-/* Fonts are bundled INSIDE this file so the theme renders fully offline.
-   Only the weights/styles the theme renders are included:
-   Fira Sans (UI) 400/500/600 + 700 for H1 · JetBrains Mono (editor) 400–700, italic 400–700.
-   JetBrains Mono's faces are variable (one file per style covers 400–700):
-   700 is used for **bold** text, 600 for code keyword tokens.
-
-   WHY BASE64: Obsidian injects theme.css into a <style> tag, so a relative
-   url('fonts/…') resolves against app://obsidian.md — NOT the theme folder —
-   and can never find a local file. The only way to ship fonts inside a theme
-   is to embed them as data URIs. The @font-face rules are therefore appended
-   to the built theme.css by fonts/embed.py as a generated "EMBEDDED FONTS"
-   section (so this file stays readable). Each face is split into latin /
-   latin-ext with unicode-range, mirroring Google's subsetting.
-
-   To refresh the fonts: put new .woff2 subsets in ./fonts, then run
-       python3 fonts/embed.py
-   which rebuilds theme.css. */
+/* Fonts are embedded as data URIs so the theme renders offline: Obsidian
+   loads theme.css into a <style> tag, so relative url()s cannot reach the
+   theme folder. fonts/embed.py appends the @font-face rules to the built
+   theme.css as the "EMBEDDED FONTS" section; to refresh, put new .woff2
+   subsets in ./fonts and run `python3 fonts/embed.py`.
+   See docs/notes/embedded-fonts.md. */
 
 /* ------------------------------------------------------------------
    CSS VARIABLES — LIGHT MODE
-   Declared for BOTH body classes: on screen the dark block below (same
-   specificity, later in the file) overrides it for .theme-dark; in print
-   that block is off (@media screen), so a dark-mode PDF export falls back
-   to this palette instead of printing dark pages. body.* keeps the class
-   specificity needed to beat Obsidian's own .theme-* token blocks.
+   Declared for both body classes so a dark-mode print/PDF export (where the
+   @media screen dark block is off) falls back to this palette. body.* keeps
+   the specificity needed to beat Obsidian's own .theme-* token blocks.
    ------------------------------------------------------------------ */
 body.theme-light,
 body.theme-dark {
@@ -126,14 +110,11 @@ body.theme-dark {
      multi-select container, and the theme's frame lines must not follow. */
   --border:                #e8e8e6;
   --border-subtle:         #f0f0ed;
-  /* The boundary of a SEARCH FIELD, which is not a divider and must not be
-     drawn like one. --border is a hairline between surfaces and is meant to be
-     quiet: measured against the three grounds a field can sit on it comes out
-     1.23 / 1.14 / 1.07 to 1, and WCAG 1.4.11 asks 3:1 for the boundary of a
-     control. This is the darkest neutral that clears 3:1 on ALL of them —
-     3.46 on --background-primary, 3.23 on --background-secondary, 3.03 on
-     --background-secondary-alt. --text-subtle would also pass but lands at
-     4.0–4.6 and reads as an underline rather than as an edge. */
+  /* The boundary of a SEARCH FIELD, not a divider: --border is too quiet for
+     a control (WCAG 1.4.11 asks 3:1). This is the darkest neutral that
+     clears 3:1 on every ground a field sits on. Not --text-subtle: it passes
+     but reads as an underline rather than an edge.
+     See docs/notes/search-field-contrast.md. */
   --klartext-field-rule:   #8a8a87;
 
   --code-bg:               #f4f4f2;
@@ -288,36 +269,19 @@ body {
      so paragraph spacing doesn't jump when switching to Read mode. */
   --readability-p-spacing:  calc(var(--klartext-line-height) * var(--klartext-p-gap) * 1em);
   --klartext-blank-line:    calc(var(--klartext-line-height) * var(--klartext-font-size));   /* one Live-Preview blank line, as a length */
-  /* THE MARKER COLUMN. It starts ON the text edge — the mark is part of the
-     text flow, and only the #ₙ heading badge hangs outside it — and is a
-     whole number of character cells of the monospace body wide (Style
-     Settings: Marker Column; two by default, four as an option). Its last
-     cell is always blank, the gap; every mark is right-aligned against that
-     gap cell, so the dash, the last digit and the checkbox all end one cell
-     before the text. At two cells a dash or a single digit is therefore
-     flush with the edge and "10" hangs its first digit into the margin; at
-     four cells three digits fit inside and a single digit sits two cells
-     in. Every hanging block — bulleted, numbered, task, quote, callout —
-     starts its text at the column's far edge, in both modes and in every
-     editing state, and nested items step by one column.
-       In Live Preview the column is the marker token itself: an inline-block
-     one column wide, end-aligned, whose source characters stay in normal
-     flow (hidden by the Klartext Marks face, see EMBEDDED FONTS). Its
-     content ends on the column's far edge, so the CARET at the end of the
-     marker sits where the text begins, and Obsidian, measuring each line's
-     hanging indent from that same caret (see LISTS), puts wrapped lines on
-     the same edge by construction. */
+  /* THE MARKER COLUMN: starts on the text edge and is a whole number of
+     body character cells wide (Style Settings: Marker Column). Its last cell
+     is the gap; every mark is right-aligned against it, and every hanging
+     block starts its text at the column's far edge. In Live Preview the
+     column is the marker token itself (see LISTS, EMBEDDED FONTS).
+     See docs/notes/marker-column.md. */
   --klartext-marker-column: 2;        /* Style Settings → Marker Column writes this (named after the setting id) */
   --klartext-col:           calc(var(--klartext-font-size) * 0.6 * var(--klartext-marker-column));
   --klartext-cell:          calc(var(--klartext-font-size) * 0.6);   /* one character cell of the body face */
-  /* ONE INDENT LEVEL, as it is actually rendered. Obsidian sets `tab-size`
-     to a LENGTH on list lines, so a tab is exactly --list-indent wide; the
-     theme sizes a space in a list indent to one --klartext-tab-size-th of
-     that (see LISTS), so a level written with spaces is the same width. The
-     list tree line reads this one unit either way. It used to take a Style
-     Settings toggle ("Lists Indented With Spaces") to switch the tree line to
-     a space's natural width; with spaces sized to the unit, that toggle would
-     only have drawn the line twice as far out, and it is gone. */
+  /* ONE INDENT LEVEL, as rendered. Obsidian sets `tab-size` to a LENGTH on
+     list lines, so a tab is exactly --list-indent wide; a space in a list
+     indent is sized to one --klartext-tab-size-th of that (see LISTS), so a
+     level written with spaces is the same width. The tree line reads this. */
   --klartext-tab-size:      4;        /* spaces per level; Obsidian's default Tab indent size, overridable by snippet */
   --klartext-indent-unit:   var(--list-indent);
   /* The font stack for a marker token: the companion face first, so its
@@ -360,18 +324,11 @@ body {
      paragraph the larger paragraph gap collapses over it. Below a block,
      Reading view uses --klartext-block-bottom instead (see READING VIEW). */
   --klartext-block-gap:     1.5em;
-  /* Corner radii. FOUR families, all at ONE value: content blocks (code,
-     tables, embeds, images, media, the properties box), panels (modals,
-     popovers, the command palette), filled inline chips (tags, property
-     pills and rows), and the flat interface (nav rows, buttons, notices,
-     suggestions, inputs — Obsidian's own --radius-s/-m/-l/-xl, pinned
-     below).
-     They stay FOUR tokens rather than collapsing into one, so any family can
-     be retuned on its own later; today they simply agree. Three shapes keep
-     their own values on purpose and are not part of this: callouts and
-     highlights are square by design, and the scrollbar thumb, the cancelled
-     task dash and the phone sheet grab handle are one-offs sized to what
-     they are. */
+  /* Corner radii. FOUR families at ONE value: content blocks, panels,
+     filled inline chips, and the flat interface (Obsidian's --radius-s/-m/
+     -l/-xl, pinned below). Kept as four tokens so each can be retuned alone.
+     Not part of this: callouts and highlights are square by design; the
+     scrollbar thumb, cancelled-task dash and sheet grab handle are one-offs. */
   --klartext-radius-block:  4px;
   --klartext-radius-panel:  4px;
   --klartext-radius-chip:   4px;
@@ -414,17 +371,12 @@ body {
   --blockquote-border-thickness: var(--klartext-rule-width);
   --blockquote-border-color:     var(--interactive-accent);
 
-  /* Obsidian combines each of these with the user's own choice (Appearance →
-     Interface font / Monospace font) into --font-interface and
-     --font-monospace, and the rules read only those, so a font picked there
-     wins in the interface and in code.
-     The note's own type is the theme's, like the page colour: the body and
-     every mark read --font-text-theme, because each mark and gutter is laid
-     out on its 0.6em cell (--klartext-cell) and a proportional text font
-     would break them; the headings, the sans note title and the callout and
-     embed titles read --klartext-heading-font, the face paired with that body, which an
-     interface font chosen for the sidebars must not reach. The interface
-     defaults to the same face. tools/check-fonts.mjs holds all of this. */
+  /* Obsidian combines these with the user's Interface/Monospace font choice
+     into --font-interface and --font-monospace, so a picked font wins there.
+     The note's own type stays the theme's: body and marks read
+     --font-text-theme (laid out on the 0.6em --klartext-cell, which a
+     proportional font would break); headings and titles read
+     --klartext-heading-font. tools/check-fonts.mjs holds this. */
   --klartext-heading-font:  'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-text-theme:        'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
   --font-interface-theme:   var(--klartext-heading-font);
@@ -434,15 +386,11 @@ body {
 
   --caret-color:            var(--interactive-accent);
 
-  /* LINKS — Obsidian's own underline, switched off here so the theme can
-     draw its own. Obsidian draws link underlines through these body
-     variables (verified in 1.13.7 app.css: a / a:hover / .external-link /
-     .markdown-rendered .internal-link use text-decoration-line: var(…)), and
-     its own selectors out-rank the theme's plain `a` rule — so the variables
-     are the hook, not text-decoration. Setting them to `none` clears the
-     field for the rule the BOLD, ITALIC, LINKS section draws instead: solid
-     under a link that stays in the vault, dotted under one that leaves it.
-     Unresolved links keep Obsidian's dimmed colour and no rule at all. */
+  /* LINKS — Obsidian draws link underlines through these variables, and its
+     selectors out-rank a plain `a` rule, so the variables are the hook, not
+     text-decoration (verified in 1.13.7). `none` clears the way for the
+     BOLD, ITALIC, LINKS section's rule: solid for vault links, dotted for
+     external ones. Unresolved links keep Obsidian's dimmed colour, no rule. */
   --link-decoration:                 none;
   --link-decoration-hover:           none;
   --link-external-decoration:        none;
@@ -458,13 +406,10 @@ body {
   /* Done tasks: one grey for both modes (editor lines and rendered items). */
   --checklist-done-color:            var(--text-subtle);
 
-  /* TAGS — Obsidian draws editor hashtags (.cm-hashtag) and rendered tags
-     (a.tag) from these tokens, so setting them here gives both modes the
-     same tag: a soft accent chip at body size, weight 500 (sans beside
-     monospace), on the corner every other chip shares. The fill is built
-     from Obsidian's accent token, so it follows whatever accent is set
-     rather than being a colour of its own. The .tag rule in the TAGS
-     section keeps the interface font; the rest is these tokens. */
+  /* TAGS — Obsidian draws .cm-hashtag and a.tag from these tokens, so both
+     modes get the same chip: soft accent fill at body size, weight 500, the
+     shared chip corner. The fill derives from Obsidian's accent token so it
+     follows the user's accent. The .tag rule in TAGS keeps the UI font. */
   --tag-color:              var(--text-muted);   /* one step down from the text; the subtle grey is unreadable inline */
   --tag-color-hover:        var(--interactive-accent);
   --tag-background:         hsla(var(--interactive-accent-hsl), 0.2);
@@ -477,26 +422,20 @@ body {
   --tag-padding-y:          0.1em;
 
   /* ── UI size scale — one anchor per device, the interface derived ─────
-     The base is not a setting. It follows the body size at 13/16, the ratio
-     the theme was designed at (13px interface beside 16px prose), so the one
-     control a user already has — Appearance → Font size — sizes the sidebars,
-     panels and plugin text with the editor. A display where 16px prose is
-     small gets a larger interface the moment the prose is enlarged, and the
-     phone, which pins its own body size, is untouched. Every sidebar, panel
-     and plugin that reads these tokens follows. Not a slider: a capped
-     slider is a ceiling on legibility for high-resolution displays.       */
+     The base follows the body size at 13/16, so Appearance → Font size
+     sizes sidebars, panels and plugin text with the editor; the phone pins
+     its own body size. Not a slider: a capped slider is a ceiling on
+     legibility for high-resolution displays.                              */
   --klartext-ui-font-size:  calc(var(--klartext-font-size) * 0.8125);  /* 13px at the 16px default */
   --klartext-ui-xs:         calc(var(--klartext-ui-font-size) * 0.88);  /* ~11px  */
   --klartext-ui-sm:         calc(var(--klartext-ui-font-size) * 0.96);  /* ~12px  */
   --klartext-ui-md:         calc(var(--klartext-ui-font-size) * 1.04);  /* ~13px  */
   --klartext-ui-lg:         calc(var(--klartext-ui-font-size) * 1.12);  /* ~14px  */
 
-  /* The flat interface family — override Obsidian's four-step ladder with
-     the one corner the rest of the theme uses (see Corner radii above).
-     -xl is pinned too: Obsidian leaves it at 16px and uses it for mobile
-     chrome (drawer outer corners, tab-switcher card previews, the mobile tab
-     pin). Left at 16px it was a round shape in an otherwise flat theme. The
-     sheet grab handle is the one place that should stay a pill; it is
+  /* The flat interface family: Obsidian's four-step ladder takes the one
+     corner the theme uses (see Corner radii above). -xl is pinned too:
+     Obsidian uses it at 16px for mobile chrome (drawer corners, tab-switcher
+     cards, the mobile tab pin). The sheet grab handle stays a pill; it is
      restored in MOBILE SPECIFIC. */
   --radius-s:               var(--klartext-radius-flat);
   --radius-m:               var(--klartext-radius-flat);
@@ -512,14 +451,12 @@ body {
   --input-radius:           var(--klartext-radius-flat);
   --pill-radius:            var(--klartext-radius-chip);
 
-  /* MOBILE'S OWN RADIUS LADDER — left to Obsidian. 1.6.1 pinned the
-     --touch-radius-* scale flat as well. Those tokens shape the phone's
-     floating controls: the tab switcher's card and rows, the collapsed
-     selector, the search and filter fields. Obsidian draws those as pills
-     because they are controls under a thumb, not panels on a page, and a
-     4px corner on a floating card read as a broken default rather than a
-     decision. The flat family above stays for what IS a panel: blocks,
-     callouts, code, tables, the desktop's inputs and buttons. */
+  /* MOBILE'S OWN RADIUS LADDER — left to Obsidian. The --touch-radius-*
+     tokens shape the phone's floating controls (tab switcher, collapsed
+     selector, search and filter fields), which Obsidian draws as pills
+     because they sit under a thumb. Don't pin them flat: a square corner on
+     a floating card reads as a broken default. The flat family above is for
+     panels. */
 
   /* Wire to Obsidian UI font tokens so plugins inherit the scale */
   --font-ui-smaller:        var(--klartext-ui-xs);
@@ -540,14 +477,12 @@ body {
 /* ------------------------------------------------------------------
    GLOBAL BASE
    ------------------------------------------------------------------ */
-/* Touch the two marker faces at startup. A data-URI face is decoded only
-   when a glyph of its range is first laid out, and Obsidian measures a
-   list line's hanging indent on first paint and caches it by line text —
-   so a marker painted in the fallback face before its own has loaded would
-   leave a wrong indent cached until the line is edited. Two hidden
-   pseudo-elements that use each face force the load before any note is
-   rendered. .app-container is Obsidian's own root and carries no
-   pseudo-elements of its own. */
+/* Touch the two marker faces at startup. A data-URI face loads only when a
+   glyph of its range is first laid out, and Obsidian caches a list line's
+   hanging indent from first paint, so a marker painted in the fallback face
+   would leave a wrong indent until the line is edited. These hidden
+   pseudo-elements on Obsidian's root (.app-container has none of its own)
+   force the load before any note renders. */
 .app-container::before,
 .app-container::after {
   content: "- . > ";
@@ -591,20 +526,12 @@ body.is-mobile {
   border-right: 1px solid var(--border);
 }
 
-/* Workspace dividers, a step softer. The lines between the sidebars and the
-   note (and between split panes) are drawn as the BORDER of the resize
-   handle, not of the panel, so the handle is what carries the colour.
-   Obsidian points them at --border; --border-subtle is the same idea one
-   step quieter, and it is already defined in every palette the theme ships:
-   lighter in both light modes, darker in dark mode, which is what "softer"
-   means on each ground. No new colour is invented.
-   `:not(:hover)` stops the rule matching while the pointer is on the handle,
-   so Obsidian's accent-coloured hover still marks the grip without needing
-   to be restated here. Widths are untouched, so every divider stays present
-   and every handle stays draggable.
-   Scope is the workspace's own dividers. The status bar's top border and the
-   tab outlines read the same token upstream and are deliberately left at
-   full strength — they separate different things. */
+/* Workspace dividers, a step softer. The lines between sidebars, note and
+   split panes are the BORDER of the resize handle, so the handle carries
+   the colour: --border-subtle, defined in every palette. `:not(:hover)`
+   keeps Obsidian's accent hover on the grip. Widths are untouched. The
+   status bar's top border and tab outlines stay at full --border on
+   purpose: they separate different things. */
 .workspace-split.mod-left-split > .workspace-leaf-resize-handle:not(:hover),
 .workspace-split.mod-right-split > .workspace-leaf-resize-handle:not(:hover),
 .workspace-split.mod-vertical > * > .workspace-leaf-resize-handle:not(:hover),
@@ -612,19 +539,11 @@ body.is-mobile {
   border-color: var(--border-subtle);
 }
 
-/* The core navigation panes carry the secondary ground. `.workspace-sidebar`
-   used to head this list; it matches nothing — Obsidian's own stylesheet never
-   emits that class and the real one is `mod-sidedock`. It was the only rule in
-   the theme that referred to it, so the font lines went nowhere either; both
-   are inherited from `body` already, which is why nobody noticed.
-   The tint is deliberately NOT widened to `.mod-sidedock .workspace-leaf-content`
-   now that the correct selector is known. A plugin panel builds its own tonal
-   hierarchy on top of `--background-primary` — raised cards and inline code on
-   `--background-secondary`, code blocks back down on primary. Repainting the
-   ground secondary inverts that hierarchy and flattens the raised surfaces into
-   their borders. The sidebars separate from the note by their divider and by
-   this theme's own chrome (tab bar, vault profile), not by repainting panels
-   the theme does not own. */
+/* The core navigation panes carry the secondary ground (the sidebar class
+   is `mod-sidedock`). Do not widen this to `.mod-sidedock
+   .workspace-leaf-content`: plugin panels build their own hierarchy on
+   --background-primary, and repainting the ground secondary inverts it. The
+   sidebars separate from the note by their divider and the theme's chrome. */
 .nav-folder,
 .nav-files-container {
   background-color: var(--background-secondary);
@@ -633,11 +552,10 @@ body.is-mobile {
 }
 
 /* No border between sidebar and editor here. The divider is drawn once, on the
-   resize handle, by the `--border-subtle` rule above. This block used to draw a
-   second one at full `--border` strength directly alongside it, so the seam
-   painted as a two-pixel ramp (#f0f0ed then #e8e8e6 against #ffffff) and read
-   as a heavy rule rather than a hairline. `tools/check-dividers.mjs` fails if a
-   border on `.mod-left-split` / `.mod-right-split` comes back. */
+   resize handle, by the `--border-subtle` rule above; a second border beside it
+   paints a two-pixel ramp that reads as a heavy rule, not a hairline.
+   `tools/check-dividers.mjs` fails on a border on `.mod-left-split` /
+   `.mod-right-split`. */
 
 /* Tab bar */
 .workspace-tab-header-container {
@@ -663,17 +581,12 @@ body.is-mobile {
   color: var(--text-subtle);
 }
 
-/* A SIDEBAR'S TAB STRIP IS PART OF ITS PANEL. The panels under it are on
-   `--background-primary` (see the note above `.nav-folder`), so a strip in the
-   bar colour read as a grey patch in the corner of the window — the only one,
-   for anyone who hides the editor's tab bar. The strip takes the panel's
-   ground instead, and its border the same colour, so the layout stays put.
-     With the strip white, a white active tab would say nothing, so the active
-   tab is marked the way the sidebar's rows already are: its icon in the text
-   colour, the others muted, and a 2px accent rule under it. Obsidian's
-   rounded curves and outline are what joined the active tab to the panel
-   below; on one ground they have nothing to join, so they go. The editor's
-   tab bar is left as it is. `tools/check-sidebar-tabs.mjs` guards this. */
+/* A SIDEBAR'S TAB STRIP IS PART OF ITS PANEL: it takes the panel's ground
+   (see the note above `.nav-folder`), with a border in the same colour so
+   the layout stays put. The active tab is marked like sidebar rows: icon in
+   the text colour, others muted, a 2px accent rule under it; Obsidian's
+   curves and outline go. The editor's tab bar is untouched.
+   `tools/check-sidebar-tabs.mjs` guards this. */
 .workspace-split.mod-sidedock .workspace-tab-header-container {
   background-color: var(--background-primary);
   border-bottom-color: var(--background-primary);
@@ -734,14 +647,11 @@ body.is-mobile {
   color: var(--text-normal);
 }
 
-/* NESTED editors — editing a table cell in Live Preview mounts a second
-   CodeMirror editor inside the cell. `.cm-editor .cm-editor` matches only the
-   nested one, never the main editor. Everything the main editor gets — page
-   background, editor font/size, the scroller's top padding, the prefix-column
-   padding on .cm-content — would otherwise leak into it (a white box over the
-   header fill, a row that grows, indented cell text). The nested editor is
-   transparent, box-less and inherits the cell's font; its line-height comes
-   from the table token below. */
+/* NESTED editors — a Live Preview table cell mounts a second CodeMirror
+   editor; `.cm-editor .cm-editor` matches only that one. Without this it
+   inherits the main editor's background, font, padding and top padding.
+   The nested editor is transparent, box-less and inherits the cell's font;
+   its line-height comes from the table token below. */
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-scroller,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-content {
@@ -806,25 +716,12 @@ body.is-mobile {
   color: var(--text-normal) !important;
 }
 
-/* …except the marks the theme deliberately renders INVISIBLE. The rule above
-   repaints every selected character in the text colour, which would bring
-   those marks back the moment the line is selected. Both of them are
-   zero-width by construction, so the returning glyph pushes nothing aside —
-   it lands ON the first character of the text: a selected headline would
-   draw its `#` on top of the first letter, a quote line its `>`.
-   Restated as transparent under selection. Each selector mirrors the one
-   that made the mark transparent in the first place (LIVE PREVIEW rule 2 and
-   BLOCKQUOTE). The quote's used to name `.hmd-inactive-line`, a CodeMirror 5
-   class that no line carries any more. An INCOMPLETE heading shows its hashes
-   on purpose (rule 4c), and gets its colour back under selection there.
-
-   `!important` is not optional here. The rule above sets its colour with
-   `!important`, and an important declaration beats every normal one
-   whatever the specificity — so without it these selectors matched,
-   computed the text colour, and a selection across a heading drew its `#`
-   over the first letter (reported, then reproduced). Among important
-   declarations specificity decides again, and these out-rank the bare
-   `::selection`. */
+/* …except the marks the theme renders INVISIBLE. They are zero-width, so a
+   selected `#` or `>` would draw over the first letter. Each selector
+   mirrors the one that hid the mark (LIVE PREVIEW rule 2, BLOCKQUOTE); an
+   INCOMPLETE heading shows its hashes on purpose (rule 4c). `!important` is
+   required: the rule above is !important, and only among important
+   declarations do these out-rank the bare `::selection`. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-header::selection,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-formatting-quote::selection {
   color: transparent !important;
@@ -838,22 +735,12 @@ body.is-mobile {
 /* ------------------------------------------------------------------
    INLINE TITLE
    ------------------------------------------------------------------ */
-/* The note's own title. Obsidian ties it to the H1 tokens by default, so
-   untouched it would be a second headline in the heading face at the full
-   h1 size, directly above the one the document may already carry. Klartext
-   gives it the h1 SIZE and WEIGHT — it is the document's headline, and a
-   note that opens with an h1 should not put its biggest type under a
-   smaller name — but keeps its own face as a Style Settings choice
-   (klartext-title-font): the body monospace by default, the heading face
-   for anyone who wants the top of the page to read as one typographic
-   family. The hairline rule under it stays, which is what still separates
-   a title from a heading.
-     Set through Obsidian's own --inline-title-* tokens rather than on the
-   element: Obsidian applies every one of them from
-   `.inline-title:not([data-level])`, which out-ranks a plain `.inline-title`
-   rule, so a plain rule would need !important and a plain letter-spacing
-   (0,1,0) never applies. The letter-spacing has no token and is restated at
-   Obsidian's own specificity, theme.css loading later. */
+/* The note's own title takes the h1 SIZE and WEIGHT (it is the document's
+   headline) but its own face, a Style Settings choice (klartext-title-font):
+   body monospace by default, or the heading face. The hairline rule under
+   it separates it from a heading. Set through Obsidian's --inline-title-*
+   tokens: Obsidian applies them from `.inline-title:not([data-level])`,
+   which a plain `.inline-title` rule cannot out-rank without !important. */
 body,
 body.klartext-title-mono {
   --inline-title-font: var(--font-text-theme);
@@ -893,35 +780,12 @@ body {
   color: var(--text-normal);
 }
 
-/* READING-VIEW heading margins. Sizes, weights, tracking and line-heights come
-   from the --hN-* variables in the typography block — Obsidian reads them in
-   BOTH modes (h1…h6 in reading view; the heading LINE in Live Preview, where
-   the .cm-header-N span is forced to `font-size: inherit !important`). So the
-   ladder lives in one place; these rules add only the vertical rhythm and
-   H6's colour (kept on the LP span too).
-     The rhythm is measured against Live Preview rather than derived, because
-   Live Preview is the reference: what separates a heading
-   from its neighbours there is the blank source line between them, and
-   nothing else. The theme's own .HyperMD-header-N margins do not reach the
-   editor at all — Obsidian zeroes every .cm-content child's margin with
-   `margin: 0 !important` at (0,3,1) — so the editor's gap is one blank line
-   plus the leading that the blank line's own box adds at each end.
-   Reading view has no blank line, so the gap has to be built from margins:
-     • the heading owns the gap above it. The block before it hands its
-       bottom margin over (the paragraph gap, 2.24em, would otherwise win
-       the collapse and open ~36px where the editor shows ~28px);
-     • h1 is listed apart because its line-height is 1.15 against 1.3 for
-       the rest, which puts ~2px less leading above its text and ~2px more
-       below it than the others.
-   Measured at a 16px body, both modes, text box to text box: every gap lands
-   within 1px of Live Preview.
-   The selectors restate Obsidian's own (0,2,3) — `div + div > hN`, for the
-   3em gap it gives a heading that follows a block — so the theme's values
-   win on load order rather than by accident.
-     Each level is its own selector rather than one `:is(h2, …, h6)`: a rule
-   whose last compound is a multi-argument `:is()` cannot be filed under a tag,
-   so Chromium tries it against every element on every style recalculation.
-   Written out, it is tried only against headings. */
+/* READING-VIEW heading margins. Sizes, weights and line-heights come from the
+   --hN-* variables (typography block); these rules add only the vertical
+   rhythm, matched to Live Preview (within 1px at a 16px body). The heading
+   owns the gap above it; h1 is apart for its 1.15 line-height. Selectors
+   restate Obsidian's (0,2,3) `div + div > hN`, so load order wins. One
+   selector per level, not `:is(h2, …, h6)`. See docs/notes/heading-rhythm.md. */
 .markdown-preview-view h1,
 .markdown-preview-view.markdown-rendered div + div > h1,
 .markdown-preview-view.markdown-rendered :is(p, pre, table, ul, ol) + h1 {
@@ -961,32 +825,16 @@ body {
 /* Live Preview heading spacing. Obsidian gives every heading line
    `padding-top: var(--p-spacing)`; it is zeroed, so the gap around a heading
    is the blank source lines beside it and nothing else (see VERTICAL RHYTHM).
-   A margin cannot add to it: Obsidian zeroes every .cm-content child's margin
-   with `margin: 0 !important`, so the heading margins that used to sit here
-   computed to 0 and are gone. */
+   Not a margin: Obsidian zeroes every .cm-content child's margin with
+   `margin: 0 !important`. */
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-header { padding-top: 0; }
 
 /* ------------------------------------------------------------------
    LIVE PREVIEW — HEADING MARKER + ONE SHARED LEFT EDGE
    ------------------------------------------------------------------
-   Scope: every rule carries .is-live-preview. Source mode and Reading view
-   are untouched.
-
-   Layout model
-     1. A prefix column of --klartext-heading-prefix is reserved on the left
-        by ONE padding-left on .cm-content. Every line and block widget shifts
-        uniformly, so headings, paragraphs, lists, quotes, callouts, tables and
-        code keep their vanilla relative alignment and share one text edge
-        (the column is that much narrower). A quote/callout's left bar sits on
-        that edge; its text indents after.
-     2. The raw `#…` marks are zero-width in every state, so a focused
-        heading never shifts.
-     3. The level marker (#₁…#₆) is an inline-block on the heading line whose
-        width is cancelled by an equal negative margin: zero net advance, so
-        it pushes nothing — it hangs back into the reserved column, on the
-        headline's baseline, at body-text size.
-     4. The fold chevron keeps Obsidian's behaviour (folding works as
-        normal); only its position moves, to the far side of the marker.
+   Live Preview only. One padding on .cm-content reserves a prefix column
+   (--klartext-heading-prefix); every block shares one text edge, and the
+   #ₙ marker and fold chevron hang back into the column with zero advance.
    ------------------------------------------------------------------ */
 
 /* 1) Reserve the prefix column — one padding on .cm-content. Obsidian sets
@@ -998,26 +846,19 @@ body {
 }
 
 /* 1a) Reading view takes the same column on the desktop, so switching modes
-       moves no text sideways and re-wraps no paragraph: without it the text
-       began 41.6px further left at a 16px body and its column was that much
-       wider, so every paragraph broke at different words. Padded on the
-       note's sections inside the sizer, as Live Preview pads .cm-content
-       inside its sizer, so the readable width is the same box in both
-       modes and the title and properties above stay where they are. Scoped
-       to the note in a pane: a popover, an embed and a print keep their own
-       edge. The phone has its own symmetric column (4b). */
+       moves no text sideways and re-wraps no paragraph. Padded on the
+       sections inside the sizer, as Live Preview pads .cm-content, so title
+       and properties stay put. Only the note in a pane: popovers, embeds
+       and print keep their own edge. The phone has its own column (4b). */
 body:not(.is-mobile) .markdown-reading-view > .markdown-preview-view > .markdown-preview-sizer > div:not(.markdown-preview-pusher):not(.mod-header):not(.mod-footer) {
   padding-left: var(--klartext-heading-prefix);
 }
 
 /* 2) Raw marks take no width, focused or not → no jump — but keep their font
-      SIZE. CodeMirror sizes the caret from the metrics of the character it
-      sits in, so font-size: 0 gave a zero-height, invisible caret at the start
-      of every heading. Instead: the monospace face, so each glyph advances
-      exactly 1ch; letter-spacing: -1ch cancels that advance → zero width, all
-      mark positions on one x; font-size inherited from the heading line, so
-      the caret is full height; transparent, so the overlapping glyphs are
-      unseen. */
+      SIZE: CodeMirror sizes the caret from the character it sits in.
+      Monospace face (each glyph advances 1ch) + letter-spacing: -1ch → zero
+      width; transparent, so the overlapping glyphs are unseen.
+      Not font-size: 0 — that gives an invisible, zero-height caret. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-header {
   font-family: var(--font-text-theme);
   font-size: inherit !important;
@@ -1052,29 +893,18 @@ body:not(.is-mobile) .markdown-reading-view > .markdown-preview-view > .markdown
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header-5::before { content: "#\2085"; }  /* #₅ */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header-6::before { content: "#\2086"; }  /* #₆ */
 
-/* 4) The fold chevron on heading lines. Obsidian anchors it with its right
-      edge on the line start, i.e. between marker and text; shifted left by
-      the marker's width (2ch at body size) plus its gap, so it sits beyond
-      the marker, still inside the column, still hover-only.
-
-      EVERY LENGTH IN THIS COLUMN IS IN BODY UNITS. It used to end `+ 0.5em`,
-      and `em` on this element is the HEADING's size, not the body's — so the
-      one gap in the gutter that was supposed to be constant came out at
-      18.2px under an h1, 10.5px under an h2 and 9.1px under an h3 at a 14px
-      body. Nothing on the desktop showed it, because the chevron is hover-only
-      there and its margin never reaches the layout; that is what let a
-      level-dependent length sit here unnoticed. `tools/check-heading-gutter.mjs`
-      now refuses any unqualified `em` in these rules. */
+/* 4) The fold chevron on heading lines. Obsidian puts its right edge on the
+      line start; shifted left by the marker's width (2ch at body size) plus
+      its gap, it sits beyond the marker, still in the column, hover-only.
+      Every length here is in BODY units: `em` on this element is the
+      heading's size. `tools/check-heading-gutter.mjs` refuses bare `em`. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator {
   margin-inline-end: calc(var(--klartext-font-size) * 1.2 + var(--klartext-cell));
 }
 
-/* 4a) Style Settings: Hide Heading Level Marks. The badge goes, and the fold
-       chevron returns to Obsidian's own place (its margin is 0 there, measured
-       with no theme: the chevron's right edge on the line start). The prefix
-       column stays: lists, quotes and callouts share its edge, and taking it
-       away would move every block, not only the headings. The raw hashes stay
-       zero-width, so a focused heading still does not shift.
+/* 4a) Style Settings: Hide Heading Level Marks. The badge goes and the fold
+       chevron returns to Obsidian's place (margin 0). The prefix column stays:
+       lists, quotes and callouts share its edge. Raw hashes stay zero-width.
        `body.klartext-no-heading-marks` out-ranks rules 3 and 4 and the
        per-level content rules by one class and one type. */
 body.klartext-no-heading-marks .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header::before {
@@ -1084,22 +914,12 @@ body.klartext-no-heading-marks .markdown-source-view.mod-cm6.is-live-preview .cm
   margin-inline-end: 0;
 }
 
-/* 4b) Mobile: a small SYMMETRIC column instead of the 2.6em strip. On a
-       phone that strip on top of Obsidian's 24px file margin would put 61px
-       left against 24px right on a 430px screen, and the text block reads as
-       pushed to the right. Both sides get one marker width (1.2em, the column
-       the list dashes already use), so headings and lists share one column,
-       the block is centred (40px / 40px), and the `#` ink starts ~22px from
-       the screen edge. Reading mode gets the same two paddings so switching
-       modes does not shift the text edge.
-         - dash needs 1.2em              → fits the column
-         - #₂…#₆ need ink + gap          → 16–18px, fits
-         - #₁ with its gap in heading em would need 31px, so on mobile the gap
-           is 0.4 BODY em → 19px, 3px into the file margin, fine
-       The chevron is hidden on mobile except on a collapsed heading (Obsidian
-       keeps the hover rule desktop-only). There the desktop shift would put
-       it 38px out, so on mobile it is NOT shifted, and the marker steps aside
-       while the heading is collapsed: the chevron takes the marker's place. */
+/* 4b) Mobile: a small SYMMETRIC column (one marker width, 1.2em, each side)
+       instead of the 2.6em strip, which on top of the file margin pushes the
+       text block right on a phone. Reading mode gets the same paddings. The
+       #₁ gap is 0.4 BODY em so it fits. The chevron shows only on a
+       collapsed heading; it stays unshifted and the marker hides there.
+       See docs/notes/heading-gutter-mobile.md. */
 body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-content {
   padding-left: var(--klartext-marker-width);
   padding-right: var(--klartext-marker-width);
@@ -1119,33 +939,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
 }
 
 /* 4c) INCOMPLETE HEADING — hashes typed, no heading text yet. A bare `#` is
-       already a valid (empty) ATX heading, so Obsidian sizes the LINE as a
-       heading the moment the hash is typed; rules 2 and 3 would then hide the
-       raw hashes and draw the #ₙ badge while nothing but a hash has been
-       typed — and carrying on WITHOUT the space produces a tag (`#Meine`),
-       not a heading. While the hashes stand alone, all three signals are
-       undone: the literal hashes show, the badge is dropped, and the line
-       stays at body size. The heading arrives with the SPACE, the moment the
-       markup stops being ambiguous.
-       The test has two halves, and BOTH are needed. First: a heading span
-       that is not a formatting mark, i.e. real heading text. This half
-       carries the idle state: Obsidian drops the `#` mark from the DOM once
-       the cursor leaves the line, so an idle heading is a single text span
-       with no mark beside it, and a test that merely counts spans would
-       shrink every unfocused heading. Second: a SECOND formatting mark. The
-       trailing space tokenised as its own mark is what says the space has
-       been typed, so the line becomes a heading on the space rather than on
-       the first character. Counting heading spans rather than children keeps
-       the fold indicator, which carries no header class, out of the count.
-       If a build bundles the trailing space into the hash span, neither half
-       fires until the first real character; CSS cannot read a span's text,
-       so that degrades to the later jump rather than misfiring.
-       And a third condition before either: the line HOLDS a hash mark. An
-       idle heading whose whole text is a widget (`## $E = mc^2$`, an embed)
-       has no heading-text span, since the widget carries no header class,
-       and no second mark, since Obsidian has dropped the first; without this
-       it shrank to body size and lost its badge until the cursor came in.
-       Hashes standing alone are always in the DOM, idle or not. */
+       already an (empty) ATX heading, but without the space it becomes a tag.
+       While the hashes stand alone: literal hashes, no badge, body size. The
+       line becomes a heading on the SPACE. Matched as: holds a hash mark, no
+       heading-text span, no second mark. All three conditions are needed.
+       See docs/notes/incomplete-heading.md. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
   font-size: var(--klartext-font-size);
   font-weight: 400;
@@ -1162,37 +960,18 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
 }
 
 /* 5) Lists and quotes — the hanging indent is deliberately NOT overridden.
-   Obsidian sets each line's padding-inline-start / text-indent per line
-   from the caret position at the end of its marker, so wrapped lines align
-   exactly under the item text. What the theme does set is the marker
-   itself (see LISTS and BLOCKQUOTE): every marker token is made exactly one
-   column wide, so that caret, and with it the indent, lands on the column
-   edge. Obsidian's 0.75em marker inset is zeroed in the tokens. */
+   Obsidian sets each line's padding-inline-start / text-indent from the
+   caret position after its marker. The theme makes every marker token
+   exactly one column wide (see LISTS and BLOCKQUOTE), so the indent lands
+   on the column edge. Obsidian's 0.75em marker inset is zeroed in the tokens. */
 
 /* ------------------------------------------------------------------
    VERTICAL RHYTHM  (Live Preview only)
    ------------------------------------------------------------------
-   The body stays monospace at its current size, and its WIDTH is not capped
-   by the theme (text follows the pane). What the theme shapes is vertical:
-     • PARAGRAPH GAP — a paragraph break in Markdown is a blank line, which
-       CodeMirror renders as a .cm-line holding only a <br>. That line gets
-       a taller line-height (--klartext-p-gap × body line height), so
-       paragraphs separate without touching the document. Blank lines
-       directly before/after a heading stay at one line height, which with
-       the heading's own taller line is the gap the Reading-view margins in
-       HEADINGS are measured against.
-       The same applies to blank lines directly before/after a LIST: a list
-       belongs to the sentence that introduces it and to the block that
-       follows it, so those blank lines stay at one line height too.
-       Likewise around a horizontal RULE, whose own margins set its gap.
-       And the LAST line, when it is empty: it separates nothing, and what
-       comes after the note (a plugin's footer, the backlinks) sits right
-       under it. Taller, it moved all of that by the difference the moment
-       a character was typed into it, and back on Enter (measured on a
-       phone: 9px each way at a 14px body).
-     • LIST ITEMS are spaced by Obsidian alone (--list-spacing, as padding).
-       A margin on a list line does not reach the editor, for the reason
-       given under HEADINGS; the 0.4em the theme once set here computed to 0.
+   A blank line (a .cm-line holding only a <br>) is the paragraph gap: it
+   gets --klartext-p-gap × line height. Next to a heading, list or rule, and
+   as the last line, it stays one line high. List items are spaced by
+   Obsidian alone. See docs/notes/heading-rhythm.md.
    ------------------------------------------------------------------ */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line:has(> br:only-child):not([class*="HyperMD-codeblock"]):not([class*="HyperMD-frontmatter"]) {
   line-height: calc(var(--klartext-line-height) * var(--klartext-p-gap));
@@ -1208,20 +987,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
 }
 
 
-/* Fold chevron on list lines. Obsidian anchors the collapse icon just before
-   the item's own column (its glyph's right edge lands at minus this margin,
-   measured from the column's start — nested items included, since Obsidian
-   places the indicator after the indent spans). Its own 0.4em put the glyph
-   6.4px before the column, which a MARK CAN REACH INTO: a mark wider than
-   the column overflows to the start, so a two-digit number's digits began
-   3.2px inside the chevron and the two collided (measured at a 16px body,
-   two-cell column).
-   Two cells of clearance instead: the chevron's glyph ends two cells before
-   the column, so it clears a two-digit number's overflow by a full cell and
-   a dash by two. Cells, not the column width, because what it has to clear
-   is the overflow, and that exists only while the column is too narrow for
-   the number. Three-digit numbers reach the glyph again at the two-cell
-   setting; at four cells they fit inside the column and cannot. */
+/* Fold chevron on list lines. Obsidian anchors the collapse icon with its
+   glyph's right edge this margin before the item's column (nested items
+   included). Two cells of clearance, not the column width: what it must clear
+   is a wide mark's overflow into the gutter. Obsidian's own 0.4em lets a
+   two-digit number collide with the chevron (16px body, two-cell column). */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line .cm-fold-indicator .collapse-indicator {
   margin-inline-end: calc(2 * var(--klartext-cell));
 }
@@ -1239,23 +1009,11 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
    READING VIEW
    ------------------------------------------------------------------ */
 
-/* THE GAP BELOW A STANDALONE BLOCK, matched to Live Preview.
-   Obsidian wraps each rendered block in its own .el-* div, but those
-   wrappers carry no margins of their own, so adjacent blocks still collapse:
-   the gap is max(previous bottom, next top), not the sum.
-   A paragraph's margins are ASYMMETRIC — 35.84px below, 19.2px above at the
-   default settings — because the gap between paragraphs is carried entirely
-   by the bottom one. ABOVE a block that works out: the paragraph's larger
-   bottom margin wins the collapse, which is what the block-gap note in the
-   typography section describes. BELOW a block it does not: the next
-   paragraph offers only its small top margin, so the block's own gap wins
-   and comes out short — 22px after a quote and 19px after a code block,
-   against the 36px Live Preview gives them.
-   So the block family states the paragraph gap explicitly on its bottom
-   side. Same length the paragraph itself uses, so a block sits in the flow
-   exactly as a paragraph does, in both directions and in both modes.
-     A callout is one of the family. Left out, it kept its own 1.5em below
-   and came out 24px short of the 36px Live Preview gives it (measured). */
+/* THE GAP BELOW A STANDALONE BLOCK, matched to Live Preview. Adjacent
+   blocks still collapse, and a paragraph's top margin is small (its gap sits
+   on its bottom), so a block's own bottom margin would come out short. The
+   block family, callouts included, states the paragraph gap below itself.
+   See docs/notes/heading-rhythm.md. */
 .markdown-preview-view blockquote,
 .markdown-preview-view .callout,
 .markdown-preview-view pre,
@@ -1301,15 +1059,11 @@ code,
 }
 
 /* A code block is frameless: no fill, no corners, a hairline above and
-   below, and a header row inside the top one that names the language
-   (see CODE BLOCK HEADER). The code starts on the text edge, as the prose
-   around it does, and the top padding is the header row's height plus the
-   air around it. Only in a note (Reading view, an embed, a hover preview): a
-   code block a plugin renders into a view of its own keeps the plugin's look
-   and its own header, if it has one.
-     On `.markdown-preview-view pre`, which ties Obsidian's own
-   `.markdown-rendered pre` (0,1,1) and wins by loading later: a bare `pre`
-   loses to it, and Obsidian's padding and zero-width border stayed. */
+   below, and a header row inside the top one (see CODE BLOCK HEADER). The
+   code starts on the text edge; the top padding is the header row plus its
+   air. Only in a note (Reading view, an embed, a hover preview); a plugin's
+   own code view keeps its look. Not a bare `pre`: Obsidian's
+   `.markdown-rendered pre` (0,1,1) would win, so this ties it and loads later. */
 pre {
   position: relative;
 }
@@ -1376,9 +1130,9 @@ body.klartext-dotted-bg .markdown-source-view.mod-cm6 thead tr > td {
    CODE BLOCK HEADER
 
    One row inside the block's top hairline: the mark `</>`, the language as
-   it was typed, and on the right the copy control, shown under the pointer.
-   The mark is three characters in the code face, not an icon, like every
-   other mark of this theme; it scales with the text and needs no image.
+   typed, and on the right the copy control, shown under the pointer. The
+   mark is three characters in the code face, not an icon: it scales with
+   the text and needs no image.
    ------------------------------------------------------------------ */
 
 /* Geometry, computed from the body size, not written in em: an absolute
@@ -1394,22 +1148,12 @@ body {
   --klartext-copy-icon:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='8' width='14' height='14' rx='2' ry='2'/><path d='M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'/></svg>");
 }
 
-/* Reading view. Obsidian renders `<pre class="language-python">` and nothing
-   that names the language in words, so the header is drawn from the block
-   itself: the mark as ::before, the language as ::after.
-
-   The language is the class, read with attr(). It reads "language-python";
-   the header is set in the code face, where "language-" is exactly nine
-   characters of equal width, so a -9ch indent moves those nine out of the
-   clipped box and leaves the word that was typed. No list of languages to
-   keep: `weirdlang` reads as typed. Only a pre with that one class gets a
-   label; with a second class (a plugin's) the class string is not a
-   language, and the block keeps the mark alone.
-
-   Only in `.markdown-preview-view`, which is a note being read, an embed or
-   a hover preview. A plugin that renders markdown into a view of its own,
-   Pythia for one, draws its own code header, and a second one here printed
-   the language straight into its code ("pydef"). */
+/* Reading view. Obsidian names the language only in the class
+   (`language-python`), so the header is drawn from the pre: the mark as
+   ::before, the class as ::after via attr(), indented -9ch to clip the nine
+   monospace cells of "language-". Any language reads as typed. A pre with a
+   second class (a plugin's) keeps the mark alone. Only in
+   `.markdown-preview-view`: plugin views (e.g. Pythia) draw their own header. */
 .markdown-preview-view pre::before,
 .markdown-preview-view pre[class^="language-"]:not([class*=" "])::after {
   position: absolute;
@@ -1480,16 +1224,12 @@ body.is-mobile .markdown-rendered .copy-code-button {
   height: calc(var(--klartext-code-btn) * 0.62);
 }
 
-/* Live Preview. Here the block is lines of the editor, and the fence line
-   is the header: while the cursor is elsewhere, Obsidian replaces the
-   ```python on it with its "flair", a span holding the language's name
-   ("Python") that copies the block when pressed. While the cursor is in the
-   block the fence shows as typed and the flair is gone, so the header never
-   sits on top of the source.
-
-   The lines lose their fill and side borders; the fence lines carry the two
-   hairlines. !important because Obsidian paints these lines from
-   `.cm-s-obsidian div.HyperMD-codeblock-bg` and its begin/end variants. */
+/* Live Preview. The fence line is the header: with the cursor elsewhere,
+   Obsidian replaces ```python with its "flair" (the language name, which
+   copies the block when pressed); with the cursor in the block the fence
+   shows as typed and the flair is gone. The lines lose fill and side
+   borders; the fence lines carry the hairlines. !important because Obsidian
+   paints them from `.cm-s-obsidian div.HyperMD-codeblock-bg` and variants. */
 .HyperMD-codeblock {
   background: transparent !important;
   border-left: none !important;
@@ -1529,13 +1269,11 @@ body.is-mobile .markdown-rendered .copy-code-button {
   padding-bottom: var(--klartext-code-inset);
 }
 
-/* The flair becomes the header: the whole row, from the code's own left edge
-   to the line's end, with the mark, the name in lowercase, and the copy
-   glyph at the far end. The row lets presses through to the line beneath,
-   so a press on the name puts the cursor on the fence as it would without
-   the header; only the copy glyph takes them, and a press there is a press
-   on the flair, which is Obsidian's copy. !important because Obsidian's own
-   flair rule places it in the top-right corner at a higher specificity. */
+/* The flair becomes the header row, from the code's left edge to the line's
+   end: mark, lowercase name, copy glyph at the far end. The row lets presses
+   through to the fence line beneath; only the copy glyph takes them, and a
+   press there is Obsidian's own copy. !important because Obsidian's flair
+   rule places it top-right at a higher specificity. */
 .markdown-source-view.mod-cm6 .code-block-flair {
   position: absolute !important;
   top: var(--klartext-code-inset) !important;
@@ -1646,36 +1384,11 @@ a:hover,
 }
 
 /* WHERE A LINK GOES, CARRIED BY THE RULE UNDER IT — solid stays inside the
-   vault, dotted leaves it. This replaces Obsidian's external-link glyph (an
-   arrow imported as a background image, removed below): the icon is drawn to
-   different proportions than the embedded monospace face, so at its 0.825em
-   it reads as a character in the sentence rather than as an annotation to it.
-   A rule under the words says the same thing in the body's own voice.
-     Scoped to the classes Obsidian puts on links in NOTE CONTENT, in both
-   editor modes and Reading view. Anchors in the interface keep the
-   undecorated style from the block above; a permanent underline on every
-   settings link would be noise.
-     A link to a note that does not exist yet keeps Obsidian's dimmed colour
-   and no rule, in Reading view as in the editor: the rule says where a link
-   goes, and this one goes nowhere.
-     The underline is permanent, so hover adds none. It changes colour, and
-   an external link's dotted rule closes up to solid — the two states meet at
-   the moment you are about to leave.
-     In the editor a Markdown link, [text](target), is .cm-link wherever it
-   points, so the class alone cannot say which rule it takes. What can is
-   the widget Obsidian sets after an external target (.external-link, the
-   span its arrow was painted on): measured in Obsidian 1.14, it follows the
-   link text after exactly four hidden spans on an idle line (`]`, `(`, the
-   target, `)`, each between two widget buffers) and after exactly four
-   visible ones on the line being edited, whatever the target's form (a
-   title, <angle brackets>, mailto:, obsidian://). A link to a note has no
-   such widget. So a .cm-link is solid, and dotted when that tail follows
-   it; link text split by formatting (`[**a** b](…)`) is matched one split
-   deep. A Markdown link to a missing note cannot be told apart in the
-   editor (Obsidian marks it only in Reading view) and stays solid.
-     A wikilink's rule sits on its .cm-underline, which Obsidian wraps in
-   .is-unresolved when the note is missing; only the direct child takes the
-   rule, so a missing note's link goes without, as in Reading view. */
+   vault, dotted leaves it; this replaces Obsidian's external-link arrow.
+   Note content only; interface anchors stay undecorated. An unresolved link
+   keeps Obsidian's dimmed colour and no rule. Hover recolours, and closes
+   dotted to solid. In the editor a .cm-link is dotted only when Obsidian's
+   .external-link widget follows it. See docs/notes/editor-link-rules.md. */
 .internal-link:not(.is-unresolved),
 .markdown-source-view.mod-cm6 .cm-hmd-internal-link > .cm-underline,
 .cm-s-obsidian span.cm-link,
@@ -1766,34 +1479,12 @@ blockquote,
   font-size: 1em;
 }
 
-/* Live-preview blockquote — the marker column model (see --klartext-col in
-   the typography block, and the LIVE PREVIEW MARKERS note in LISTS for the
-   two Obsidian facts it rests on).
-     The "> " token stays in the DOM as real text in every state. Idle,
-   Obsidian wraps the ">" in its own transparent span and leaves the space
-   beside it; on the active line the token is one plain span. Both live
-   inside .cm-formatting-quote, which is the element styled here, so the two
-   states render identically and nothing moves when the cursor arrives.
-     • The token is an inline-block one column wide, and its characters are
-       set in the Klartext Marks face, in which ">" and the space are empty
-       glyphs with zero advance. The caret at its end sits on the column's
-       far edge where the text begins, and Obsidian's hanging indent — which
-       it measures from that very caret position — puts wrapped lines on
-       the same edge. Nothing is clipped, boxed in flex or painted over, so
-       the caret is drawn.
-     • The ">" is never shown. The bar is the mark, in every state.
-     • Nested quotes: each "> " token is one column, so level-2 text sits
-       one column further in, and the bars are drawn from the LINE rather
-       than from the tokens — level 1 by Obsidian's own ::before, level 2
-       and 3 by an ::after on the line — each on the axis of its own column,
-       in every state. Obsidian's level-2 widget (.cm-blockquote-border,
-       present only on idle lines) is collapsed to nothing, so an idle
-       nested line measures the same as an active one.
-     The LINE takes the quote's size, not just the spans inside it, so both
-   modes lead a quote identically (Reading view sizes the blockquote); the
-   column is derived from the body size rather than from em, so the text
-   edge is the edge every other block uses. The inline hanging indent
-   Obsidian writes is left alone: it equals the token's width. */
+/* Live-preview blockquote — the marker column model (see --klartext-col, and
+   LIVE PREVIEW MARKERS in LISTS). The "> " token (.cm-formatting-quote) is a
+   one-column inline-block in the Klartext Marks face, where ">" and space are
+   empty: the caret ends on the text edge in every state, and the ">" never
+   shows; the bar is the mark. Nested bars are drawn from the line, one per
+   column. See docs/notes/marker-column.md. */
 .cm-quote {
   color: var(--text-muted) !important;
   font-style: italic;
@@ -1816,17 +1507,12 @@ blockquote,
   white-space: pre;
   color: transparent !important;   /* also beats the theme's own .cm-quote colour; the glyphs are empty anyway */
 }
-/* A callout's HEADER line while its source is showing. Obsidian tokenises
-   "> [!type] " as ONE span carrying the quote-formatting classes plus
-   .cm-hmd-callout, so the column box above would squeeze the tag into the
-   margin over the title. Instead the token stays inline at its natural
-   width, set in the Quote variant of the marks face (only the ">" is
-   blank; the spaces keep their cells), and is padded by the column less
-   the one cell the space after ">" occupies: the tag begins on the text
-   edge, its trailing space is the gap before the title, and the caret
-   after "> " sits on the edge, so the hanging indent matches the body
-   lines. The tag itself
-   is faint (see the rule for .cm-hmd-barelink below). */
+/* A callout's HEADER line while its source shows. Obsidian tokenises
+   "> [!type] " as ONE quote span plus .cm-hmd-callout, so the column box
+   would squeeze the tag into the margin. Instead it stays inline in the
+   Quote marks face (only ">" blank) and is padded by the column less the
+   space after ">": the tag starts on the text edge and the hanging indent
+   matches. The tag is faint (see .cm-hmd-barelink below). */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-quote .cm-formatting-quote.cm-hmd-callout {
   display: inline;
   width: auto;
@@ -1896,13 +1582,11 @@ blockquote,
               calc(4 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color);
 }
 
-/* A lazy line: text without ">" straight after a quote line, which Markdown
-   counts as part of the quote (Reading view joins it into the quote's
-   paragraph). Obsidian marks it .HyperMD-quote-lazy but writes no hanging
-   indent on it, because there is no "> " token to measure, so its text began
-   on the paragraph edge and the bar, which stands on the marker axis inside
-   that edge, ran through its first letter. One column per level puts it on
-   the quote's text edge, where Reading view has it. */
+/* A lazy line: text without ">" right after a quote line, which Markdown
+   counts as part of the quote. Obsidian marks it .HyperMD-quote-lazy but
+   writes no hanging indent (no "> " token to measure), so the bar would run
+   through its first letter. One column per level puts it on the quote's
+   text edge, where Reading view has it. */
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy {
   padding-inline-start: var(--klartext-col);
 }
@@ -1945,15 +1629,11 @@ hr,
    LISTS
    ------------------------------------------------------------------ */
 /* READING VIEW — the marker column model (see --klartext-col). Every item
-   hangs exactly one column (as a length, so the font-size:0 bullet box
-   can't collapse it); each mark is a float pulled back into that column
-   and END-aligned against its last cell, which stays empty as the gap:
-   dash, last digit and checkbox all end one cell before the text. Nested
-   items keep Obsidian's own --list-indent step, which defaults to the same
-   column, so a nested mark starts on its parent's text edge. Obsidian's
-   reading indentation guide hangs off the nested list's edge by
-   --indentation-guide-reading-indent; re-based so it lands on the parent's
-   marker axis, as in the editor. */
+   hangs one column (a length, so the font-size:0 bullet box can't collapse
+   it); each mark is a float end-aligned in that column, its last cell left
+   as the gap. Nested items keep Obsidian's --list-indent step (one column by
+   default). The reading indentation guide is re-based via
+   --indentation-guide-reading-indent onto the parent's marker axis. */
 .markdown-preview-view ul,
 .markdown-preview-view ol {
   padding-left: 0;
@@ -1962,14 +1642,11 @@ hr,
 .markdown-rendered ol > li {
   margin-inline-start: var(--klartext-col);
 }
-/* Numbering: the counter alone, no dot, no dash, right-aligned in the
-   column. NOT done via ::marker content — WebKit (iOS/macOS Obsidian)
-   honours only color and font-size on ::marker and paints "1." with its
-   default spacing instead (verified in a WKWebView). So the native marker is
-   switched off and the number is a ::before float in the column, the same
-   construction as the bullet's .list-bullet box. The implicit list-item
-   counter honours <ol start> and nesting in WebKit and Blink (verified).
-   Ordered task items keep their number, as in Obsidian. */
+/* Numbering: the counter alone, no dot, right-aligned in the column, as a
+   ::before float like the bullet's .list-bullet box. Not ::marker content:
+   WebKit (iOS/macOS) honours only color and font-size there and paints
+   "1." anyway. The list-item counter honours <ol start> and nesting in
+   WebKit and Blink. Ordered task items keep their number, as in Obsidian. */
 .markdown-rendered ol {
   list-style: none;
 }
@@ -2014,45 +1691,11 @@ hr,
 }
 
 /* LIVE PREVIEW MARKERS — the marker column model (see --klartext-col).
-   Obsidian keeps a list marker in the DOM as real text, one span per
-   token: .cm-formatting-list-ul holds "- " (idle: the "-" wrapped in
-   Obsidian's .list-bullet; active: plain), .cm-formatting-list-ol holds
-   "1. " together with EVERY space that follows it (idle: wrapped in
-   .list-number; active: plain). The CONTAINER is what is styled, so both
-   states render the same and nothing moves when the cursor arrives.
-     Two facts of Obsidian 1.13.7 decide the construction (both read from
-   its code and measured over the debugging port):
-     • The rendered number and bullet marks are withheld while the
-       selection touches the token, END INCLUDED. A fresh item, with the
-       cursor right after "1. ", is therefore always in its plain state,
-       and so is one the user has just typed extra spaces into.
-     • The hanging indent is written per line from coordsAtPos() at the
-       end of the marker text — the caret position — floored to a pixel
-       and applied as text-indent / padding-inline-start. Where there is
-       no caret coordinate there is no indent at all.
-   So: keep the characters in normal flow with real metrics, turn the ones
-   that must not show into empty zero-advance glyphs through the Klartext
-   Marks face (see EMBEDDED FONTS), and make the token an inline-block one
-   column wide, end-aligned. Its content ends on the column's far edge, so
-   the caret at the end of the marker is drawn exactly where the text
-   begins; Obsidian measures the hanging indent there and writes the column
-   width, so wrapped lines sit on that edge too. A real text run inside the
-   box keeps the caret measurable: a whitespace-only text node inside an
-   inline-FLEX container is not rendered at all and has no caret coordinate,
-   and anything clipped or painted over hides the caret.
-     Bulleted: no character of the token is visible, so the dash is drawn by
-   a ::before followed by one cell of margin as the gap; end-aligned, it
-   lands in the column's last mark cell (the first at two cells, the third
-   at four). One dash for "-", "*" and "+", since
-   Reading view cannot tell them apart either.
-     Numbered: the digits are visible and right-align on their own; the dot
-   (or parenthesis) keeps one cell of advance but no ink, so "10." ends on
-   the column's edge with its digits ending one cell earlier, and extra
-   spaces cost nothing. A number with more digits than the column has mark
-   cells hangs its first digits into the margin (see the flex note below).
-     Task: Obsidian replaces "- [ ]" with a checkbox widget and leaves the
-   space after it as body text. The widget is the column less one cell,
-   with the box at its end; the space is the last cell. */
+   The marker token stays real text; the CONTAINER is styled, so idle and
+   active states match. It is a one-column inline-block, end-aligned, with
+   hidden characters made empty zero-advance glyphs by the Klartext Marks
+   face (see EMBEDDED FONTS), so the caret, and Obsidian's hanging indent,
+   land on the text edge. See docs/notes/marker-column.md. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ul,
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
   display: inline-block;
@@ -2066,13 +1709,11 @@ hr,
   white-space: pre;
   color: var(--text-faint);
 }
-/* The number token is a FLEX box, end-justified: a number with more digits
-   than the column has mark cells then overflows at the start, hanging its
-   first digits into the margin, while its text stays on the shared edge.
-   An inline-block cannot do that (overflowing content aligns to the start
-   and runs into the text). Flex is safe here, unlike on the bullet token:
-   the number's text run is never whitespace-only, so it is always rendered
-   and the caret after it always has a box. */
+/* The number token is a FLEX box, end-justified, so a number with more
+   digits than the column has mark cells hangs its first digits into the
+   margin while its text stays on the edge. Not inline-block: its overflow
+   runs into the text. Flex is safe here, unlike on the bullet token: the
+   number's text run is never whitespace-only, so the caret always has a box. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-formatting-list-ol {
   display: inline-flex;
   justify-content: flex-end;
@@ -2096,12 +1737,11 @@ hr,
 .markdown-rendered {
   --checkbox-size: var(--klartext-checkbox-size);
   /* Where a task box sits on its line: its centre on half the CAP height of
-     the body face (JetBrains Mono: 0.73em, digits the same), measured up from
-     the baseline. `vertical-align: middle` centres on half the x-height
-     instead, 1.4px lower at a 16px body, so beside a capital or a digit the
-     box read low. Written as the box's bottom edge, which is what a length
-     in vertical-align places, and set here, where --checkbox-size is the
-     theme's: on body it would still be Obsidian's. */
+     the body face (JetBrains Mono: 0.73em, digits the same). Not
+     `vertical-align: middle`: that centres on half the x-height, so the box
+     reads low beside a capital or digit. Written as the box's bottom edge,
+     and set here, where --checkbox-size is the theme's (on body it is still
+     Obsidian's). */
   --klartext-checkbox-align: calc(var(--klartext-font-size) * 0.73 / 2 - var(--checkbox-size) / 2);
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label {
@@ -2120,29 +1760,15 @@ hr,
 
 /* Item spacing: none of the theme's own, in either mode. Live Preview spaces
    its items by Obsidian's --list-spacing alone (a margin never reaches the
-   editor, see VERTICAL RHYTHM), and Reading view follows it. It used to add
-   0.4em below each top-level item, so the same list stood 34px a line in
-   Reading view and 28px in Live Preview. */
+   editor, see VERTICAL RHYTHM), and Reading view follows it, so a list stands
+   at the same pitch in both modes. */
 
-/* A callout or a quote INSIDE a list item takes that item gap too, not the
-   prose block gap. Both blocks carry generous vertical margins (see
-   BLOCKQUOTE and CALLOUTS), measured against the paragraphs they sit between,
-   and the quote's is deliberately asymmetric so its bottom survives the
-   collapse with the next paragraph's top margin. A list item collapses none
-   of it: Obsidian gives every <li> 1.2px of vertical padding, and a padding
-   edge stops a child's margin collapsing through it, so both ends are added
-   in full inside the item.
-   Measured in Obsidian's reading view, before this rule: a bodyless callout
-   as a list item's whole content turned a 22px block into a 72px item, with
-   the marker sitting 25px above the line it numbers; a quote turned a 24px
-   block into 84px (22.32 above, 35.84 below). A three-item sublist came out
-   184px tall against the 91px its content needs.
-   0.4em above and below, a small fixed step, so the block reads as part of
-   its item and the marker lands on its first line. !important because the blockquote
-   rule this overrides carries one; the selector out-ranks both base rules on
-   specificity in any case. Live Preview needs nothing: Obsidian does not
-   build a callout widget for one written inside a list item, so those lines
-   stay source there. */
+/* A callout or a quote INSIDE a list item takes the item gap, not the prose
+   block gap (see BLOCKQUOTE and CALLOUTS). Obsidian gives every <li> 1.2px of
+   vertical padding, which stops margins collapsing, so their large margins
+   would land in full and push the marker off the first line. !important
+   because the blockquote rule carries one. Live Preview needs nothing: a
+   callout inside a list item stays source there. */
 .markdown-rendered li > .callout,
 .markdown-rendered li > blockquote {
   margin-block: 0.4em !important;
@@ -2151,15 +1777,11 @@ hr,
 .list-bullet  { color: var(--text-faint); }
 .list-number  { color: var(--text-faint); }
 
-/* Unordered bullet in Reading view: a quieter en-dash instead of the filled
-   dot. Obsidian draws the dot as an absolutely-positioned ::after box (sized
-   by --list-bullet-size) plus a zero-width ::before. Hide the box explicitly
-   — not by relying on font-size:0 collapsing an em-sized box — and draw the
-   dash via ::before; the font-size: 0 is on the box rule above. (Live
-   Preview draws its dash from the marker token instead; see LIVE PREVIEW
-   MARKERS above.) To try another glyph, change the content escape:
-     \2013 –  (en dash)   \2022 •  (dot)   \00B7 ·  (middot)
-     \25E6 ◦  (hollow)    \203A ›  (angle)  \2192 →  (arrow) */
+/* Unordered bullet in Reading view: a quieter en-dash instead of the dot.
+   Obsidian's dot is the ::after box; hide it explicitly rather than rely on
+   font-size: 0 (set on the box rule above) collapsing it, and draw the dash
+   via ::before. Live Preview: see LIVE PREVIEW MARKERS. Other glyphs:
+     \2013 –  \2022 •  \00B7 ·  \25E6 ◦  \203A ›  \2192 → */
 .markdown-rendered .list-bullet::after {
   display: none;
 }
@@ -2169,52 +1791,12 @@ hr,
   color: var(--text-faint);
 }
 
-/* One nesting level is one indent unit, whether it is written with a tab or
-   with spaces (Live Preview).
-
-   Obsidian emits one .cm-indent per level and floors each at --list-indent:
-
-       .markdown-source-view.mod-cm6 .cm-indent
-         { min-width: var(--list-indent); display: inline-block; }
-
-   A tab is exactly --list-indent wide, because Obsidian sets `tab-size` to
-   that length. A run of spaces is not: it renders at its own width, and the
-   floor is what normally keeps it in line — under Obsidian's own tokens four
-   spaces measure about 20px against a 36px unit, so they round up to the unit
-   and land on the same column as a tab.
-
-   This theme's unit is the marker column, 1.2em, and Live-Preview list lines
-   are set in the monospace face where a space is 0.6em. Four spaces are
-   therefore 2.4em: WIDER than the unit, so the floor never applies and one
-   space-indented level paints as exactly two levels. In a file where some
-   lines are tabbed and some are spaced — a paste, an import, a vault whose
-   "Indent using tabs" setting changed — a sibling drops onto its own
-   children's column while the parser still reads it as a sibling, so it also
-   survives the parent's fold. Measured in Obsidian: level 2 at 19.2px with a
-   tab, 38.4px with four spaces.
-
-   Zero-advance spaces put a whole level's worth back under the floor, so it
-   resolves to exactly one unit while tabs are untouched (word-spacing does not
-   apply to a tab, and a tab's width comes from `tab-size` anyway).
-   ONLY on .cm-indent, which is Obsidian's box for a COMPLETE level and the one
-   carrying the floor. The remainder of a partial indent — three spaces under
-   "1. ", say — goes in a .cm-indent-spacing, which has no floor to fall back
-   on, so zeroing it there would collapse the indent entirely rather than
-   correct it. That case is left as Obsidian renders it.
-   NOT font-size, which would fix the width and then collapse the box: the
-   indentation guide is .cm-indent's own ::before and takes its height, so
-   shrinking the face to make four spaces fit drops the guide from 25.6px to
-   6.4px. Measured both.
-
-   WITHOUT INDENTATION GUIDES there is no .cm-indent at all. Obsidian emits
-   those boxes only while Editor → "Show indentation guides" is on; with it
-   off the indent is bare text in .cm-hmd-list-indent, there is no floor, and
-   a space-indented level painted two levels deep (measured: level 2 at 38px
-   with four spaces, 19px with a tab). So the indent itself sets each space to
-   one --klartext-tab-size-th of a level: --klartext-tab-size spaces are then
-   exactly one unit, like a tab, and a partial indent shrinks in proportion.
-   With guides on, the .cm-indent rule above replaces this inside each box,
-   and a remainder keeps Obsidian's own width, as before. */
+/* One nesting level is one indent unit, tab or spaces (Live Preview): four
+   monospace spaces would otherwise paint two levels. Spaces get zero advance
+   in .cm-indent (a complete level, floored at --list-indent), not in a
+   .cm-indent-spacing remainder; with guides off each space is
+   1/--klartext-tab-size of a level. Not font-size: that collapses the guide.
+   See docs/notes/live-preview-list-indent.md. */
 .markdown-source-view.mod-cm6 .cm-hmd-list-indent {
   word-spacing: calc(var(--list-indent) / var(--klartext-tab-size) - var(--klartext-cell));
 }
@@ -2225,37 +1807,23 @@ hr,
   word-spacing: normal;
 }
 
-/* The list tree line (Live Preview), drawn by the theme from end to end.
-
-   Obsidian draws an indentation guide only on an INDENTED line, so a guide
-   begins at the first child and never at the parent, and it draws nothing at
-   all when "Show indentation guides" is off. The theme used to add only the
-   missing parent segment and lean on Obsidian for the rest, which meant the
-   line existed or did not according to a setting, and the one segment the
-   theme drew went on painting with nothing to join when the setting was off.
-
-   So the theme draws the whole thing and Obsidian's own guide steps aside.
-   A line's ancestor columns are a background gradient over the line's full
-   height; the parent's own column is the ::after below, from under its bullet
-   to the end of the item. Both read --klartext-tree-x, so they cannot drift a
-   pixel apart — which is exactly what happened while each did its own
-   arithmetic.
-
-   The colour is --indentation-guide-color throughout, so a vault that restyles
-   guides restyles this, and the print block's `transparent` still removes it. */
+/* The list tree line (Live Preview), drawn entirely by the theme, since
+   Obsidian's guide starts only at the first child and vanishes with
+   "Show indentation guides" off. Ancestor columns are a background gradient;
+   the parent's column is the ::after below. Both read --klartext-tree-x so
+   they cannot drift apart. Colour is --indentation-guide-color, so print's
+   `transparent` still removes it. See docs/notes/live-preview-list-indent.md. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line {
   /* Where the 1px band sits inside its unit. Obsidian's own guide is a box
      with the border on its END side, so the band lands one width past the
      inset; matching it keeps the line where readers already expect it. */
   --klartext-tree-x: calc(var(--indentation-guide-editing-indent) + var(--indentation-guide-width));
 
-  /* One band per unit, repeated, then clipped to the number of ancestor
-     columns this line has. A line at level N sits N-1 units in and therefore
-     carries N-1 columns; level 1 sets none and paints nothing.
-     border-box, NOT content-box: Obsidian gives a list line a padding-left
-     equal to its whole indent with a matching negative text-indent, so a
-     gradient measured from the content box starts past every column it is
-     meant to draw — measured, it landed 38px right on level 2. */
+  /* One band per unit, repeated, clipped to this line's ancestor columns:
+     level N carries N-1, level 1 paints nothing.
+     border-box, NOT content-box: Obsidian pads a list line by its whole
+     indent (with a negative text-indent), so a content-box gradient starts
+     past every column. */
   background-image: repeating-linear-gradient(
     to right,
     transparent 0 var(--klartext-tree-x),
@@ -2286,13 +1854,10 @@ hr,
   border-inline-end-color: transparent;
 }
 
-/* The parent's own column: from below its bullet, down its wrapped lines, into
-   its children's. A filled band rather than a border, so it shares the
-   gradient's x instead of adding a border width of its own on top of it.
-   The segment starts below the item's first line box, leaving a clear gap
-   under the dash rather than touching it — a one-line parent therefore has
-   nothing to draw, and needs nothing: its child's own columns start where it
-   ends. */
+/* The parent's own column: from below its first line box, down its wrapped
+   lines, into its children's. A filled band rather than a border, so it
+   shares the gradient's x. A one-line parent draws nothing; its child's
+   columns take over. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2) { --klartext-tree-col: 0; }
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3) { --klartext-tree-col: 1; }
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4) { --klartext-tree-col: 2; }
@@ -2364,16 +1929,11 @@ hr,
   text-align: start;                  /* `start`, not `left` — matches Obsidian's default and is RTL-correct */
 }
 
-/* COLUMN ALIGNMENT. Obsidian carries the delimiter row's colons as an
-   `align` ATTRIBUTE on each cell and styles it with
-   `.markdown-rendered th[align="center"]` (0,2,1). The theme's cell rule
-   above reaches the editor through `.markdown-source-view.mod-cm6 th`, also
-   (0,2,1) and later in the cascade, so it would win that tie there and
-   left-align every column however the delimiter row was written.
-   Restated for both modes, above the theme's own default and Obsidian's —
-   the editor arms at (0,3,1), the Reading arms at (0,2,1), which tie
-   Obsidian's and win by loading later — so the markup decides in either view. `start`/`end`
-   rather than `left`/`right`, matching Obsidian and staying correct in RTL. */
+/* COLUMN ALIGNMENT. Obsidian carries the delimiter colons as an `align`
+   attribute on each cell. The theme's cell rule above ties Obsidian's
+   (0,2,1) in the editor and would left-align every column, so alignment is
+   restated for both modes (editor at 0,3,1; Reading ties and wins on load
+   order). `start`/`end` rather than `left`/`right`, for RTL. */
 .markdown-rendered th[align="left"],
 .markdown-rendered td[align="left"],
 .markdown-source-view.mod-cm6 th[align="left"],
@@ -2430,14 +1990,11 @@ hr,
   background: transparent;
 }
 
-/* Zebra striping — every 2nd BODY row gets a whisper of grey, in both modes.
-   Counting inside <tbody> leaves the header row (own fill) untouched; body row
-   1 stays plain so it reads as continuous with the header.
-   `td` and `th` rather than `*`: Obsidian alternates COLUMN backgrounds with
-   `.markdown-rendered tbody tr > td:nth-child(2n+2)` (specificity 0,2,3),
-   which out-ranks the `> *` form (0,2,2) and would leave every even column
-   of a striped row unpainted in Reading view. Equal specificity here; theme.css
-   loads later and wins. */
+/* Zebra striping: every 2nd BODY row, in both modes; counting inside
+   <tbody> leaves the header and body row 1 plain.
+   `td` and `th`, not `*`: Obsidian's column stripes
+   (`tbody tr > td:nth-child(2n+2)`, 0,2,3) out-rank `> *` and would leave
+   every even column unpainted in Reading view. */
 .markdown-rendered tbody tr:nth-child(even) > td,
 .markdown-rendered tbody tr:nth-child(even) > th,
 .markdown-source-view.mod-cm6 tbody tr:nth-child(even) > td,
@@ -2445,31 +2002,22 @@ hr,
   background-color: var(--table-stripe-bg);
 }
 
-/* Table edge on the shared text edge. In Live Preview Obsidian pairs a widget
-   padding of --table-drag-handle-size (room for the row/column drag handles)
-   with an equal NEGATIVE margin — `margin: 0 calc(-1 * var(--size-4-4))
-   !important` — so the table border lands on the text edge by itself, as
-   long as NEITHER half is overridden (zeroing the padding alone slides the
-   table 16px left). Both halves are left to Obsidian; the handles sit in the
-   prefix column. The wrapper carries no inset in either mode — zeroing it is
-   harmless and keeps reading view explicit. */
+/* Table edge on the shared text edge. In Live Preview Obsidian pairs a
+   --table-drag-handle-size padding with an equal negative margin, so the
+   border lands on the text edge by itself. Leave both halves to Obsidian:
+   zeroing the padding alone slides the table 16px left. The wrapper inset
+   is zeroed in both modes to keep Reading view explicit. */
 .markdown-source-view.mod-cm6.is-live-preview .cm-table-widget .table-wrapper,
 .markdown-rendered .table-wrapper {
   padding-left: 0;
   margin-left: 0;
 }
 
-/* Wide tables scroll sideways instead of being squeezed. A table takes its
-   natural width (below) and grows past the column when the columns'
-   minimum widths do not fit, so the lever is the per-column minimum:
-   Obsidian's token, 6ch by default, raised to 11ch (border-box, so ~9
-   characters of content beside the cell padding) so numbers, dates and
-   short labels stay on one line while prose cells still wrap; header
-   labels never wrap, so each column is at least as wide as its heading.
-   Reading: the scroll container is Obsidian's block wrapper around each
-   table (frame, radius and stripes travel with the content, on the text
-   edge). Live Preview: Obsidian's .cm-table-widget already scrolls.
-   Scrollbars follow the global 5px styling and appear only on overflow. */
+/* Wide tables scroll sideways instead of being squeezed. The lever is the
+   per-column minimum: Obsidian's 6ch raised to 11ch (border-box, ~9 chars)
+   so numbers, dates and short labels stay on one line; headers never wrap.
+   Reading scrolls in Obsidian's .el-table wrapper; Live Preview's
+   .cm-table-widget already scrolls. */
 /* stylelint-disable-next-line no-duplicate-selectors */
 body {
   --table-column-min-width: 11ch;
@@ -2492,16 +2040,11 @@ body {
 .markdown-rendered td {
   max-width: 45ch;
 }
-/* Once a table overflows, auto layout parks EVERY column at its minimum,
-   so a prose column beside short ones turns into a tall strip of wrapped
-   words. So every table takes its natural width instead — short cells on
-   one line, prose at its natural length — and scrolls; capped at twice
-   the column, beyond which cells wrap again. NOT stretched to the column
-   (GitHub's model): a stretched table hands the spare width to columns in
-   proportion to their natural widths, so a glossary's term column grew to
-   half the table and sat empty while the meanings wrapped. A table that
-   is narrower than the column is a compact box on the text edge. (width and
-   max-width sit on the table rule at the top of this section.) */
+/* Every table takes its natural width, capped at twice the column, and
+   scrolls: once a table overflows, auto layout parks every column at its
+   minimum and prose turns into a tall strip. NOT stretched to the column:
+   that hands spare width to short columns (a glossary's term column ends
+   up half-empty). Width and max-width sit on the table rule at the top. */
 
 /* ------------------------------------------------------------------
    TAGS
@@ -2611,27 +2154,11 @@ a.tag {
    SEARCH
    ------------------------------------------------------------------ */
 
-/* The field a search pane is typed into — the global search, the tag pane,
-   the backlinks pane, and anything else built on Obsidian's own
-   .search-input-container.
-
-   Obsidian draws it as a filled box with a border, and in dark that fill and
-   that border are the same colour, so the box has no edge (see the token's
-   comment). Rather than tint the fill harder, the box goes: a pane is already
-   a box, and a second one at the top of it competes with the thing it
-   filters. What is left is the field on the pane's own ground with one rule
-   under it — the silhouette this theme already gives the command palette.
-
-   The focus ring is the rule thickening and taking the accent, and nothing
-   else. A pane clips what leaves it, so a ring drawn outside the box loses
-   its top edge and reads as a rendering fault.
-
-   One rule for every size, because this IS the mobile silhouette already:
-   measured with no theme loaded, Obsidian draws this field on a phone with no
-   fill, no radius and a bottom border alone, and only on a desktop wraps it
-   in a box. The phone was right; the desktop is what changes here. (The pill
-   shapes 1.6.1 left to Obsidian's touch-radius ladder are the floating nav's
-   controls, not a field inside a pane — this element never had one.) */
+/* The field a search pane is typed into (global search, tags, backlinks,
+   anything on .search-input-container). No box: the field sits on the pane's
+   ground with one rule under it, like the command palette and like
+   Obsidian's own phone layout, so one rule serves every size. Focus thickens
+   the rule; no outer ring, since the pane clips its top edge. */
 .search-input-container input {
   background-color: transparent;
   border: none;
@@ -2640,14 +2167,10 @@ a.tag {
   box-shadow: none;
 }
 
-/* Obsidian states hover and focus for this field at (0,3,1) —
-   `input[type='search']:not(:disabled):hover` sets `border-color`, which
-   reaches the bottom edge as well and puts the boundary back under 3:1 the
-   moment a pointer crosses it; `input[type='search']:focus` does the same and
-   adds a ring. A rule at (0,2,1) loses to both, so these are restated at
-   Obsidian's own specificity and win on source order, the way the rest of
-   this theme does. Hover keeps the rest colour: hovering a field is not a
-   state worth saying anything about when focus is about to say it. */
+/* Obsidian's hover and focus for this field are (0,3,1) and set
+   `border-color`, which would undo the bottom rule's 3:1 contrast. Restated
+   at the same specificity; source order wins. Hover keeps the rest colour:
+   focus is the state worth showing. */
 .search-input-container input:not(:disabled):hover {
   border-bottom-color: var(--klartext-field-rule);
 }
@@ -2736,21 +2259,11 @@ a.tag {
   font-family: var(--font-interface);
 }
 
-/* A settings heading starts where the names of its rows start.
-   Obsidian pads a heading with --size-4-4 (16px, app.css .setting-item-heading
-   and .setting-group .setting-item-heading) but a row inside a group's
-   .setting-items with --setting-items-padding-x (20px, app.css
-   .setting-group .setting-item:not(.setting-item-heading)), so in every
-   grouped tab (Obsidian's own, and a plugin that uses its setting groups) the
-   heading's name began 4px LEFT of the names below it, measured in Obsidian
-   1.13.7: 273px against 277px on the desktop, 33px against 37px on a phone.
-   A row outside a group (a plugin's plain Setting rows, Schreibstube's among
-   them) is padded --size-4-4 like the heading and was already flush (273
-   against 273), so only the grouped heading is restated, in the rows' own
-   variable: it follows any change of that padding instead of a number. The
-   space above and the heading's look stay Obsidian's. After: 277 against
-   277 on the desktop, 37 against 37 on a phone, light and dark
-   (node tools/verify.mjs settings). */
+/* A settings heading starts where the names of its rows start. Obsidian
+   pads a grouped heading --size-4-4 but its rows --setting-items-padding-x,
+   4px further in (measured in Obsidian 1.13.7). The heading takes the rows'
+   variable so it follows any change of it; ungrouped rows already match.
+   Checked by `node tools/verify.mjs settings`. */
 .setting-group > .setting-item.setting-item-heading {
   padding-inline: var(--setting-items-padding-x);
 }
@@ -2777,27 +2290,12 @@ button.mod-cta:hover,
   background-color: var(--interactive-accent-hover) !important;
 }
 
-/* A hover for buttons that do not bring their own.
-   This theme flattens the resting fill to white (--interactive-normal), which
-   leaves Obsidian's own hover, --interactive-hover #fafafa, a five-in-255 step
-   off the ground: not visible. --surface-muted is thirteen, which is. It
-   matters most for plugins, which use <button> for icon-shaped controls that
-   would otherwise have no hover feedback at all.
-
-   NOT !important. The selector is (0,2,1) and Obsidian's `button:hover` is
-   (0,1,1), so specificity alone already wins where it needs to — the
-   !important only reached past plugins that had deliberately styled their own
-   hover, and took it from them. Measured in Obsidian with it removed: every
-   button without its own hover rule still paints #f2f2ee (Obsidian's own,
-   Schreibstube's review actions, Vizardry's canvas controls), and only a
-   plugin that defines its own gets it back. With it, one plugin's accent-
-   filled primary button painted #f2f2ee under a white label: 1.12:1, an empty
-   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off.
-     Obsidian's red buttons are exempt like .mod-cta: .mod-warning hovers in
-   its own darker red, and its (0,2,1) loses to this rule only by load order.
-   Measured in Obsidian with them included: a focused Delete painted #f2f2ee
-   under its white label, 1.12:1. .mod-destructive (red text on a red tint)
-   would lose its tint the same way. */
+/* A hover for buttons that do not bring their own: Obsidian's
+   --interactive-hover is invisible on the theme's white fill.
+   NOT !important: (0,2,1) already beats `button:hover`, and !important would
+   override plugins' own hovers (`tools/check-button-hover.mjs` guards it).
+   .mod-cta, .mod-warning and .mod-destructive are exempt: this grey under
+   their white or red labels leaves an empty box (1.12:1). */
 button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):hover,
 button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):focus-visible {
   background-color: var(--surface-muted);
@@ -2822,15 +2320,11 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   border-color: var(--interactive-accent) !important;
 }
 
-/* The box is drawn at 0.8 × the body size (12.8px at 16px) but clicks over
-   up to 24 × 24px, WCAG 2.5.8's target size, through a transparent ::before
-   centred on it; a click on a pseudo-element is a click on its input.
-   Obsidian draws the checkmark with ::after, so ::before is free. The area
-   is capped twice: no wider than the box plus a gap cell either side, so a
-   click on the text still places the cursor, and no taller than one line
-   (--klartext-blank-line), so items on neighbouring lines never share it.
-   At a 16px body that is 24 × 24px; at 14px (the phone's default), 24 ×
-   22.4px, the whole line. */
+/* The box is drawn at 0.8 × the body size but clicks over up to 24 × 24px
+   (WCAG 2.5.8) through a transparent ::before centred on it; Obsidian's
+   checkmark uses ::after. Capped at the box plus a gap cell either side, so
+   a click on the text still places the cursor, and at one line
+   (--klartext-blank-line), so neighbouring items never share the area. */
 .markdown-rendered .task-list-item-checkbox,
 .markdown-source-view.mod-cm6 .task-list-item-checkbox {
   position: relative;
@@ -2846,13 +2340,10 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   transform: translate(-50%, -50%);
 }
 
-/* Done tasks. Colour comes from Obsidian's --checklist-done-color (set on
-   body to the theme's subtle grey), which the editor uses per LINE — so both
-   modes agree. In Reading view the strike and colour sit on the whole <li>
-   and would propagate into a done task's nested sub-tasks (the editor marks
-   per line, so it never does). A nested list inside a done task is made
-   inline-block, which stops text-decoration propagation, and gets the
-   normal colour back; its own done items re-apply their state. */
+/* Done tasks take --checklist-done-color, which the editor applies per line.
+   In Reading view the strike and colour sit on the whole <li>, so a nested
+   list inside a done task is made inline-block (which stops text-decoration
+   propagation) and gets the normal colour back. */
 .task-list-item.is-checked {
   color: var(--checklist-done-color) !important;
   text-decoration: line-through;
@@ -2868,15 +2359,11 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   color: var(--text-normal);
 }
 
-/* Cancelled task `- [-]`. One step lighter than done: struck through in the
-   faint grey, and the box carries a short dash on a neutral fill instead of
-   a checkmark. Same treatment on editor lines and rendered items.
-     Obsidian counts any character in the box as done: a cancelled item is
-   `.is-checked` and its box `:checked`. So the done rules above reach it, and
-   they carry !important — measured, a cancelled task rendered exactly as a
-   done one, accent box and checkmark included, and the dash below was drawn
-   through the checkmark's mask. Everything here is therefore !important too,
-   and wins on specificity. */
+/* Cancelled task `- [-]`: struck through in the faint grey, the box a short
+   dash on a neutral fill. Editor lines and rendered items alike.
+   Obsidian counts any character in the box as done (`.is-checked`, box
+   `:checked`), so the !important done rules above reach it; everything here
+   is !important too and wins on specificity. */
 .markdown-rendered li.task-list-item[data-task="-"],
 .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="-"] {
   color: var(--text-faint) !important;
@@ -2905,15 +2392,11 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   mask-image: none;
 }
 
-/* In-progress task `- [/]`. Still open work, so no strike and the normal
-   text colour; the box is cut on its diagonal, bottom left to top right,
-   and the half below the cut is filled with the accent: on its way to a
-   checked box. Same treatment on editor lines and rendered items.
-     As with `[-]`, Obsidian counts the slash as done: the item is
-   `.is-checked`, its box `:checked`, and the editor line takes the done
-   colour and strike. The two done tokens are reset on the item, so Obsidian's
-   own rules that read them fall back too, and the rest is !important to beat
-   the done rules above. */
+/* In-progress task `- [/]`: no strike, normal colour; the box is cut on its
+   diagonal and the lower half filled with the accent.
+   Obsidian counts the slash as done, as with `[-]`. The two done tokens are
+   reset on the item so Obsidian's own rules fall back too, and the rest is
+   !important to beat the done rules above. */
 .markdown-rendered li.task-list-item[data-task="/"],
 .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="/"] {
   --checklist-done-color: var(--text-normal);
@@ -2968,13 +2451,10 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   font-size: var(--klartext-ui-font-size);
 }
 
-/* Property rows take the CHIP radius at rest, on hover and on focus, in place
-   of Obsidian's own 6px: a property row is a small filled shape a reader
-   picks out of a list, which is what that radius is for, and it puts the row
-   and the tag chips that sit inside it on one corner.
-   Listed with Obsidian's own two narrow-context selectors so the value holds
-   at equal specificity there too (theme.css loads later, so the ties fall
-   this way). */
+/* Property rows take the CHIP radius in every state, in place of Obsidian's
+   6px, so a row and the tag chips inside it share one corner.
+   Obsidian's two narrow-context selectors are listed too, so the value holds
+   at equal specificity there (theme.css loads later). */
 .metadata-container,
 .is-phone .metadata-container,
 .workspace-drawer .metadata-container {
@@ -2983,19 +2463,12 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   --metadata-property-radius-focus: var(--klartext-radius-chip);
 }
 
-/* In the note body only — the sidebar and the phone drawer are too narrow
-   for a wide key column:
-     • KEY COLUMN. Obsidian fixes it at 9em, which truncated three of this
-       vault's key names (measured against every distinct key in it: at 9em
-       "excalidraw-plugin" and "schreibstubeLanguage" are
-       all cut; 10em and 11em still cut two and one). 12.5em is the first
-       width at which none of them truncate on EITHER platform — mobile
-       needs the extra half em because Obsidian draws the property icon,
-       which shares this column, two pixels larger there.
-     • PADDING. The block keeps its fill, and the fill needs room: Obsidian
-       pads it vertically but not horizontally, so the heading, the keys and
-       the values all sat flush against the panel edge. The em resolves
-       against the container's own UI font size, set above. */
+/* In the note body only — the sidebar and phone drawer are too narrow:
+     • KEY COLUMN. 12.5em is the narrowest width at which no key name in the
+       vault truncates on either platform (mobile draws the property icon,
+       which shares the column, 2px larger). Obsidian's default is 9em.
+     • PADDING. Obsidian pads the filled block only vertically; the em
+       resolves against the container's UI font size, set above. */
 .markdown-source-view .metadata-container,
 .markdown-preview-view .metadata-container {
   --metadata-label-width: 12.5em;
@@ -3014,35 +2487,21 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 .view-header,
 body.is-mobile .view-header {
   background-color: var(--background-primary);
-  /* Border kept for stable layout, TRANSPARENT rather than page-coloured. A
-     page-coloured border is only invisible while the header's own opaque
-     background sits behind it. With Obsidian's floating navigation the header
-     is transparent and floats over the note, so that background is gone and
-     the 1px of page colour was the only thing left painting — a hard dark
-     line drawn straight across the text. Transparent shows whatever is
-     behind: the header's background when docked, the note when floating. */
+  /* Border kept for stable layout, TRANSPARENT rather than page-coloured:
+     with Obsidian's floating navigation the header is transparent over the
+     note, and a page-coloured border would paint a hard line across the
+     text. */
   border-bottom: 1px solid transparent;
   box-shadow: none;
   font-family: var(--font-interface);
 }
 
-/* Soft scroll edge. The header's own border is invisible; what still reads
-   as a hard line is text being cut off flush against the header while
-   scrolling. A short gradient scrim just below the header fades text out
-   instead. An overlay, not a mask, so the scrollbar is untouched and the
-   colour follows the page token (correct in dark mode too). Markdown views
-   only. Not a setting: it is the theme's own polish, not a preference.
-     It fades IN with the scroll, over the first two lines, so at scroll-top
-   nothing is under it. The note's top padding cannot promise that: Live
-   Preview's is 3vh, 27px in a 900px window against a 35px scrim, so a
-   shorter window or a phone on its side faded the title's top. The
-   scrollers (.cm-scroller, .markdown-preview-view) sit inside .view-content,
-   so the timeline is named on them and hoisted with timeline-scope. Where
-   scroll-driven animation is missing, the animation runs as a plain one of
-   zero length and holds its end: the scrim is simply always on, as before.
-     The in-note find bar sits at the top of .view-content. Obsidian gives it
-   z-index 30 but leaves it static, where z-index does nothing, so the scrim
-   (z-index 5) washed over its field; positioned, its own 30 applies. */
+/* Soft scroll edge: a gradient scrim below the header fades text out
+   instead of cutting it flush. An overlay, not a mask, so the scrollbar is
+   untouched. It fades in over the first two lines of scroll (a scroll
+   timeline hoisted from the scrollers with timeline-scope), so at the top it
+   covers nothing; without scroll-driven animation it is simply always on.
+   See docs/notes/view-header-scrim.md. */
 body .workspace-leaf-content[data-type="markdown"] .view-content {
   position: relative;
   timeline-scope: --klartext-scroll;
@@ -3099,51 +2558,30 @@ body.is-mobile {
   /* WebKit's auto-inflation of narrow viewports is switched off in GLOBAL BASE. */
 
   /* BODY TEXT SIZE — mobile takes its own, off Appearance → Font size.
-     That slider is stored in the vault's app.json, which syncs to every
-     device, so one value would have to serve a wide desktop display and a
-     phone, and it cannot: sized for the desktop it is overbearing on the
-     phone, sized for the phone it is small on the desktop. Unhooking mobile
-     leaves the Appearance slider meaning "desktop" and puts the phone on its
-     own control (Style Settings → Mobile Body Text Size).
-     Everything the theme derives — marker column, heading prefix, quote
-     size, list geometry, code — is calculated from this alias, so it all
-     follows. The fallback matches the Style Settings default, so the theme
-     behaves before the setting is ever touched, and at the same size the
-     slider defaults to, so the two can never disagree.
-     `body.is-mobile` (0,1,1) out-ranks the `body` block where the alias is
-     defined from --font-text-size. */
+     That slider lives in app.json, which syncs to every device, and no one
+     value serves both a desktop display and a phone. The phone uses Style
+     Settings → Mobile Body Text Size; the fallback matches that default.
+     Everything the theme derives follows this alias. `body.is-mobile`
+     (0,1,1) out-ranks the `body` block that defines it. */
   --klartext-font-size: var(--klartext-mobile-font-size, 14px);
 
-  /* INTERFACE TEXT SIZE — the same story one level up. Klartext wires
-     Obsidian's --font-ui-* ladder to its own base in the typography block,
-     but Obsidian redefines that entire ladder from a 16px base under
-     `.is-mobile` (0,1,0), which out-ranks a plain `body` declaration, so a
-     `body` wiring alone is desktop-only and the phone's chrome runs about
-     23% above the theme's scale.
-     Two things are restated here. First the theme's OWN base, so the tokens
-     derived from it (-xs/-sm/-md/-lg are calc()s of this one, resolved on
-     whichever element reads them) follow the mobile value. Then the wiring
-     into Obsidian's ladder, which `.is-mobile` overwrote — pointing it back
-     at the theme's tokens rather than at numbers keeps one scale for both
-     platforms.
-     The phone's interface follows the phone's body size one to one (14 and
-     14 at the defaults): touch targets want chrome at prose size, where the
-     desktop sits at 13/16. One control per device, the interface derived,
-     and neither device ever sees the other's number. */
+  /* INTERFACE TEXT SIZE — Obsidian redefines the whole --font-ui-* ladder
+     from a 16px base under `.is-mobile` (0,1,0), out-ranking the `body`
+     wiring in the typography block. So the theme's own base is restated
+     (the -xs/-sm/-md/-lg calc()s follow it), then the ladder is pointed back
+     at the theme's tokens. On the phone the interface follows the body size
+     one to one (touch chrome at prose size); the desktop sits at 13/16. */
   --klartext-ui-font-size: var(--klartext-font-size);
   --font-ui-smaller: var(--klartext-ui-xs);
   --font-ui-small:   var(--klartext-ui-font-size);
   --font-ui-medium:  var(--klartext-ui-md);
   --font-ui-large:   var(--klartext-ui-lg);
 
-  /* CORNERS — NOT restated for the phone. Obsidian assigns the phone its
-     own radius tokens under `.is-mobile`, and 1.6.1 flattened every one of
-     them here. Measured against Obsidian's own drawer (1.13, phone
-     emulation): the switcher card and its rows at 30px, the selector a pill,
-     the filter field at 44px. Flattened, the same elements were 4px
-     rectangles with a blurred shadow above them and the active row's
-     highlight ending hard on the selector's edge. The phone's chrome takes
-     Obsidian's shapes; the theme's flat corner is for the page. */
+  /* CORNERS — NOT restated for the phone. Obsidian's `.is-mobile` radius
+     tokens shape its drawer (switcher card and rows, pill selector, filter
+     field); flattened, they turn into hard rectangles that clash with the
+     highlights. The phone's chrome takes Obsidian's shapes; the theme's
+     flat corner is for the page. See docs/notes/mobile-drawer.md. */
 }
 
 body.is-mobile .workspace-drawer {
@@ -3157,18 +2595,12 @@ body.is-mobile .workspace-drawer {
   overflow-x: clip;
 }
 
-/* The band under the clock above an open drawer is the leaf's ground, not
-   the drawer's. The theme paints every leaf --background-primary (WORKSPACE
-   & LAYOUT), the drawer keeps --mobile-sidebar-background, and the drawer
-   shows only in its top padding, which Obsidian sizes to the safe area
-   (max(--size-4-2, --safe-area-inset-top) in app.css): a strip in another
-   colour above the panel, measured in Obsidian 1.13.7's phone emulation as
-   #222222 over #1a1a1a in dark, both drawers (reported on an iPhone). Light
-   only looked right: there the drawer's colour is #ffffff as well. Painted
-   here in the leaf's colour in both, so the two stay one if either moves, over
-   exactly that padding: the selector and the footer below keep the
-   drawer's. A phone only: a tablet's left drawer carries the ribbon down
-   its side, whose top would then not match it. */
+/* The band under the clock above an open drawer is the leaf's ground: the
+   drawer shows only in its top padding (safe-area sized), which would read
+   as a strip in another colour in dark mode. That padding is painted
+   --background-primary, so the two stay one if either moves. A phone only:
+   a tablet's left drawer carries the ribbon down its side.
+   See docs/notes/mobile-drawer.md. */
 body.is-phone .workspace-drawer-inner {
   background-image: linear-gradient(var(--background-primary), var(--background-primary));
   background-size: 100% max(var(--size-4-2), var(--safe-area-inset-top));
@@ -3179,23 +2611,14 @@ body.is-phone .workspace-drawer-inner {
    rows, the collapsed selector and the drawer's search and filter fields
    keep the radii Obsidian gives them on the phone. */
 
-/* SIDEBAR TAB SWITCHER — icon sized from the theme's interface scale rather
-   than from Obsidian's touch scale. Obsidian gives every row in this control
-   a 24px icon (--icon-l on mobile), which reads as oversized beside 14px
-   type and alone holds the row's height. Derived from the UI base, so it
-   tracks the body size instead of being a second number to keep in step.
-     The row's PADDING is deliberately left alone. It is asymmetric (4px top,
-   12px bottom) and tightening it would shrink the box further, but padding
-   here also sets the row's height, and the row is a thumb target, so the tap
-   area stays exactly as Obsidian sized it.
-   Specificity: Obsidian's icon rule is (0,2,0); the `body.is-mobile` prefix
-   clears it. */
-/* The switcher's rows are `.workspace-tab-header` too, and the desktop tab
-   bar's active rule (page colour, !important, in TABS) reached them: a white
-   rectangle behind each active row's pill, showing at the pill's four
-   corners. Measured in the phone emulation once the pills came back. Here
-   the row is a box around a pill and paints nothing of its own; the pill
-   (`.workspace-tab-header-inner`) carries the highlight, as Obsidian has it.
+/* SIDEBAR TAB SWITCHER — icon sized from the theme's interface scale, not
+   Obsidian's 24px --icon-l, which looks oversized beside 14px type.
+   Leave the row's PADDING alone: it sets the row's height, and the row is a
+   thumb target. The `body.is-mobile` prefix clears Obsidian's (0,2,0). */
+/* The switcher's rows are `.workspace-tab-header` too, so the desktop tab
+   bar's active rule (TABS) would paint a page-coloured box behind each
+   active row's pill. The row paints nothing; the pill
+   (`.workspace-tab-header-inner`) carries the highlight, as in Obsidian.
    `!important` against `!important`: (0,4,1) beats (0,2,0). */
 body.is-mobile .workspace-drawer-tab-options .workspace-tab-header,
 body.is-mobile .workspace-drawer-tab-options .workspace-tab-header.is-active {
@@ -3214,24 +2637,12 @@ body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner-icon {
    like a button; with the pill back, the hairline would draw a straight line
    over a rounded corner, and the fill is what makes the pill a pill. */
 
-/* Slack below the selector, which is ~35px tall with the icon above, against
-   the 52px Obsidian's own sizing assumes. Two gaps, and only these two are
-   actually slack:
-     1. The drawer footer (vault or file name) sits 12px under the selector;
-        8px is enough once the selector no longer reads as a button needing
-        its own breathing room.
-     2. The OPEN panel reserves a strip at its bottom so its last row cannot
-        end up under the selector. Obsidian sizes that strip from
-        --touch-size-l (52px). A flat 40px, derived from the theme's ~35px
-        reading of the control, was too little: the control is a floating
-        card with its own margins, so its footprint is taller than its row,
-        and the panel's last option was left half-covered. The strip follows
-        the theme's interface scale where that is the larger of the two —
-        the control grows with the type — and never falls below the touch
-        size Obsidian's own sizing assumes.
+/* Slack below the selector: the drawer footer sits 8px under it, and the
+   OPEN panel's bottom reserve follows the interface scale but never falls
+   below --touch-size-l (the control floats with its own margins, so less
+   leaves the last option half-covered).
    NOT reduced: the space under the footer is --safe-area-inset-bottom, the
-   home indicator, about 34px on a phone. Taking it back would put the file
-   name under the indicator. It only looks like padding. */
+   home indicator. See docs/notes/mobile-drawer.md. */
 body.is-mobile .workspace-drawer-header {
   padding-top: var(--size-4-2);
 }
@@ -3243,40 +2654,26 @@ body.is-phone .workspace-drawer-tab-options-list {
   padding-bottom: calc(max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85)) + var(--size-4-2));
 }
 
-/* NO strip for the VIEW the drawer is showing. 1.6.1 reserved
-   --touch-size-l (52px) at the foot of every drawer view, by analogy with the
-   open switcher above: "the collapsed selector floats over the bottom of the
-   drawer". Measured in Obsidian 1.13 with the phone emulation, it does not:
-   `.workspace-drawer-inner` is a flex column, the tab container is `flex: 1`,
-   and `.workspace-drawer-tab-options` is `position: relative` — the selector
-   sits BELOW the view in normal flow and never covers its last row. The
-   reserve was 52px of dead panel under every plugin view, most visibly under
-   a composer whose Send button then hung two finger-widths above the
-   selector; Obsidian's own floating-nav fade (`.workspace-leaf-content::after`,
-   48px, sidebar colour) then painted that empty strip as a gradient band.
-   Only the OPEN switcher's option list (above) needs its reserve, because
-   that list is a card floating over the drawer. A view that scrolls a list
-   under a floating control of its own carries its own slack, as the core
-   file list does. */
+/* NO bottom reserve for the VIEW the drawer is showing: the collapsed
+   selector sits below the view in normal flow and never covers its last
+   row. A reserve here is dead space under every view, which Obsidian's
+   floating-nav fade then paints as a band. Only the OPEN switcher (above)
+   floats over the drawer. See docs/notes/mobile-drawer.md. */
 
 /* The bottom-sheet grab handle is the ONE mobile shape that stays round: it
-   reads as a physical handle, not as a panel. Obsidian draws it with
-   --radius-xl, which the theme pins to the flat radius (see the Corner radii
-   block), so the pill is restored explicitly here. Its own height is 4px, so
-   any radius at or above half of that gives a full pill; 999px keeps it one
-   whatever Obsidian sets the height to. `body.is-phone` (0,2,1) out-ranks
-   Obsidian's own `.is-phone .menu-grabber` (0,2,0). */
+   reads as a physical handle. Obsidian draws it with --radius-xl, which the
+   theme pins flat (see the Corner radii block); 999px keeps it a pill
+   whatever its height. `body.is-phone` (0,2,1) out-ranks Obsidian's
+   `.is-phone .menu-grabber` (0,2,0). */
 body.is-phone .menu-grabber {
   border-radius: 999px;
 }
 
 /* Mobile editing toolbar (the row above the keyboard). The band takes the
-   page colour, Obsidian's own default, so it is invisible on the page rather
-   than reading as a second keyboard strip, and the button pills carry the
-   theme's muted surface — the same fill as code blocks and table headers —
-   so they stand on the page as controls. Obsidian's touch-background token,
-   which the pills use by default, is left to the pills' hover and press
-   states. */
+   page colour so it doesn't read as a second keyboard strip; the button
+   pills take the theme's muted surface (as code blocks and table headers)
+   so they read as controls. Obsidian's touch-background token is left to
+   the pills' hover and press states. */
 body.is-mobile .mobile-toolbar {
   background-color: var(--background-primary);
   border-top: none;
@@ -3288,10 +2685,9 @@ body.is-mobile .mobile-toolbar-floating-options {
 
 /* ------------------------------------------------------------------
    TOP PADDING
-   Unconditional: `.is-focused` is Obsidian's body class for WINDOW focus, so
-   a rule keyed on it would shift the content 3vh every time the app gains or
-   loses focus. The nested table-cell editor's scroller is padded back to 0
-   by the NESTED rule.
+   Unconditional: `.is-focused` is WINDOW focus, so keying on it would shift
+   the content 3vh whenever the app gains or loses focus. The nested
+   table-cell editor is reset to 0 by the NESTED rule.
    ------------------------------------------------------------------ */
 .markdown-source-view.mod-cm6 .cm-scroller {
   padding-top: 3vh;
@@ -3409,18 +2805,9 @@ body.is-mobile .mobile-toolbar-floating-options {
 
 /* ------------------------------------------------------------------
    CALLOUT COLOURS
-   Obsidian 1.13 defines --callout-color as a COLOUR (e.g. #086ddd) and
-   uses it bare (icon colour, border colour-mix). The theme's palette is
-   therefore stored as real colours too and used bare everywhere.
-   Palette rules (measured):
-     • the title is small caps at 0.78em, so every colour is ≥ 4.5:1 on the
-       page — ≥ 5:1 on white, ≥ 6:1 on the dark ground, with its own dark
-       tint per type (same hue, lifted);
-     • one hue per type: note is a calm blue away from the violet accent,
-       important has its own teal (as in Obsidian), question and warning
-       are amber and orange, example is the only violet;
-     • types the theme doesn't know (custom types) take the quote grey, not
-       Obsidian's saturated blue.
+   --callout-color is a real colour, used bare (as Obsidian 1.13 does).
+   One hue per type, ≥ 5:1 on white and ≥ 6:1 on dark for the 0.78em
+   small-caps title; unknown custom types take the quote grey.
    ------------------------------------------------------------------ */
 /* stylelint-disable-next-line no-duplicate-selectors */
 .callout                                          { --callout-color: rgb(115 113 108); }   /* default: any unknown type */
@@ -3558,64 +2945,18 @@ body.is-mobile .mobile-toolbar-floating-options {
 /* ------------------------------------------------------------------
    HIGHLIGHT / MARK
    ------------------------------------------------------------------ */
-/* ==Highlight== as a marker stroke, not a form field. A stroke lands with a
-   slanted, feathered start where the pen sets down, runs flat, and lifts off
-   with a lighter, feathered end; a highlight that wraps is one stroke PER
-   LINE, each with its own landing and lift, as a marker pen on paper leaves
-   them (box-decoration-break: clone). Vertical padding overshoots the
-   letters as a felt tip does — inline padding never moves the line — and the
-   side margins hand that overshoot back, so the text keeps its place. No
-   radius, no shadow, one hue.
-     What a stroke must NOT do is lift in the middle of a line. Live Preview
-   splits a highlight into one span per formatting change — inline code,
-   bold, a link, and the `==` marks themselves while the line is edited — and
-   if each span were a complete stroke the pen would lift and land again
-   around every piece of code in a sentence. So:
-     • A span FOLLOWED by more of the same highlight ends flat: its lift is
-       switched off and its end padding runs on under the next span's start.
-       Which spans those are is read off the siblings — adjacent while the
-       line is edited, and on an idle line separated by the two widget
-       buffers and the empty span Obsidian leaves in place of hidden
-       formatting — so both patterns are matched.
-     • A span that CONTINUES a highlight keeps its landing, so its own
-       wrapped lines still start with one, but lands in the plain ink rather
-       than the strong: the strong press belongs to the true start only.
-     • The ink is OPAQUE and the span blends with `darken` (light) or
-       `lighten` (dark). Where the flat end of one span overlaps the landing
-       of the next, ink over ink is then simply ink, and the feathered landing
-       vanishes under the flat end instead of showing as a seam. Translucent
-       tints could not do this: two of them always add up darker. The opaque
-       colours are translucent tints composited on the page.
-     The one thing this cannot do: a span that leads into formatting ends
-   flat on ALL its lines, because a span's ends are decided per span, not per
-   line — so a long span before an inline code has no lift at its own line
-   ends. Its landings, and every landing after the formatting, are kept,
-   which is the half a reader notices. Reading view renders the whole
-   highlight as one element with the formatting nested inside it, so there
-   every line lands and lifts and no seam exists.
-     Inline code inside a highlight keeps a fill, but a translucent one, so
-   it sits ON the stroke instead of cutting a window into it. */
-/* THE STROKE. A felt tip laid over the words and lifted off again: the sweep
-   is 104deg, the ink fades in over the first half character (transparent to
-   0.2em, full by 0.7em) and lifts off over the last sixth (full to 88%,
-   transparent by calc(100% - 0.28em)), and 0.14em/0.42em of padding lets it
-   overshoot the letters the way a real one does. Cancelled by an equal
-   negative margin so the run of text does not move.
-
-   INK STRENGTH IS MEASURED, NOT PICKED. This ink sits 70 from the page —
-   Euclidean RGB distance from --background-primary, sampled over the flat
-   middle of the stroke in a screenshot. 60-140 is the band where a mark on a
-   run of prose reads as a mark: below it, a rendering artefact; above it, a UI
-   chip dropped into a paragraph.
-
-   NOT: no border-radius (a marker pen has no corners, and a rounded end reads
-   as a field or a chip), no text-shadow (a halo is a second treatment
-   competing with the stroke, and it inverts between light and dark), no
-   box-shadow, no border. Do not vary the angle to tell two marks apart — it is
-   not legible at text size. Vary the ink.
-
-   The --hl-* names are local to this rule. They are short because they are
-   read here and nowhere else. */
+/* ==Highlight== as a marker stroke: a feathered landing, a flat run, a lighter
+   lift, cloned onto every wrapped line. Live Preview splits a highlight into
+   one span per formatting change, so a span followed by more highlight ends
+   flat and a continuing span lands in the plain ink; opaque ink blended with
+   darken/lighten hides the overlap. Inline code inside keeps a translucent
+   fill. See docs/notes/highlight-stroke.md. */
+/* THE STROKE. A felt tip laid over the words and lifted off again; the
+   negative side margin cancels the padding so the text does not move.
+   Ink strength is measured (70 RGB from the page; 60-140 reads as a mark).
+   NOT: no border-radius, text-shadow, box-shadow or border; vary the ink,
+   not the angle. The --hl-* names are local to this rule.
+   See docs/notes/highlight-stroke.md. */
 mark,
 .markdown-preview-view mark,
 .cm-highlight,
@@ -3668,17 +3009,10 @@ mark,
 
 /* COLOURED HIGHLIGHTS (Obsidian 1.13: ==🔴text==, or the formatting menu).
    The same pen in another ink: only the two ink tokens change, on the
-   element itself, so the stroke and the seam rules above read them as they
-   read the yellow. Reading view marks the colour as data-highlight on the
-   <mark>; Live Preview as a cm-highlight-<colour> class on every span.
-   Yellow, and a <mark> with an empty data-highlight, keep the yellow ink.
-     While the line is edited, Live Preview shows a swatch in place of the
-   emoji, a widget between the opening `==` and the text, framed by two
-   widget buffers. It takes the stroke as a piece of the middle: the `==`
-   before it runs on under it, it neither lands strong nor lifts, and the
-   text after it continues the stroke (the seam rules above). Obsidian's own
-   fill behind it would sit on the stroke as a second, translucent band; the
-   stroke rule clears it. */
+   element itself. Reading view: data-highlight on <mark>; Live Preview:
+   cm-highlight-<colour> on every span. Yellow and an empty data-highlight
+   keep the yellow ink. The edit-mode swatch widget is part of the stroke's
+   middle (see the seam rules above). See docs/notes/highlight-stroke.md. */
 mark[data-highlight="red"],
 .cm-highlight-red,
 .cm-highlight-color-widget[data-highlight="red"] {
@@ -3829,22 +3163,12 @@ mark code,
   vertical-align: bottom;
 }
 
-/* Image alignment, written into the alt text: ![Map | center | 750](map.png)
-   or ![[map.png|center|750]]; also left and right. Obsidian reads the width
-   only from the LAST segment, so the word goes before it (`| 750 | center`
-   would lose the width) or stands alone (`![Map | right](map.png)`). What is
-   left in the alt is the caption plus the word, "Map | center"; Live Preview
-   keeps the space before the width ("Map | center "), hence the trailing-space
-   variants. "Population center | 300" is a caption, not a command: the word
-   has to be a segment of its own.
-   An aligned image is a figure, not a word, so it leaves the sentence:
-   - Reading view makes the inline embed a flex row. It was inline, so the
-     theme's block-gap margin never applied to it; margin-block: 0 keeps the
-     paragraph's spacing exactly as it was.
-   - Live Preview keeps Obsidian's inline-flex and widens it to the line
-     (Obsidian sizes it to the image, width: fit-content). A block here would
-     push CodeMirror's cursor buffers on either side onto lines of their own,
-     45px taller than the same image unaligned. */
+/* Image alignment in the alt text: ![Map | center | 750](map.png) or
+   ![[map.png|center|750]]; also left and right. The width must stay the LAST
+   segment, and the word must be a segment of its own; Live Preview keeps a
+   trailing space, hence the "word " variants. Reading view: a flex row with
+   margin-block: 0. Live Preview: inline-flex widened to the line, not a
+   block. See docs/notes/image-alignment.md. */
 .markdown-rendered .image-embed:is(
   [alt="left" i], [alt="left " i],
   [alt$="|left" i], [alt$="| left" i], [alt$="|left " i], [alt$="| left " i],
@@ -3881,11 +3205,9 @@ mark code,
 
 /* ------------------------------------------------------------------
    MERMAID DIAGRAMS  (Style Settings: klartext-center-diagrams)
-   Obsidian renders a ```mermaid fence as <div class="mermaid"> holding an
-   <svg> with its own intrinsic max-width, so by default it sits flush left
-   with empty space to the right. Centering the container's content centers
-   the drawing within the text column — same in Live Preview and Reading
-   view. The toggle removes the body class and the default (left) returns.
+   A ```mermaid fence renders as <div class="mermaid"> holding an <svg>
+   with its own max-width, so it sits flush left by default. Centering the
+   container's content centers the drawing in both views.
    ------------------------------------------------------------------ */
 body.klartext-center-diagrams .mermaid {
   display: flex;
@@ -3898,15 +3220,10 @@ body.klartext-center-diagrams .mermaid > svg {
 }
 
 /* Greyscale rendering (Style Settings: klartext-greyscale-diagrams).
-   Two layers, so EVERY diagram type ends up monochrome:
-     1. token overrides for the elements every flowchart / sequence diagram
-        has, so boxes, outlines, edges and text use the theme's own greys —
-        the same surfaces as table headers and code fences, light and dark;
-     2. filter: grayscale(1) on the svg as the guarantee — anything Mermaid
-        colours that the overrides don't name (pie slices, gantt bars, git
-        branches, future diagram types) is desaturated as well.
-   Mermaid paints its colours via a <style> inside the svg plus inline
-   attributes; !important is what lets the theme win over both. */
+   Two layers: token overrides give flowchart/sequence elements the theme's
+   own greys (as table headers and code fences); filter: grayscale(1) on the
+   svg catches everything else (pie, gantt, git, future types).
+   !important beats Mermaid's in-svg <style> and inline attributes. */
 body.klartext-greyscale-diagrams .mermaid svg {
   filter: grayscale(1);
 }
@@ -3949,16 +3266,12 @@ body.klartext-greyscale-diagrams .mermaid svg .arrowheadPath {
 body.klartext-greyscale-diagrams .mermaid svg .edgeLabel rect {
   fill: var(--background-primary) !important;
 }
-/* Edge-label chip on the page colour, so a label cuts a clean window into the
-   lines crossing behind it instead of sitting on a grey chip. Mermaid paints
-   the chip either as an SVG rect.labelBkg (needs fill) or on the span / an
-   inner element of the HTML label (needs background-color) — name all of
-   them. The window is widened with a box-shadow halo, which has ZERO layout
-   impact. NEVER pad these labels: Mermaid measures them to lay the diagram
-   out, and padding on the inline span (which wraps a block <p>) makes its
-   empty inline fragments generate two phantom line boxes — every label then
-   measured ~3× its height and the edges were spread far apart from their
-   labels (reproduced and bisected in Chromium with Mermaid 11). */
+/* Edge-label chip on the page colour, so a label cuts a clean window into
+   the lines behind it. Mermaid paints it as rect.labelBkg (fill) or on the
+   HTML label (background-color), so all are named; the box-shadow halo
+   widens it with zero layout impact. NEVER pad these labels: Mermaid
+   measures them, and padding inflates the measured height (~3x).
+   See docs/notes/mermaid-diagrams.md. */
 body.klartext-greyscale-diagrams .mermaid svg rect.labelBkg {
   fill: var(--background-primary) !important;
 }
@@ -3993,17 +3306,11 @@ body.klartext-greyscale-diagrams .mermaid svg .cluster text {
   fill: var(--text-muted) !important;
 }
 
-/* Label size, fixed at 0.9 of the body font. Mermaid's default
-   16px is larger than the body text; labels at a fraction of the body size read
-   as a diagram, and because Mermaid sizes node boxes from the MEASURED label,
-   the boxes tighten and the diagram gets more compact rather than just showing
-   small text in big boxes. Mermaid measures in an off-screen container before
-   the svg lands in .mermaid, so the rule also matches the svg by Mermaid's own
-   aria-roledescription attribute (set on every diagram root at creation). The
-   token is an absolute length (calc), so root + labels don't compound.
-   Labels are UI text, not prose, so they use the interface font (Fira Sans)
-   rather than the monospace body font — set on the same selectors so the
-   measurement pass uses the (narrower) sans metrics and boxes fit. */
+/* Label size, fixed at 0.9 of the body font (Mermaid's 16px is larger than
+   body text); Mermaid sizes boxes from the measured label, so they tighten.
+   Also matched by aria-roledescription, for Mermaid's off-screen measuring
+   pass. Absolute (calc) so root and labels don't compound. Interface font,
+   so the measurement uses the sans metrics. See docs/notes/mermaid-diagrams.md. */
 .mermaid svg,
 svg[aria-roledescription] {
   font-size: var(--klartext-diagram-font-size) !important;
@@ -4024,19 +3331,11 @@ svg[aria-roledescription] tspan {
 }
 
 /* Rendered-block rhythm + geometry (independent of the toggles):
-     • the block sits in the page rhythm like every other block (1.5em
-       above; below, the Reading-view block gap); the svg keeps its own aspect ratio (no flex stretch), so
-       the only air left is what Mermaid's own diagramPadding leaves;
-     • node and subgraph corners read the theme's flat radius — CSS geometry
-       properties win over Mermaid's rx/ry attributes;
-     • labels can never be truncated: Mermaid sizes each label's
-       foreignObject from its own measurement, and any display-time
-       difference (font fallback, padding) is clipped — "Partne",
-       "Propstac". Overflow is visible instead. (CSS padding on .nodeLabel
-       clips the same way; box inset is Mermaid's `padding` config, not
-       something CSS can grow.)
-     • subgraph titles read as titles: medium weight (colour is set with the
-       greyscale rules). */
+     • 1.5em above, the Reading-view block gap below; the svg keeps its aspect ratio;
+     • node and subgraph corners read the theme's flat radius;
+     • labels overflow visibly, never truncated (Mermaid clips its foreignObject);
+     • subgraph titles at medium weight (colour: greyscale rules).
+     See docs/notes/mermaid-diagrams.md. */
 .markdown-preview-view .mermaid {
   margin: var(--klartext-block-gap) 0;
 }
@@ -4076,25 +3375,12 @@ svg[aria-roledescription] .cluster-label .nodeLabel {
   color: var(--text-subtle);
 }
 
-/* <details> / <summary> — a typographic +/− in place of the browser's own
-   disclosure triangle. Obsidian does not style <summary>, so that triangle
-   would be Chromium's default ::marker: the one mark on the page nobody
-   chose, and an icon in a theme whose other structural marks are all type
-   (the #ₙ heading badge, the list dash, the lowercase code label).
-     The native marker is switched off rather than re-lettered: WebKit
-   honours only colour and font-size on ::marker and ignores content — the
-   same constraint the LISTS section works around — so the mark is drawn as
-   a ::before instead. list-style covers current engines, the -webkit- rule
-   covers older ones.
-     Geometry follows the heading badge: a box one marker wide, cancelled by
-   an equal negative margin, so the mark hangs back into the reserved column
-   and the summary's text sits on the SAME left edge as the prose around it.
-   1.2em is safe in every context — Live Preview reserves its prefix column,
-   mobile Reading view reserves the same width, and desktop Reading view has
-   Obsidian's wider file margin to hang into.
-     + and − are one cell each in the embedded monospace face, so toggling
-   the section cannot shift its title sideways. U+2212 MINUS, not a hyphen:
-   a hyphen is the list dash, and reusing it here would blur the two. */
+/* <details> / <summary> — a typographic +/− in place of the browser's
+   disclosure triangle. ::marker is switched off and the mark drawn as a
+   ::before: WebKit ignores content on ::marker (as in LISTS). It hangs in a
+   1.2em column like the heading badge, so the title keeps the prose edge.
+   + and − are one cell each in the monospace face, so toggling cannot shift
+   the title. U+2212 MINUS, not a hyphen: the hyphen is the list dash. */
 .markdown-rendered details > summary,
 .markdown-source-view.mod-cm6 details > summary {
   list-style: none;
@@ -4259,12 +3545,10 @@ body {
 
 /* ------------------------------------------------------------------
    PRINT / PDF EXPORT
-   Obsidian renders the note as a Reading view inside `body > .print` and
-   hides everything else, so only Reading rules matter here. The palette is
-   already light in print (dark block is @media screen). Beyond that:
-   colour fills survive the printer's colour stripping; headings stay with
-   what follows; blocks are not cut across pages; screen-only decoration
-   (guides, dot grid) goes; links print as text with a quiet underline. */
+   Obsidian prints a Reading view inside `body > .print`, so only Reading
+   rules matter; the palette is already light (dark block is @media screen).
+   Fills survive colour stripping, headings keep what follows, blocks stay
+   whole, screen-only decoration goes, links print as quiet underlined text. */
 @media print {
   .print .markdown-preview-view,
   .print .markdown-rendered {
@@ -4280,17 +3564,10 @@ body {
   }
 
   /* Page breaks: headings keep the next block, blocks are not split,
-     paragraphs leave at least two lines on either side of a break.
-     Obsidian wraps each block in div.el-*, so the wrappers carry the
-     rule as well as the elements.
-       A TABLE is not in the list, on purpose: a table longer than the
-     space left on a page cannot avoid breaking anyway, so the rule would
-     only move it whole to the next page and leave most of the current one
-     blank. Its
-     ROWS are kept whole instead, and Chromium repeats the header row on
-     every page a table runs onto, so a break between rows costs nothing.
-     Code blocks stay in the list: a fence kept whole is worth the gap it
-     can leave, and a fence taller than a page breaks regardless. */
+     paragraphs keep two lines either side. Obsidian wraps blocks in div.el-*,
+     so the wrappers carry the rule too. Tables are left out on purpose:
+     keeping a long table whole only leaves a blank page; rows stay whole and
+     Chromium repeats the header. Code fences stay in: worth the gap. */
   .print .markdown-preview-view :is(h1, h2, h3, h4, h5, h6),
   .print .markdown-preview-view [class^="el-h"]:not(.el-hr) {
     break-after: avoid;
@@ -4326,13 +3603,9 @@ body {
   }
 
   /* The frame is drawn on the cells, not on the table. Chromium extends a
-     table that runs onto the next page down to the bottom edge of the page
-     it leaves, and paints the table's own side borders along that empty
-     stretch — an empty framed row at the foot of the page, seen on four
-     pages of a 78-page export, with or without any break rule. Rows never
-     reach that space, so borders carried by the cells stop with the last
-     row that fits; the header row repeats on the next page and brings the
-     top edge with it. On paper the corners are square. */
+     table that breaks across pages to the bottom of the page it leaves and
+     paints the table's side borders down that empty stretch; cell borders
+     stop with the last row. Square corners on paper. */
   .print .markdown-rendered table {
     width: auto;
     max-width: 100%;
@@ -4352,13 +3625,11 @@ body {
     border-bottom: 1px solid var(--border);
   }
 
-  /* Lists on paper. Obsidian's export renders with its list-bullet option
-     switched off, so the .list-bullet span the screen draws the dash in
-     does not exist there and a bulleted item would print the browser's own
-     disc in the text colour, while numbered items, drawn on the item
-     itself, print as designed. The dash is drawn on the item here too, in
-     the same box the screen bullet uses, and the native marker is switched
-     off for every list, which also keeps a task item to its checkbox. */
+  /* Lists on paper. Obsidian exports with its list-bullet option off, so
+     the .list-bullet span the screen dash lives in does not exist and the
+     browser's disc would print. The dash is drawn on the item instead, in
+     the screen bullet's box; the native marker is off for every list, which
+     also keeps a task item to its checkbox. */
   .print .markdown-rendered ul {
     list-style: none;
   }

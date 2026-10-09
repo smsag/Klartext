@@ -1139,19 +1139,25 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
        the fold indicator, which carries no header class, out of the count.
        If a build bundles the trailing space into the hash span, neither half
        fires until the first real character; CSS cannot read a span's text,
-       so that degrades to the later jump rather than misfiring. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
+       so that degrades to the later jump rather than misfiring.
+       And a third condition before either: the line HOLDS a hash mark. An
+       idle heading whose whole text is a widget (`## $E = mc^2$`, an embed)
+       has no heading-text span, since the widget carries no header class,
+       and no second mark, since Obsidian has dropped the first; without this
+       it shrank to body size and lost its badge until the cursor came in.
+       Hashes standing alone are always in the DOM, idle or not. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
   font-size: var(--klartext-font-size);
   font-weight: 400;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
   content: none;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
   letter-spacing: normal !important;
   color: var(--text-faint);
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header::selection {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header::selection {
   color: var(--text-normal) !important;   /* the hashes are shown here, so a selection must not hide them (see the ::selection rules under EDITOR) */
 }
 

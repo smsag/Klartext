@@ -156,12 +156,14 @@ rather than Obsidian's.
 
 ## Notes for anyone editing it
 
-The stylesheet is `src/theme.css`, one file sectioned by element with a comment block
-above each rule that explains why the value is what it is. The `theme.css` at the
-repository root is built from it by `python3 fonts/embed.py`, which appends the
-embedded fonts; it is the file Obsidian installs and must stay committed, but it is
-not the file to edit. Where a number was measured rather than chosen,
-the comment says what it was measured against. The `@settings` block at the top of the
+The stylesheet is `src/theme.css`, one file sectioned by element. A comment above a
+rule says why the value is what it is, in the present tense and in a few lines (six at
+most); a derivation, a measurement or an Obsidian internal it rests on goes in
+`docs/notes/`, which the comment names, and the history of a fix goes in the commit
+message and `CHANGELOG.md`. The `theme.css` at the repository root is built from it by
+`python3 fonts/embed.py`, which strips the comments (all but `@settings`) and appends
+the embedded fonts; it is the file Obsidian installs and must stay committed, but it is
+not the file to edit. The `@settings` block at the top of the
 file is the Style Settings schema; the four `--klartext-radius-*` tokens are the corner
 system; `--klartext-font-size` is the body size every derived length chains from;
 `--klartext-col` is the marker column that holds every mark, on the text edge.

@@ -2709,9 +2709,14 @@ button.mod-cta:hover,
    Schreibstube's review actions, Vizardry's canvas controls), and only a
    plugin that defines its own gets it back. With it, one plugin's accent-
    filled primary button painted #f2f2ee under a white label: 1.12:1, an empty
-   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off. */
-button:not(.mod-cta):hover,
-button:not(.mod-cta):focus-visible {
+   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off.
+     Obsidian's red buttons are exempt like .mod-cta: .mod-warning hovers in
+   its own darker red, and its (0,2,1) loses to this rule only by load order.
+   Measured in Obsidian with them included: a focused Delete painted #f2f2ee
+   under its white label, 1.12:1. .mod-destructive (red text on a red tint)
+   would lose its tint the same way. */
+button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):hover,
+button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):focus-visible {
   background-color: var(--surface-muted);
 }
 

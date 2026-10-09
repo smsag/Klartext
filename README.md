@@ -160,7 +160,8 @@ The stylesheet is `src/theme.css`, one file sectioned by element. A comment abov
 rule says why the value is what it is, in the present tense and in a few lines (six at
 most); a derivation, a measurement or an Obsidian internal it rests on goes in
 `docs/notes/`, which the comment names, and the history of a fix goes in the commit
-message and `CHANGELOG.md`. The `theme.css` at the repository root is built from it by
+message and `CHANGELOG.md`; `tools/check-comments.mjs` holds the comments to that. The
+`theme.css` at the repository root is built from it by
 `python3 fonts/embed.py`, which strips the comments (all but `@settings`) and appends
 the embedded fonts; it is the file Obsidian installs and must stay committed, but it is
 not the file to edit. The `@settings` block at the top of the

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Coloured highlights.** Obsidian 1.13's six highlight colours (`==🔴text==`, or the colour from the formatting menu) now draw the marker stroke in their own ink, in Reading view and Live Preview, light and dark; before, every colour drew in the theme's yellow. Each ink is Obsidian's own colour for that swatch, mixed to the same strength as the yellow (measured as distance from the page), so no colour shouts louder than another. The swatch Live Preview shows while the line is edited sits on the stroke as part of it, without Obsidian's separate fill behind it and without a lift-and-land around it. Checked in Obsidian 1.14.4.
+
 ## [2.4.2] — 2026-10-02
 
 ### Fixed

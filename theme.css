@@ -167,6 +167,20 @@ body.theme-dark {
   --klartext-hl-ink:            #ffeebe;
   --klartext-hl-ink-strong:     #ffeaad;
   --klartext-hl-blend:          darken;
+  /* The colours Obsidian 1.13 added (==🔴text==): each is Obsidian's own
+     --color-* (the swatch's hue) composited on white at the alpha that puts
+     it the same distance from the page as the yellow above, so every colour
+     presses as hard. Yellow IS the ink above. */
+  --klartext-hl-red:            #facdd2;
+  --klartext-hl-red-strong:     #f8c0c7;
+  --klartext-hl-orange:         #fbdfc4;
+  --klartext-hl-orange-strong:  #f9d7b5;
+  --klartext-hl-green:          #caf0d9;
+  --klartext-hl-green-strong:   #bceccf;
+  --klartext-hl-blue:           #c6ddf7;
+  --klartext-hl-blue-strong:    #b7d4f5;
+  --klartext-hl-purple:         #d6cafa;
+  --klartext-hl-purple-strong:  #cbbcf8;
   /* Panel shadow — modals, popovers, menus (dark palette: deeper) */
   --klartext-shadow-panel:      0 6px 24px rgba(0, 0, 0, 0.12);
 }
@@ -220,6 +234,16 @@ body.theme-dark {
   --klartext-hl-ink:            #43391d;   /* the dark tints composited on #1a1a1a */
   --klartext-hl-ink-strong:     #53461e;
   --klartext-hl-blend:          lighten;   /* on a dark ground the ink is the lighter colour, so lighten is the mode that keeps ink over ink as ink */
+  --klartext-hl-red:            #4b2425;   /* the same rule on #1a1a1a */
+  --klartext-hl-red-strong:     #5f2829;
+  --klartext-hl-orange:         #463422;
+  --klartext-hl-orange-strong:  #573f25;
+  --klartext-hl-green:          #25482f;
+  --klartext-hl-green-strong:   #295a38;
+  --klartext-hl-blue:           #1a2e49;   /* red channel held at the page's 1a: under lighten a lower one would render as 1a anyway */
+  --klartext-hl-blue-strong:    #1a365c;
+  --klartext-hl-purple:         #332d43;
+  --klartext-hl-purple-strong:  #3d3453;
   --klartext-shadow-panel:   0 6px 24px rgba(0, 0, 0, 0.5);
 }
 }
@@ -3428,7 +3452,8 @@ body.is-mobile .mobile-toolbar-floating-options {
    read here and nowhere else. */
 mark,
 .markdown-preview-view mark,
-.cm-highlight {
+.cm-highlight,
+.cm-highlight-color-widget {
   --hl-angle: 104deg;
   --hl-land-0: 0.2em;                       /* landing: transparent until here… */
   --hl-land-1: 0.7em;                       /* …ink from here: the pen lands over half a character */
@@ -3461,14 +3486,62 @@ mark,
 
 /* A span that continues a highlight: lands in the plain ink. */
 .cm-highlight + .cm-highlight,
-.cm-highlight + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight {
+.cm-highlight + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight,
+.cm-highlight-color-widget,
+.cm-highlight-color-widget + .cm-widgetBuffer + .cm-highlight {
   --hl-ink-strong: var(--klartext-hl-ink);
 }
 /* A span followed by more of the same highlight: no lift. */
 .cm-highlight:has(+ .cm-highlight),
-.cm-highlight:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight) {
+.cm-highlight:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-highlight),
+.cm-highlight:has(+ .cm-widgetBuffer + .cm-highlight-color-widget),
+.cm-highlight-color-widget {
   --hl-lift-1: 100%;
   --hl-lift-0: 100%;
+}
+
+/* COLOURED HIGHLIGHTS (Obsidian 1.13: ==🔴text==, or the formatting menu).
+   The same pen in another ink: only the two ink tokens change, on the
+   element itself, so the stroke and the seam rules above read them as they
+   read the yellow. Reading view marks the colour as data-highlight on the
+   <mark>; Live Preview as a cm-highlight-<colour> class on every span.
+   Yellow, and a <mark> with an empty data-highlight, keep the yellow ink.
+     While the line is edited, Live Preview shows a swatch in place of the
+   emoji, a widget between the opening `==` and the text, framed by two
+   widget buffers. It takes the stroke as a piece of the middle: the `==`
+   before it runs on under it, it neither lands strong nor lifts, and the
+   text after it continues the stroke (the seam rules above). Obsidian's own
+   fill behind it would sit on the stroke as a second, translucent band; the
+   stroke rule clears it. */
+mark[data-highlight="red"],
+.cm-highlight-red,
+.cm-highlight-color-widget[data-highlight="red"] {
+  --klartext-hl-ink: var(--klartext-hl-red);
+  --klartext-hl-ink-strong: var(--klartext-hl-red-strong);
+}
+mark[data-highlight="orange"],
+.cm-highlight-orange,
+.cm-highlight-color-widget[data-highlight="orange"] {
+  --klartext-hl-ink: var(--klartext-hl-orange);
+  --klartext-hl-ink-strong: var(--klartext-hl-orange-strong);
+}
+mark[data-highlight="green"],
+.cm-highlight-green,
+.cm-highlight-color-widget[data-highlight="green"] {
+  --klartext-hl-ink: var(--klartext-hl-green);
+  --klartext-hl-ink-strong: var(--klartext-hl-green-strong);
+}
+mark[data-highlight="blue"],
+.cm-highlight-blue,
+.cm-highlight-color-widget[data-highlight="blue"] {
+  --klartext-hl-ink: var(--klartext-hl-blue);
+  --klartext-hl-ink-strong: var(--klartext-hl-blue-strong);
+}
+mark[data-highlight="purple"],
+.cm-highlight-purple,
+.cm-highlight-color-widget[data-highlight="purple"] {
+  --klartext-hl-ink: var(--klartext-hl-purple);
+  --klartext-hl-ink-strong: var(--klartext-hl-purple-strong);
 }
 
 /* Inline code on the stroke: the translucent tint layered over it. */

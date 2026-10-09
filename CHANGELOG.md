@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] — 2026-10-09
+
+### Changed
+
+- **The installed `theme.css` is about a fifth smaller** (607 KB to 480 KB). It no longer carries the stylesheet's source comments, which Obsidian never reads; the commented source stays in the repository. The Style Settings options are unchanged.
+
 ### Fixed
 
 - **A task box sits level with the text beside it.** It was centred on half the x-height (`vertical-align: middle`), so beside a capital or a digit it read low: 1.4px at a 16px body. Its centre is now on half the cap height, in Reading view and Live Preview.

@@ -2004,12 +2004,13 @@ hr,
   --indentation-guide-reading-indent: calc(var(--klartext-marker-axis) - var(--klartext-col));
 }
 /* Task items: the box ends on the gap cell like every other mark, and is
-   centred on the line rather than sat on the baseline. */
+   centred on the cap height (see --klartext-checkbox-align) rather than sat
+   on the baseline. */
 .markdown-rendered ul > li.task-list-item > .task-list-item-checkbox,
 .markdown-rendered ul > li.task-list-item > p > .task-list-item-checkbox {
   margin-inline-start: calc(-1 * (var(--klartext-cell) + var(--checkbox-size)));
   margin-inline-end: var(--klartext-cell);
-  vertical-align: middle;
+  vertical-align: var(--klartext-checkbox-align);
 }
 
 /* LIVE PREVIEW MARKERS — the marker column model (see --klartext-col).
@@ -2094,6 +2095,14 @@ hr,
 .markdown-source-view.mod-cm6,
 .markdown-rendered {
   --checkbox-size: var(--klartext-checkbox-size);
+  /* Where a task box sits on its line: its centre on half the CAP height of
+     the body face (JetBrains Mono: 0.73em, digits the same), measured up from
+     the baseline. `vertical-align: middle` centres on half the x-height
+     instead, 1.4px lower at a 16px body, so beside a capital or a digit the
+     box read low. Written as the box's bottom edge, which is what a length
+     in vertical-align places, and set here, where --checkbox-size is the
+     theme's: on body it would still be Obsidian's. */
+  --klartext-checkbox-align: calc(var(--klartext-font-size) * 0.73 / 2 - var(--checkbox-size) / 2);
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label {
   display: inline-flex;
@@ -2102,7 +2111,8 @@ hr,
   box-sizing: border-box;
   width: calc(var(--klartext-col) - var(--klartext-cell));
   margin: 0;
-  vertical-align: middle;
+  /* The label is exactly the box's height, so it takes the box's place. */
+  vertical-align: var(--klartext-checkbox-align);
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label .task-list-item-checkbox {
   margin: 0;
@@ -2810,6 +2820,30 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 .task-list-item-checkbox:checked {
   background-color: var(--interactive-accent) !important;
   border-color: var(--interactive-accent) !important;
+}
+
+/* The box is drawn at 0.8 × the body size (12.8px at 16px) but clicks over
+   up to 24 × 24px, WCAG 2.5.8's target size, through a transparent ::before
+   centred on it; a click on a pseudo-element is a click on its input.
+   Obsidian draws the checkmark with ::after, so ::before is free. The area
+   is capped twice: no wider than the box plus a gap cell either side, so a
+   click on the text still places the cursor, and no taller than one line
+   (--klartext-blank-line), so items on neighbouring lines never share it.
+   At a 16px body that is 24 × 24px; at 14px (the phone's default), 24 ×
+   22.4px, the whole line. */
+.markdown-rendered .task-list-item-checkbox,
+.markdown-source-view.mod-cm6 .task-list-item-checkbox {
+  position: relative;
+}
+.markdown-rendered .task-list-item-checkbox::before,
+.markdown-source-view.mod-cm6 .task-list-item-checkbox::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(24px, var(--checkbox-size) + 2 * var(--klartext-cell));
+  height: min(24px, var(--klartext-blank-line));
+  transform: translate(-50%, -50%);
 }
 
 /* Done tasks. Colour comes from Obsidian's --checklist-done-color (set on

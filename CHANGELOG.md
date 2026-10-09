@@ -11,9 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **A task box sits level with the text beside it.** It was centred on half the x-height (`vertical-align: middle`), so beside a capital or a digit it read low: 1.4px at a 16px body. Its centre is now on half the cap height, in Reading view and Live Preview.
 - **A task box is easier to hit.** It keeps its drawn size, 0.8 × the body, but takes clicks over up to 24 × 24px (WCAG 2.5.8's target size): 24 × 24px at a 16px body, 24 × 22.4px at 14px, where one line is lower than 24px. The area never reaches the text or the next line.
-
-### Fixed
-
 - **An in-progress task (`- [/]`) no longer looks done.** Obsidian counts any character in the box as done, so it rendered as a finished task: struck through, greyed, with an accent box and a checkmark. It now keeps the normal text colour without a strike, and its box is cut on the diagonal from bottom left to top right, with the half below the cut filled in the accent, in Reading view and Live Preview.
 
 ## [2.5.0] — 2026-10-09

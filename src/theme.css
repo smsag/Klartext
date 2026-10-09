@@ -997,6 +997,19 @@ body {
   padding-left: var(--klartext-heading-prefix);
 }
 
+/* 1a) Reading view takes the same column on the desktop, so switching modes
+       moves no text sideways and re-wraps no paragraph: without it the text
+       began 41.6px further left at a 16px body and its column was that much
+       wider, so every paragraph broke at different words. Padded on the
+       note's sections inside the sizer, as Live Preview pads .cm-content
+       inside its sizer, so the readable width is the same box in both
+       modes and the title and properties above stay where they are. Scoped
+       to the note in a pane: a popover, an embed and a print keep their own
+       edge. The phone has its own symmetric column (4b). */
+body:not(.is-mobile) .markdown-reading-view > .markdown-preview-view > .markdown-preview-sizer > div:not(.markdown-preview-pusher):not(.mod-header):not(.mod-footer) {
+  padding-left: var(--klartext-heading-prefix);
+}
+
 /* 2) Raw marks take no width, focused or not → no jump — but keep their font
       SIZE. CodeMirror sizes the caret from the metrics of the character it
       sits in, so font-size: 0 gave a zero-height, invisible caret at the start
@@ -1126,19 +1139,25 @@ body.is-mobile .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-he
        the fold indicator, which carries no header class, out of the count.
        If a build bundles the trailing space into the hash span, neither half
        fires until the first real character; CSS cannot read a span's text,
-       so that degrades to the later jump rather than misfiring. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
+       so that degrades to the later jump rather than misfiring.
+       And a third condition before either: the line HOLDS a hash mark. An
+       idle heading whose whole text is a widget (`## $E = mc^2$`, an embed)
+       has no heading-text span, since the widget carries no header class,
+       and no second mark, since Obsidian has dropped the first; without this
+       it shrank to body size and lost its badge until the cursor came in.
+       Hashes standing alone are always in the DOM, idle or not. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) {
   font-size: var(--klartext-font-size);
   font-weight: 400;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header))::before {
   content: none;
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header {
   letter-spacing: normal !important;
   color: var(--text-faint);
 }
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header::selection {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-header:has(> .cm-formatting-header):not(:has(> .cm-header:not(.cm-formatting-header))):not(:has(> .cm-formatting-header ~ .cm-formatting-header)) .cm-formatting-header::selection {
   color: var(--text-normal) !important;   /* the hashes are shown here, so a selection must not hide them (see the ::selection rules under EDITOR) */
 }
 
@@ -1641,22 +1660,52 @@ a:hover,
    goes, and this one goes nowhere.
      The underline is permanent, so hover adds none. It changes colour, and
    an external link's dotted rule closes up to solid — the two states meet at
-   the moment you are about to leave. */
+   the moment you are about to leave.
+     In the editor a Markdown link, [text](target), is .cm-link wherever it
+   points, so the class alone cannot say which rule it takes. What can is
+   the widget Obsidian sets after an external target (.external-link, the
+   span its arrow was painted on): measured in Obsidian 1.14, it follows the
+   link text after exactly four hidden spans on an idle line (`]`, `(`, the
+   target, `)`, each between two widget buffers) and after exactly four
+   visible ones on the line being edited, whatever the target's form (a
+   title, <angle brackets>, mailto:, obsidian://). A link to a note has no
+   such widget. So a .cm-link is solid, and dotted when that tail follows
+   it; link text split by formatting (`[**a** b](…)`) is matched one split
+   deep. A Markdown link to a missing note cannot be told apart in the
+   editor (Obsidian marks it only in Reading view) and stays solid.
+     A wikilink's rule sits on its .cm-underline, which Obsidian wraps in
+   .is-unresolved when the note is missing; only the direct child takes the
+   rule, so a missing note's link goes without, as in Reading view. */
 .internal-link:not(.is-unresolved),
-.markdown-source-view.mod-cm6 .cm-hmd-internal-link .cm-underline {
+.markdown-source-view.mod-cm6 .cm-hmd-internal-link > .cm-underline,
+.cm-s-obsidian span.cm-link,
+.markdown-source-view.mod-cm6 .cm-link .cm-underline {
   text-decoration: underline solid currentColor !important;
   text-decoration-thickness: 1px !important;
   text-underline-offset: 0.22em;
 }
 
 .external-link,
-.cm-s-obsidian span.cm-link,
 .cm-s-obsidian span.cm-url,
-.markdown-source-view.mod-cm6 .cm-link .cm-underline,
-.markdown-source-view.mod-cm6 .cm-url .cm-underline {
+.markdown-source-view.mod-cm6 .cm-url .cm-underline,
+/* idle line: four hidden spans, then the widget */
+.cm-s-obsidian span.cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link),
+.cm-s-obsidian span.cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-link + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link),
+/* edited line: `]`, `(`, the target, `)`, then the widget */
+.cm-s-obsidian span.cm-link:has(+ .cm-formatting-link + .cm-url + .cm-url + .cm-url + .external-link),
+.cm-s-obsidian span.cm-link:has(+ .cm-formatting + .cm-link + .cm-formatting-link + .cm-url + .cm-url + .cm-url + .external-link) {
   text-decoration: underline dotted currentColor !important;
   text-decoration-thickness: 1px !important;
   text-underline-offset: 0.22em;
+}
+.markdown-source-view.mod-cm6 .cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link) .cm-underline,
+.markdown-source-view.mod-cm6 .cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-link + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link) .cm-underline {
+  text-decoration-style: dotted !important;
+}
+
+/* The brackets of a link being edited are syntax, not words: no rule. */
+.cm-s-obsidian span.cm-link.cm-formatting-link {
+  text-decoration: none !important;
 }
 
 .external-link:hover,
@@ -1811,14 +1860,14 @@ blockquote,
 }
 
 /* The bars. Level 1 is Obsidian's ::before, moved from the column's edge to
-   the marker axis. Levels 2 and 3 are one ::after on the line, on the axis
-   of the second column; a box-shadow offset by one column repeats it for
-   the third, so a three-deep quote shows all three bars. */
+   the marker axis. Every deeper level is one ::after on the line, on the
+   axis of the second column; a box-shadow offset by one column repeats it
+   per further level, so an n-deep quote shows n bars. Spelled out to six
+   levels, as headings are; a seventh shows six. */
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote::before {
   inset-inline-start: var(--klartext-marker-axis);
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2::after,
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3::after {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote:not(.HyperMD-quote-1)::after {
   content: "";
   position: absolute;
   top: 0;
@@ -1830,6 +1879,21 @@ blockquote,
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3::after {
   box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color);
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4::after {
+  box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color),
+              calc(2 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color);
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5::after {
+  box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color),
+              calc(2 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color),
+              calc(3 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color);
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5)::after {
+  box-shadow: var(--klartext-col) 0 0 0 var(--blockquote-border-color),
+              calc(2 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color),
+              calc(3 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color),
+              calc(4 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color);
 }
 
 /* A lazy line: text without ">" straight after a quote line, which Markdown
@@ -1847,6 +1911,15 @@ blockquote,
 }
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy {
   padding-inline-start: calc(3 * var(--klartext-col));
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4.HyperMD-quote-lazy {
+  padding-inline-start: calc(4 * var(--klartext-col));
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5.HyperMD-quote-lazy {
+  padding-inline-start: calc(5 * var(--klartext-col));
+}
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-lazy:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5) {
+  padding-inline-start: calc(6 * var(--klartext-col));
 }
 
 /* No vertical padding on the first/last quote line: the bar spans the
@@ -2709,9 +2782,14 @@ button.mod-cta:hover,
    Schreibstube's review actions, Vizardry's canvas controls), and only a
    plugin that defines its own gets it back. With it, one plugin's accent-
    filled primary button painted #f2f2ee under a white label: 1.12:1, an empty
-   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off. */
-button:not(.mod-cta):hover,
-button:not(.mod-cta):focus-visible {
+   grey box where Send used to be. `tools/check-button-hover.mjs` keeps it off.
+     Obsidian's red buttons are exempt like .mod-cta: .mod-warning hovers in
+   its own darker red, and its (0,2,1) loses to this rule only by load order.
+   Measured in Obsidian with them included: a focused Delete painted #f2f2ee
+   under its white label, 1.12:1. .mod-destructive (red text on a red tint)
+   would lose its tint the same way. */
+button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):hover,
+button:not(.mod-cta):not(.mod-warning):not(.mod-destructive):focus-visible {
   background-color: var(--surface-muted);
 }
 
@@ -2890,10 +2968,32 @@ body.is-mobile .view-header {
    scrolling. A short gradient scrim just below the header fades text out
    instead. An overlay, not a mask, so the scrollbar is untouched and the
    colour follows the page token (correct in dark mode too). Markdown views
-   only; a note's top padding means nothing is faded at scroll-top. Not a
-   setting: it is the theme's own polish, not a preference. */
+   only. Not a setting: it is the theme's own polish, not a preference.
+     It fades IN with the scroll, over the first two lines, so at scroll-top
+   nothing is under it. The note's top padding cannot promise that: Live
+   Preview's is 3vh, 27px in a 900px window against a 35px scrim, so a
+   shorter window or a phone on its side faded the title's top. The
+   scrollers (.cm-scroller, .markdown-preview-view) sit inside .view-content,
+   so the timeline is named on them and hoisted with timeline-scope. Where
+   scroll-driven animation is missing, the animation runs as a plain one of
+   zero length and holds its end: the scrim is simply always on, as before.
+     The in-note find bar sits at the top of .view-content. Obsidian gives it
+   z-index 30 but leaves it static, where z-index does nothing, so the scrim
+   (z-index 5) washed over its field; positioned, its own 30 applies. */
 body .workspace-leaf-content[data-type="markdown"] .view-content {
   position: relative;
+  timeline-scope: --klartext-scroll;
+}
+body .workspace-leaf-content[data-type="markdown"] .cm-scroller,
+body .workspace-leaf-content[data-type="markdown"] .markdown-preview-view {
+  scroll-timeline: --klartext-scroll block;
+}
+body .workspace-leaf-content[data-type="markdown"] .document-search-container {
+  position: relative;
+}
+@keyframes klartext-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 body .workspace-leaf-content[data-type="markdown"] .view-content::before {
   content: "";
@@ -2908,6 +3008,9 @@ body .workspace-leaf-content[data-type="markdown"] .view-content::before {
               transparent 100%);
   pointer-events: none;
   z-index: 5;
+  animation: klartext-scrim-in linear both;
+  animation-timeline: --klartext-scroll;   /* after the shorthand, which resets it */
+  animation-range: 0 calc(var(--klartext-font-size) * 3.2);
 }
 /* font-family inherited from .view-header. The two levels are separated by
    COLOUR and size, not by transparency: the name takes the body text colour,

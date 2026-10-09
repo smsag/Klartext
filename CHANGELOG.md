@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Obsidian's red buttons keep their red on hover and keyboard focus.** The theme's grey hover for plain buttons also caught `.mod-warning` and `.mod-destructive`, so a focused Delete in a confirmation dialog turned #f2f2ee under its white label (1.12:1, measured in Obsidian 1.14.4). They now keep Obsidian's own fills.
+- **A Markdown link to a note is solid in Live Preview, as in Reading view.** `[text](Other note.md)` was dotted in the editor, as if it left the vault. Only a link Obsidian marks as external is dotted now, idle or being edited, whatever the target's form (title, angle brackets, `mailto:`, `obsidian://`). A link's brackets, while shown, carry no rule. A Markdown link to a note that does not exist cannot be recognised in the editor and stays solid.
+- **A wikilink to a missing note has no underline in Live Preview**, as in Reading view; it promised a destination that does not exist.
+- **The soft edge under the note's header fades in as you scroll** instead of always being there. At scroll-top it covered the top of the title wherever Live Preview's 3vh top padding was shorter than the 2.2-line scrim (a short window, a phone on its side). It also no longer washes over the in-note find bar.
+- **Reading view starts text on the same edge as Live Preview on the desktop.** Live Preview reserves a 2.6em column for the `#₁`…`#₆` marks; Reading view did not, so switching modes moved the text sideways by 41.6px at a 16px body and changed every paragraph's line breaks. Reading view now has the same column inside the same readable width. The phone already matched.
+- **Quotes nested four to six deep show all their bars in Live Preview**, and their lazy lines start on the quote's text edge. Beyond level three only the first bar was drawn.
+- **A heading whose whole text is math or an embed keeps its size and `#ₙ` mark** in Live Preview. `## $E = mc^2$` dropped to body size whenever the cursor left the line.
+
 ### Added
 
 - **Coloured highlights.** Obsidian 1.13's six highlight colours (`==🔴text==`, or the colour from the formatting menu) now draw the marker stroke in their own ink, in Reading view and Live Preview, light and dark; before, every colour drew in the theme's yellow. Each ink is Obsidian's own colour for that swatch, mixed to the same strength as the yellow (measured as distance from the page), so no colour shouts louder than another. The swatch Live Preview shows while the line is edited sits on the stroke as part of it, without Obsidian's separate fill behind it and without a lift-and-land around it. Checked in Obsidian 1.14.4.

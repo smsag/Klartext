@@ -12,7 +12,7 @@ import { readFileSync } from "node:fs";
 
 const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
 
-const from = css.indexOf("mark,\n.markdown-preview-view mark,\n.cm-highlight {");
+const from = css.indexOf("mark,\n.markdown-preview-view mark,\n.cm-highlight,\n.cm-highlight-color-widget {");
 if (from < 0) {
   console.error("check-highlight: the HIGHLIGHT / MARK rule is not where it was; update this guard.");
   process.exit(1);

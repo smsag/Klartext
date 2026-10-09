@@ -7,6 +7,8 @@ tags: [klartext, check]
 
 A paragraph with **bold**, *italic*, ~~struck~~, ==a highlight with `code` and **bold** inside it==, `inline code`, an [[Klartext refactor check|internal link]], an [external link](https://example.com), an [[Nonexistent note]], and a #tag. Footnote here.[^1] Block id here. ^blockid
 
+Coloured highlights: ==🔴red with `code` inside==, ==🟠orange==, ==🟡yellow==, ==🟢green==, ==🔵blue== and ==🟣purple==.
+
 ## Heading two
 
 ### Heading three

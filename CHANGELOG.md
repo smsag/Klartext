@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **An in-progress task (`- [/]`) no longer looks done.** Obsidian counts any character in the box as done, so it rendered as a finished task: struck through, greyed, with an accent box and a checkmark. It now keeps the normal text colour without a strike, and its box is cut on the diagonal from bottom left to top right, with the half below the cut filled in the accent, in Reading view and Live Preview.
+
 ## [2.5.0] — 2026-10-09
 
 ### Added

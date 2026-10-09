@@ -47,6 +47,8 @@ Paragraph before a list:
 - [x] done task with **bold**
 	- [ ] nested open under done
 - [-] cancelled task
+- [/] in-progress task with **bold**
+	- [ ] nested open under in-progress
 
 > A quote, long enough to wrap across the line in a narrow column, and then some more words.
 A lazy line: no marker, still part of the quote, and long enough to wrap onto a second line in the column.

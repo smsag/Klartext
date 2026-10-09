@@ -1641,22 +1641,52 @@ a:hover,
    goes, and this one goes nowhere.
      The underline is permanent, so hover adds none. It changes colour, and
    an external link's dotted rule closes up to solid — the two states meet at
-   the moment you are about to leave. */
+   the moment you are about to leave.
+     In the editor a Markdown link, [text](target), is .cm-link wherever it
+   points, so the class alone cannot say which rule it takes. What can is
+   the widget Obsidian sets after an external target (.external-link, the
+   span its arrow was painted on): measured in Obsidian 1.14, it follows the
+   link text after exactly four hidden spans on an idle line (`]`, `(`, the
+   target, `)`, each between two widget buffers) and after exactly four
+   visible ones on the line being edited, whatever the target's form (a
+   title, <angle brackets>, mailto:, obsidian://). A link to a note has no
+   such widget. So a .cm-link is solid, and dotted when that tail follows
+   it; link text split by formatting (`[**a** b](…)`) is matched one split
+   deep. A Markdown link to a missing note cannot be told apart in the
+   editor (Obsidian marks it only in Reading view) and stays solid.
+     A wikilink's rule sits on its .cm-underline, which Obsidian wraps in
+   .is-unresolved when the note is missing; only the direct child takes the
+   rule, so a missing note's link goes without, as in Reading view. */
 .internal-link:not(.is-unresolved),
-.markdown-source-view.mod-cm6 .cm-hmd-internal-link .cm-underline {
+.markdown-source-view.mod-cm6 .cm-hmd-internal-link > .cm-underline,
+.cm-s-obsidian span.cm-link,
+.markdown-source-view.mod-cm6 .cm-link .cm-underline {
   text-decoration: underline solid currentColor !important;
   text-decoration-thickness: 1px !important;
   text-underline-offset: 0.22em;
 }
 
 .external-link,
-.cm-s-obsidian span.cm-link,
 .cm-s-obsidian span.cm-url,
-.markdown-source-view.mod-cm6 .cm-link .cm-underline,
-.markdown-source-view.mod-cm6 .cm-url .cm-underline {
+.markdown-source-view.mod-cm6 .cm-url .cm-underline,
+/* idle line: four hidden spans, then the widget */
+.cm-s-obsidian span.cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link),
+.cm-s-obsidian span.cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-link + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link),
+/* edited line: `]`, `(`, the target, `)`, then the widget */
+.cm-s-obsidian span.cm-link:has(+ .cm-formatting-link + .cm-url + .cm-url + .cm-url + .external-link),
+.cm-s-obsidian span.cm-link:has(+ .cm-formatting + .cm-link + .cm-formatting-link + .cm-url + .cm-url + .cm-url + .external-link) {
   text-decoration: underline dotted currentColor !important;
   text-decoration-thickness: 1px !important;
   text-underline-offset: 0.22em;
+}
+.markdown-source-view.mod-cm6 .cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link) .cm-underline,
+.markdown-source-view.mod-cm6 .cm-link:has(+ .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-link + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .cm-widgetBuffer + span:empty + .cm-widgetBuffer + .external-link) .cm-underline {
+  text-decoration-style: dotted !important;
+}
+
+/* The brackets of a link being edited are syntax, not words: no rule. */
+.cm-s-obsidian span.cm-link.cm-formatting-link {
+  text-decoration: none !important;
 }
 
 .external-link:hover,

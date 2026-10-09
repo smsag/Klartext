@@ -2872,7 +2872,8 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 }
 
 /* In-progress task `- [/]`. Still open work, so no strike and the normal
-   text colour; the box is half filled with the accent, the start of a
+   text colour; the box is cut on its diagonal, bottom left to top right,
+   and the half below the cut is filled with the accent: on its way to a
    checked box. Same treatment on editor lines and rendered items.
      As with `[-]`, Obsidian counts the slash as done: the item is
    `.is-checked`, its box `:checked`, and the editor line takes the done
@@ -2890,7 +2891,7 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
 .markdown-rendered li.task-list-item[data-task="/"] > p > .task-list-item-checkbox,
 .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="/"] .task-list-item-checkbox {
   background-color: var(--background-primary) !important;
-  background-image: linear-gradient(to right, var(--interactive-accent) 50%, transparent 50%) !important;
+  background-image: linear-gradient(to bottom right, transparent 50%, var(--interactive-accent) 50%) !important;
   border-color: var(--interactive-accent) !important;
 }
 .markdown-rendered li.task-list-item[data-task="/"] > .task-list-item-checkbox::after,

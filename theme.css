@@ -997,6 +997,19 @@ body {
   padding-left: var(--klartext-heading-prefix);
 }
 
+/* 1a) Reading view takes the same column on the desktop, so switching modes
+       moves no text sideways and re-wraps no paragraph: without it the text
+       began 41.6px further left at a 16px body and its column was that much
+       wider, so every paragraph broke at different words. Padded on the
+       note's sections inside the sizer, as Live Preview pads .cm-content
+       inside its sizer, so the readable width is the same box in both
+       modes and the title and properties above stay where they are. Scoped
+       to the note in a pane: a popover, an embed and a print keep their own
+       edge. The phone has its own symmetric column (4b). */
+body:not(.is-mobile) .markdown-reading-view > .markdown-preview-view > .markdown-preview-sizer > div:not(.markdown-preview-pusher):not(.mod-header):not(.mod-footer) {
+  padding-left: var(--klartext-heading-prefix);
+}
+
 /* 2) Raw marks take no width, focused or not → no jump — but keep their font
       SIZE. CodeMirror sizes the caret from the metrics of the character it
       sits in, so font-size: 0 gave a zero-height, invisible caret at the start

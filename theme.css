@@ -2871,6 +2871,34 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   mask-image: none;
 }
 
+/* In-progress task `- [/]`. Still open work, so no strike and the normal
+   text colour; the box is half filled with the accent, the start of a
+   checked box. Same treatment on editor lines and rendered items.
+     As with `[-]`, Obsidian counts the slash as done: the item is
+   `.is-checked`, its box `:checked`, and the editor line takes the done
+   colour and strike. The two done tokens are reset on the item, so Obsidian's
+   own rules that read them fall back too, and the rest is !important to beat
+   the done rules above. */
+.markdown-rendered li.task-list-item[data-task="/"],
+.markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="/"] {
+  --checklist-done-color: var(--text-normal);
+  --checklist-done-decoration: none;
+  color: var(--text-normal) !important;
+  text-decoration: none !important;
+}
+.markdown-rendered li.task-list-item[data-task="/"] > .task-list-item-checkbox,
+.markdown-rendered li.task-list-item[data-task="/"] > p > .task-list-item-checkbox,
+.markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="/"] .task-list-item-checkbox {
+  background-color: var(--background-primary) !important;
+  background-image: linear-gradient(to right, var(--interactive-accent) 50%, transparent 50%) !important;
+  border-color: var(--interactive-accent) !important;
+}
+.markdown-rendered li.task-list-item[data-task="/"] > .task-list-item-checkbox::after,
+.markdown-rendered li.task-list-item[data-task="/"] > p > .task-list-item-checkbox::after,
+.markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="/"] .task-list-item-checkbox::after {
+  content: none;
+}
+
 /* ------------------------------------------------------------------
    SCROLLBARS
    ------------------------------------------------------------------ */

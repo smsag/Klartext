@@ -44,6 +44,7 @@ Paragraph before a list:
 	2. nested ordered two
 
 - [ ] open task
+- [ ] Task 42 starts with a Capital and a digit
 - [x] done task with **bold**
 	- [ ] nested open under done
 - [-] cancelled task

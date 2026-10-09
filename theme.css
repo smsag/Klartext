@@ -2925,10 +2925,32 @@ body.is-mobile .view-header {
    scrolling. A short gradient scrim just below the header fades text out
    instead. An overlay, not a mask, so the scrollbar is untouched and the
    colour follows the page token (correct in dark mode too). Markdown views
-   only; a note's top padding means nothing is faded at scroll-top. Not a
-   setting: it is the theme's own polish, not a preference. */
+   only. Not a setting: it is the theme's own polish, not a preference.
+     It fades IN with the scroll, over the first two lines, so at scroll-top
+   nothing is under it. The note's top padding cannot promise that: Live
+   Preview's is 3vh, 27px in a 900px window against a 35px scrim, so a
+   shorter window or a phone on its side faded the title's top. The
+   scrollers (.cm-scroller, .markdown-preview-view) sit inside .view-content,
+   so the timeline is named on them and hoisted with timeline-scope. Where
+   scroll-driven animation is missing, the animation runs as a plain one of
+   zero length and holds its end: the scrim is simply always on, as before.
+     The in-note find bar sits at the top of .view-content. Obsidian gives it
+   z-index 30 but leaves it static, where z-index does nothing, so the scrim
+   (z-index 5) washed over its field; positioned, its own 30 applies. */
 body .workspace-leaf-content[data-type="markdown"] .view-content {
   position: relative;
+  timeline-scope: --klartext-scroll;
+}
+body .workspace-leaf-content[data-type="markdown"] .cm-scroller,
+body .workspace-leaf-content[data-type="markdown"] .markdown-preview-view {
+  scroll-timeline: --klartext-scroll block;
+}
+body .workspace-leaf-content[data-type="markdown"] .document-search-container {
+  position: relative;
+}
+@keyframes klartext-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 body .workspace-leaf-content[data-type="markdown"] .view-content::before {
   content: "";
@@ -2943,6 +2965,9 @@ body .workspace-leaf-content[data-type="markdown"] .view-content::before {
               transparent 100%);
   pointer-events: none;
   z-index: 5;
+  animation: klartext-scrim-in linear both;
+  animation-timeline: --klartext-scroll;   /* after the shorthand, which resets it */
+  animation-range: 0 calc(var(--klartext-font-size) * 3.2);
 }
 /* font-family inherited from .view-header. The two levels are separated by
    COLOUR and size, not by transparency: the name takes the body text colour,

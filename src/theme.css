@@ -552,11 +552,10 @@ body.is-mobile {
 }
 
 /* No border between sidebar and editor here. The divider is drawn once, on the
-   resize handle, by the `--border-subtle` rule above. This block used to draw a
-   second one at full `--border` strength directly alongside it, so the seam
-   painted as a two-pixel ramp (#f0f0ed then #e8e8e6 against #ffffff) and read
-   as a heavy rule rather than a hairline. `tools/check-dividers.mjs` fails if a
-   border on `.mod-left-split` / `.mod-right-split` comes back. */
+   resize handle, by the `--border-subtle` rule above; a second border beside it
+   paints a two-pixel ramp that reads as a heavy rule, not a hairline.
+   `tools/check-dividers.mjs` fails on a border on `.mod-left-split` /
+   `.mod-right-split`. */
 
 /* Tab bar */
 .workspace-tab-header-container {
@@ -826,9 +825,8 @@ body {
 /* Live Preview heading spacing. Obsidian gives every heading line
    `padding-top: var(--p-spacing)`; it is zeroed, so the gap around a heading
    is the blank source lines beside it and nothing else (see VERTICAL RHYTHM).
-   A margin cannot add to it: Obsidian zeroes every .cm-content child's margin
-   with `margin: 0 !important`, so the heading margins that used to sit here
-   computed to 0 and are gone. */
+   Not a margin: Obsidian zeroes every .cm-content child's margin with
+   `margin: 0 !important`. */
 .markdown-source-view.mod-cm6 .cm-line.HyperMD-header { padding-top: 0; }
 
 /* ------------------------------------------------------------------
@@ -1762,9 +1760,8 @@ hr,
 
 /* Item spacing: none of the theme's own, in either mode. Live Preview spaces
    its items by Obsidian's --list-spacing alone (a margin never reaches the
-   editor, see VERTICAL RHYTHM), and Reading view follows it. It used to add
-   0.4em below each top-level item, so the same list stood 34px a line in
-   Reading view and 28px in Live Preview. */
+   editor, see VERTICAL RHYTHM), and Reading view follows it, so a list stands
+   at the same pitch in both modes. */
 
 /* A callout or a quote INSIDE a list item takes the item gap, not the prose
    block gap (see BLOCKQUOTE and CALLOUTS). Obsidian gives every <li> 1.2px of

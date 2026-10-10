@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The Minimal set of task markers, on request.** While the Klartext plugin's *Draw the theme's task markers* is on (it sets `body.klartext-task-markers`), `[>]`, `[<]`, `[?]`, `[!]`, `[*]`, `["]`, `[l]`, `[b]`, `[i]`, `[S]`, `[I]`, `[p]`, `[c]`, `[f]`, `[k]`, `[w]`, `[u]` and `[d]` each draw a neutral box with their own glyph in an Obsidian colour (`→` blue for forwarded, `!` red for important, `★` yellow for star, …), in Reading view and Live Preview. Obsidian counts any character in the box as done; the item resets the two done tokens, as `[/]` does, so the text keeps its normal colour without a strike. Without the class nothing changes.
+
 ## [2.5.1] — 2026-10-09
 
 ### Changed

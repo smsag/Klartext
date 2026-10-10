@@ -40,6 +40,12 @@ one file and follow Obsidian's own light/dark setting.
   Schreibstube's PDF export.
 - **Link destination in the underline.** Internal links are underlined solid,
   external links dotted. No arrow glyph interrupts the sentence.
+- **Four task states, and more on request.** `[ ]` is open, `[/]` in progress (the box
+  half filled), `[-]` cancelled (struck through, faint), `[x]` done. With the
+  [Klartext plugin](https://github.com/smsag/klartext-plugin)'s *Draw the theme's task
+  markers* on, the Minimal set — `[>]` forwarded, `[<]` scheduled, `[?]`, `[!]`, `[*]`,
+  `["]`, `[l]`, `[b]`, `[i]`, `[S]`, `[I]`, `[p]`, `[c]`, `[f]`, `[k]`, `[w]`, `[u]`,
+  `[d]` — gets a box with its own glyph and colour and reads as open, not done.
 - **A highlight is a marker stroke.** Each line lands and lifts like a pen on paper,
   and the stroke runs unbroken through any code, bold or link inside it.
 - **One corner radius.** Content blocks, panels, chips and the flat interface all sit

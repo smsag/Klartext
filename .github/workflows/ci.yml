@@ -1,19 +1,25 @@
-# The release's gate, on every push and pull request: every tools/check-*.mjs
-# guard, stylelint, and theme.css rebuilt from src/theme.css. The guards used
-# to run only in the pre-commit hook (which each clone has to switch on) and in
-# the release itself, so a broken guard could first be found by a release.
+# The release's gate, on every push and pull request: tools/guards.mjs (every
+# tools/check-*.mjs and the parser's tests), stylelint, and theme.css rebuilt
+# from src/theme.css. The release workflow calls this file rather than
+# copying it, so the two gates cannot drift apart.
+#
+# Third-party code (the actions, stylelint from npm) is pinned to an exact
+# version and runs with a read-only token that checkout does not keep.
 name: CI
 
 on:
   push:
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # When Release calls this, github.workflow is "Release", so the release's
+  # check and a push's run on the same branch never cancel each other.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,20 +27,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
       - name: Guards
         # Every guard runs, so one push shows every failure, not only the first.
-        run: |
-          status=0
-          for guard in tools/check-*.mjs; do
-            node "$guard" || { echo "::error file=$guard::$guard failed"; status=1; }
-          done
-          exit "$status"
+        run: node tools/guards.mjs
       - name: Stylelint
-        run: npx --yes stylelint@17 src/theme.css
+        run: npx --yes stylelint@17.16.0 src/theme.css
       - name: theme.css is built from src/theme.css
         run: |
           python3 fonts/embed.py

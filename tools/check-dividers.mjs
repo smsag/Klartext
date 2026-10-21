@@ -8,41 +8,27 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-dividers.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
-
-// Comments are stripped, so a selector quoted in prose cannot fail the check.
-const bare = readStylesheet();
+// tools/guards.mjs runs it with every other guard.
+import { declarations, readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 // Selectors for the sidebar/editor seam. The handle is exempt: it is the one
-// element allowed to paint the line.
+// element allowed to paint the line. Both are judged arm by arm, so a handle
+// grouped into the same list exempts only itself.
 const SEAM = /\.workspace-split\.mod-(left|right)-split(?![\w-])/;
 const HANDLE = /workspace-leaf-resize-handle/;
 // `border-inline` is the logical shorthand for both side borders at once.
-const BORDER = /(^|[;{\s])border(-(left|right|inline|inline-start|inline-end))?(-(width|style|color))?\s*:/;
+const BORDER = /^border(-(left|right|inline|inline-start|inline-end))?(-(width|style|color))?$/;
 
 const failures = [];
-for (const { selector, body, line } of rules(bare)) {
-  if (!SEAM.test(selector) || HANDLE.test(selector)) continue;
-  for (const decl of body.split(";")) {
-    if (!BORDER.test(";" + decl)) continue;
-    const value = decl.split(":").slice(1).join(":").trim();
+for (const { arms, body, line } of rules(readStylesheet())) {
+  const seams = arms.filter((a) => SEAM.test(a) && !HANDLE.test(a));
+  if (seams.length === 0) continue;
+  for (const { prop, value } of declarations(body)) {
+    if (!BORDER.test(prop)) continue;
     // A border explicitly switched off is the point of the rule, not a relapse.
     if (/^(none|0|0px|transparent)$/.test(value)) continue;
-    failures.push({ line, selector, decl: decl.trim() });
+    failures.push(`line ${line}: ${seams[0]} { ${prop}: ${value} } — the resize handle already draws this line at --border-subtle; soften or widen it there instead`);
   }
 }
 
-if (failures.length) {
-  console.error(`${FILE}: the sidebar/editor divider is drawn twice.`);
-  for (const f of failures) {
-    console.error(`  ${FILE}:${f.line}  ${f.selector} { ${f.decl} }`);
-  }
-  console.error(
-    "\nThe resize handle already draws this line at --border-subtle. Soften or" +
-      "\nwiden it there instead of adding a second border to the split.",
-  );
-  process.exit(1);
-}
-
-console.log(`${FILE}: divider drawn once (resize handle only) — ok`);
+report("the sidebar/editor divider is drawn twice", failures, "dividers: drawn once, on the resize handle.");

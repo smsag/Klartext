@@ -14,16 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A footnote reference no longer makes its line taller.** The `<sup>` was raised at the inherited line height; it now has `line-height: 0`, like the theme's other superscripts.
 - **Tag hover reads `--tag-color-hover`**, the token the theme already defines for it, so a snippet that retunes the token now takes effect in both modes.
 - **The edit-block `</>` icon scales with the text**, like every other mark: `0.875 × --klartext-font-size`, 14px at a 16px body as before.
+- **The Line Height option says what it does.** It was the one Style Settings entry without a description; it now names what follows it (both modes, the paragraph gap) and what does not (tables).
 
 ### Changed
 
 - **The Minimal task markers set their glyph and colour as two tokens on the item** (`--klartext-task-glyph`, `--klartext-task-color`), read once by the box rule, instead of eighteen rules that each restated the full three-arm selector. Same rendering.
 - The copy button in a code block is placed by `inset-inline-end` alone, not `right` as well; the drawer's option-list reserve drops a nested `calc()`.
 - Comments that told how a rule had behaved before are in the present tense, as README asks; the history stays here.
+- **The heading hand-over rule and the task-marker box rules end on a class or a tag**, one arm per block, instead of on a multi-argument `:is()`. Chromium files a rule under its last compound, and an `:is()` there cannot be filed, so each was tried against every element on every style recalculation: the cost `docs/notes/heading-rhythm.md` says the theme avoids. Same elements matched; the box rules end on `.task-list-item-checkbox`, the item rule on `.task-list-item` and `.HyperMD-task-line`.
+- **The dark palette states colours only.** It restated five aliases (`--background-primary-alt`, `--table-header-bg`, `--background-modifier-border`, `--hr-color`, `--table-border-color`) exactly as the light block, which `body.theme-dark` also matches, declares them; retargeting one in the light block now reaches dark mode too.
+- **The canvas selection halo is a palette token**, `--klartext-ring-selected`, instead of a literal `rgba()` in a light rule and a second dark `@media` rule.
+- **The scrollbar's width is one token**, `--klartext-scrollbar-size`, read by the scrollbar and by the view-header scrim that stops short of it; the two were linked by `6px` and a comment.
+- **The tag chip's fill is declared once**, on `body, body.is-mobile.theme-dark`, instead of in the typography block and again for a phone in dark mode.
+- The tab-switcher comment points to WORKSPACE & LAYOUT, not to a "TABS" section that does not exist.
 
 ### Security
 
 - **`tools/verify.mjs` talks to the debugging port on `127.0.0.1` only** and refuses a debugger socket on any other host or port, so a `/json` answered by something else cannot hand it another host. Snapshot names are restricted to `[\w.-]` and passed into the page as JSON: a name with a quote in it broke out of a string in the code evaluated inside Obsidian. README and the script now say that while the port is open any local process can run code in Obsidian, and to restart it normally afterwards.
+- **The release's write token never meets a package from npm.** The release workflow calls `ci.yml` for its checks, with a read-only token, and only the publishing job, which runs the repository's own scripts and `gh`, can write; before, one job held `contents: write` while `npx` fetched and ran stylelint.
+- **Third-party code runs at an exact version.** `actions/checkout` and `actions/setup-node` are pinned to a commit SHA (v4.4.0), stylelint to 17.16.0 in CI, the release, the hook and README; CI's checkout no longer leaves the token in `.git/config` for later steps.
 
 ### Tooling
 
@@ -41,6 +50,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CI and the release workflow run every guard and report each failure** as an annotation, instead of stopping at the first.
 - **`fonts/embed.py` builds the same bytes on every platform**: it reads and writes UTF-8 with LF line endings, where it used the locale's encoding and Windows wrote CRLF. It replaces `theme.css` in one step, keeping the file's mode, so an interrupted build never leaves a truncated file; names a missing font file instead of raising a traceback; refuses unknown arguments with its usage; and its docstring no longer says it appends to `src/theme.css`.
 - `docs/notes/marker-column.md` describes the quote bars to six levels and lazy lines; `docs/notes/embedded-fonts.md` covers comment stripping and the Klartext Marks faces; README documents the guards' shared library, the hook, `verify.mjs`'s exit codes, and that a snippet sets `--klartext-ui-font-size` on `body.is-mobile` for a phone.
+- **The guards' parser splits a selector list at its top-level commas only.** `rules().arms` used `split(",")`, which cut `.x :is(button, .y):hover` into two fragments; check-button-hover recognised neither as a button, so an `!important` hover inside `:is()` passed the guard written to stop it, and every guard that iterates arms read such fragments. check-button-hover also treats each `:is()`/`:where()` alternative as the styled element, while `:has()` and `:not()` stay conditions.
+- **The parser reads strings as text.** A `{`, `}`, `;` or `/*` inside a string or a quoted `url()` was read as structure and shifted every later rule; now a string is skipped whole, as `fonts/embed.py` reads it.
+- **`tools/lib/stylesheet.test.mjs` tests the parser** (offsets, `@media`, arms, strings, comments, line numbers), and **`tools/guards.mjs` runs those tests and every guard**, reports each failure (as an annotation in Actions) and ends with a count. The hook, CI and the release call it instead of three copies of a shell loop.
+- **The pre-commit hook checks the commit, not the working tree.** It exports the staged files to a scratch folder and lints, guards and rebuilds there, so an unstaged fix can no longer pass a broken stylesheet into a commit. It also fires for `fonts/`, `.stylelintrc.json` and the hook itself.
+- **check-highlight reads the rule, not the text.** It read the raw source, so a commented-out `text-shadow: none;` above a live halo passed; and it found the rule by a newline-exact selector string. It now reads the flattened rule by its selector list.
+- **check-dividers judges each arm**: a resize-handle arm grouped with the split no longer exempts the split, and `none !important` counts as switched off. **check-list-blocks** classifies each arm as prose or item rule and reports both blocks rather than stopping at the first.
+- **check-quote-lazy covers every level the theme pads**: one to five and the catch-all for six and deeper, not one to three.
+- **check-heading-gutter** catches a heading-relative unit straight after the colon (`margin:0.5em`), reads rules through the parser, and names a missing Hide Heading Level Marks rule as such instead of as a unit problem.
+- **check-field-rule and check-tree-line find rules by their selector list** (`rulesFor()` in the library), not by a whitespace-exact string, so re-wrapping a selector no longer fails them; check-tree-line sorts levels as numbers.
+- **check-comments also checks section pointers.** A `see SECTION` or `(SECTION)` must name a banner or a capitalised heading in the stylesheet; it found the dangling "(TABS)".
+- **check-task-markers** is new: every `[data-task]` list under `body.klartext-task-markers` must name exactly the markers that have a glyph rule, so a marker added to one list and not the others fails instead of drawing half.
+- **Every guard reports through `report()`** and collects all its failures; check-list-indent, check-list-blocks and check-button-hover stopped at the first. Guard headers say `tools/guards.mjs` runs them.
+- **`fonts/embed.py` reports bytes, not characters,** and stops when the `@settings` block did not survive comment stripping, which would have taken every Style Settings option away with a clean build.
+- **`verify.mjs snapshot` restores the note's own view mode** (it always left Live Preview); **`settings` closes Settings** when it is done and reports a tab id Obsidian does not know instead of measuring the previous tab under it; **`diff` says how many lines it did not print**; the socket open times out; a port that answers without a target list is named as such; Obsidian 2.x titles are recognised; the header says `teardown` moves the note to the trash.
+- README: `fonts/embed.py` writes `theme.css` and leaves `src/theme.css` alone (it said the fonts were appended to the source); the measured Obsidian versions are 1.13.7 and 1.14.4; the guard runner, the parser's tests, the hook's staged check and the release's split are described.
 
 ## [2.6.0] — 2026-10-10
 

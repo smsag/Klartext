@@ -12,7 +12,8 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-image-align.mjs
-import { FILE, readStylesheet, rules as parse } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();
 const WORDS = ["left", "center", "right"];
@@ -47,9 +48,4 @@ const covered = (word, prop) =>
 if (!covered("center", "center")) failures.push("no rule centres [alt=\"center\"]");
 if (!covered("right", "flex-end")) failures.push("no rule right-aligns [alt=\"right\"]");
 
-if (failures.length) {
-  console.error(`${FILE}: image alignment is incomplete.`);
-  for (const f of failures) console.error(`  ${f}`);
-  process.exit(1);
-}
-console.log(`image alignment: ${rules.length} rules, every word in all six spellings, no block display in Live Preview.`);
+report("image alignment is incomplete", failures, `image alignment: ${rules.length} rules, every word in all six spellings, no block display in Live Preview.`);

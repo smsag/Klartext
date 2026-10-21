@@ -13,15 +13,10 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-list-blocks.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();
-
-const fail = (...msg) => {
-  console.error(`${FILE}: ${msg.join("\n  ")}`);
-  process.exit(1);
-};
 
 // Block types that can be a list item's whole content and carry prose margins.
 const BLOCKS = [
@@ -56,45 +51,47 @@ function verticalZero(prop, value) {
   return ZERO.test(v[0]) && ZERO.test(v.length >= 3 ? v[2] : v[0]);
 }
 
-for (const { selector, body, line: startLine } of rules(bare)) {
+// Arm by arm: `blockquote, li > blockquote { … }` is a prose margin AND an
+// item rule, and judged as a whole list it would pass as the override alone.
+for (const { arms, body, line: startLine } of rules(bare)) {
   for (const b of BLOCKS) {
-    if (!b.base.test(selector)) continue;
-    const inItem = b.item.test(selector);
+    const based = arms.filter((a) => b.base.test(a));
+    if (based.length === 0) continue;
     for (const decl of body.split(";")) {
       const m = VERTICAL_MARGIN.exec(";" + decl);
       if (!m) continue;
       const prop = m[2] || "";
       // `margin-inline*`/`margin-left|right` never reach this regex.
       if (verticalZero(prop, m[3])) continue;
-      (inItem ? found[b.name].item : found[b.name].prose).push({
-        line: startLine,
-        selector: selector.slice(0, 70),
-        important: /!important/.test(decl),
-      });
+      for (const arm of based) {
+        (b.item.test(arm) ? found[b.name].item : found[b.name].prose).push({
+          line: startLine,
+          selector: arm.slice(0, 70),
+          important: /!important/.test(decl),
+        });
+      }
     }
   }
 }
 
+const failures = [];
 for (const b of BLOCKS) {
   const f = found[b.name];
   if (!f.prose.length) continue; // no prose margin to escape the item
   if (!f.item.length) {
-    fail(
-      `${b.name}: a vertical margin is set for prose flow (${FILE}:${f.prose[0].line})`,
-      "but no rule re-spaces it inside a list item, where nothing collapses it.",
-      `Add a \`li > ${b.name === "callout" ? ".callout" : "blockquote"}\` rule with margin-block.`,
+    failures.push(
+      `${b.name}: a vertical margin is set for prose flow (line ${f.prose[0].line}, ${f.prose[0].selector}) ` +
+        `but no rule re-spaces it inside a list item, where nothing collapses it; add a \`li > ${b.name === "callout" ? ".callout" : "blockquote"}\` rule with margin-block`,
     );
+    continue;
   }
   // The base blockquote rule uses !important; an override without one loses.
-  const baseImportant = f.prose.some((r) => r.important);
-  if (baseImportant && !f.item.some((r) => r.important)) {
-    fail(
-      `${b.name}: the prose margin at ${FILE}:${f.prose.find((r) => r.important).line} is !important,`,
-      `so the list-item rule at ${FILE}:${f.item[0].line} never wins. Mark it !important too.`,
+  const important = f.prose.find((r) => r.important);
+  if (important && !f.item.some((r) => r.important)) {
+    failures.push(
+      `${b.name}: the prose margin at line ${important.line} is !important, so the list-item rule at line ${f.item[0].line} never wins; mark it !important too`,
     );
   }
 }
 
-console.log(
-  `${FILE}: a callout or quote in a list item is spaced like an item — ok`,
-);
+report("a block inside a list item is spaced like a paragraph", failures, "list blocks: a callout or quote in a list item is spaced like an item.");

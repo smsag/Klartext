@@ -132,6 +132,12 @@ fonts_css = "".join(out)
 if args == ["--fonts"]:
     sys.stdout.write(fonts_css)
 else:
-    src = HEADER + strip_comments((ROOT / "src" / "theme.css").read_text(encoding="utf-8"))
+    source = (ROOT / "src" / "theme.css").read_text(encoding="utf-8")
+    src = HEADER + strip_comments(source)
+    # Style Settings reads its schema from the installed file, so a schema the
+    # stripping dropped (a comment opened as `/*@settings`, say) would take
+    # every option away with a clean-looking build.
+    if "@settings" in source and "/* @settings" not in src:
+        sys.exit("embed.py: src/theme.css has a @settings block that did not survive; open it as `/* @settings`")
     write_atomically(ROOT / "theme.css", src + fonts_css)
-    print(f"theme.css: {len(src)} bytes of stylesheet + {len(fonts_css)} bytes of fonts")
+    print(f"theme.css: {len(src.encode('utf-8'))} bytes of stylesheet + {len(fonts_css.encode('utf-8'))} bytes of fonts")

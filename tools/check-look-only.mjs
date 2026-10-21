@@ -21,7 +21,7 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-look-only.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
+// tools/guards.mjs runs it with every other guard.
 import { flatten, readSource, report } from "./lib/stylesheet.mjs";
 
 const css = readSource();

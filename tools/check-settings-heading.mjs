@@ -18,21 +18,16 @@
 //     the theme aligns Obsidian's settings, not one plugin's.
 //
 //     node tools/check-settings-heading.mjs
-import { FILE, readStylesheet, rules as parse } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { declarations, readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
 const ROW_PADDING = "var(--setting-items-padding-x)";
 
-const rules = parse(readStylesheet()).map(({ arms, body }) => {
-  const decls = body
-    .split(";")
-    .map((d) => d.trim())
-    .filter(Boolean)
-    .map((d) => {
-      const colon = d.indexOf(":");
-      return { prop: d.slice(0, colon).trim(), value: d.slice(colon + 1).trim() };
-    });
-  return { arms, decls };
-});
+// `value` keeps its !important here: a heading rule that carries one is itself a failure.
+const rules = parse(readStylesheet()).map(({ arms, body }) => ({
+  arms,
+  decls: declarations(body).map((d) => ({ prop: d.prop, value: d.important ? `${d.value} !important` : d.value })),
+}));
 
 const failures = [];
 const isHeading = (arm) => /\.setting-item-heading\b(?![\w-])(?!\s*\S)/.test(arm) || /\.setting-item-heading(\s*>\s*|\s+)\.setting-item-(info|name)\s*$/.test(arm);
@@ -71,9 +66,4 @@ for (const r of rules) {
   }
 }
 
-if (failures.length) {
-  console.error(`${FILE}: settings headings are not aligned with their rows.`);
-  for (const f of failures) console.error(`  ${f}`);
-  process.exit(1);
-}
-console.log("settings headings: flush with their rows' names, by the rows' own padding variable.");
+report("settings headings are not aligned with their rows", failures, "settings headings: flush with their rows' names, by the rows' own padding variable.");

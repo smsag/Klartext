@@ -17,15 +17,12 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-list-indent.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { FILE, readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();
-
-const fail = (...msg) => {
-  console.error(`${FILE}: ${msg.join("\n  ")}`);
-  process.exit(1);
-};
+const all = rules(bare);
+const failures = [];
 
 const decl = (name) => {
   const m = bare.match(new RegExp(`--${name}\\s*:\\s*([^;]+);`));
@@ -39,24 +36,18 @@ const num = (name) => {
 // The derivation this check reasons about. If it changes shape, the check
 // cannot claim anything and says so rather than passing quietly.
 if (decl("list-indent") !== "var(--klartext-col)") {
-  fail(
-    "--list-indent is no longer var(--klartext-col).",
-    "Re-derive the tab/space floor in this script before changing it.",
-  );
+  failures.push("--list-indent is no longer var(--klartext-col); re-derive the tab/space floor in this script before changing it");
 }
 for (const [token, factor] of [["klartext-col", "0.6"], ["klartext-cell", "0.6"]]) {
   if (!(decl(token) || "").includes(`* ${factor}`)) {
-    fail(
-      `--${token} no longer measures in ${factor}em character cells.`,
-      "Re-derive the tab/space floor in this script before changing it.",
-    );
+    failures.push(`--${token} no longer measures in ${factor}em character cells; re-derive the tab/space floor in this script before changing it`);
   }
 }
 
 const markerColumn = num("klartext-marker-column");
 const tabSize = num("klartext-tab-size");
 if (markerColumn === null || tabSize === null) {
-  fail("--klartext-marker-column and --klartext-tab-size must be plain numbers.");
+  report("one list level is not one indent unit", [...failures, "--klartext-marker-column and --klartext-tab-size must be plain numbers"], "");
 }
 
 // The box for ONE COMPLETE level: the element Obsidian floors, and the one
@@ -65,18 +56,12 @@ if (markerColumn === null || tabSize === null) {
 // is deliberately not part of this.
 const SPAN = /\.cm-hmd-list-indent\s*>\s*\.cm-indent(?![\w-])/;
 let neutralised = false;
-for (const block of bare.split("}")) {
-  const brace = block.indexOf("{");
-  if (brace === -1 || !SPAN.test(block.slice(0, brace))) continue;
-  const body = block.slice(brace + 1);
+for (const { arms, body, line } of all) {
+  if (!arms.some((a) => SPAN.test(a))) continue;
   // font-size shrinks the box as well as the advance, and the indentation
   // guide is this element's ::before — its height is the box's.
   if (/(^|[;\s])font-size\s*:/.test(body)) {
-    fail(
-      "font-size on the indent box collapses the indentation guide.",
-      "The guide is .cm-indent's own ::before and takes the box's height",
-      "(measured: 25.6px -> 6.4px). Neutralise the advance instead.",
-    );
+    failures.push(`line ${line}: font-size on the indent box collapses the indentation guide, which is .cm-indent's own ::before and takes the box's height (measured: 25.6px -> 6.4px); neutralise the advance instead`);
   }
   if (/(^|[;\s])word-spacing\s*:\s*calc\(\s*var\(--klartext-cell\)\s*\*\s*-1\s*\)/.test(body)) {
     neutralised = true;
@@ -86,34 +71,30 @@ for (const block of bare.split("}")) {
 // Without indentation guides Obsidian emits no .cm-indent at all: the indent
 // is bare text in .cm-hmd-list-indent, with no floor, and only the space's own
 // width can be corrected. Measured: four spaces painted two levels deep.
-let sized = false;
-for (const block of bare.split("}")) {
-  const brace = block.indexOf("{");
-  if (brace === -1 || !/\.cm-hmd-list-indent\s*$/.test(block.slice(0, brace).trim())) continue;
-  const body = block.slice(brace + 1);
-  if (/word-spacing\s*:\s*calc\(\s*var\(--list-indent\)\s*\/\s*var\(--klartext-tab-size\)\s*-\s*var\(--klartext-cell\)\s*\)/.test(body)) sized = true;
-}
+const sized = all.some(
+  ({ arms, body }) =>
+    arms.some((a) => /\.cm-hmd-list-indent$/.test(a)) &&
+    /word-spacing\s*:\s*calc\(\s*var\(--list-indent\)\s*\/\s*var\(--klartext-tab-size\)\s*-\s*var\(--klartext-cell\)\s*\)/.test(body),
+);
 if (tabSize > markerColumn && !sized) {
-  fail(
-    "with indentation guides off there is no .cm-indent floor, so a space in a list",
-    "indent must be sized to one --klartext-tab-size-th of a level on .cm-hmd-list-indent:",
-    "`word-spacing: calc(var(--list-indent) / var(--klartext-tab-size) - var(--klartext-cell))`.",
+  failures.push(
+    "with indentation guides off there is no .cm-indent floor, so a space in a list indent must be sized to one " +
+      "--klartext-tab-size-th of a level on .cm-hmd-list-indent: `word-spacing: calc(var(--list-indent) / var(--klartext-tab-size) - var(--klartext-cell))`",
   );
 }
 
 if (tabSize > markerColumn && !neutralised) {
-  fail(
-    `a space-indented level is ${tabSize} cells wide against a ${markerColumn}-cell unit,`,
-    "so Obsidian's min-width floor never applies and it paints " +
-      `${(tabSize / markerColumn).toFixed(2)}x too deep.`,
-    "Restore `word-spacing: calc(var(--klartext-cell) * -1)` on",
-    ".cm-hmd-list-indent > .cm-indent, or widen --klartext-marker-column",
-    "to --klartext-tab-size.",
+  failures.push(
+    `a space-indented level is ${tabSize} cells wide against a ${markerColumn}-cell unit, so Obsidian's min-width floor never applies ` +
+      `and it paints ${(tabSize / markerColumn).toFixed(2)}x too deep; restore \`word-spacing: calc(var(--klartext-cell) * -1)\` on ` +
+      ".cm-hmd-list-indent > .cm-indent, or widen --klartext-marker-column to --klartext-tab-size",
   );
 }
 
-console.log(
+report(
+  "one list level is not one indent unit",
+  failures,
   `${FILE}: one level = one indent unit for tabs and spaces ` +
     `(${tabSize} cells vs ${markerColumn}-cell unit, ` +
-    `${neutralised ? "advance neutralised" : "floor sufficient"}, ${sized ? "spaces sized without guides" : "no guide-less sizing needed"}) — ok`,
+    `${neutralised ? "advance neutralised" : "floor sufficient"}, ${sized ? "spaces sized without guides" : "no guide-less sizing needed"}).`,
 );

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **The cursor's level is marked on a level-5 parent's tree segment** in Live Preview. The tree line bridges five parent levels, but the active-guide rule covered only four, so with the cursor on a level-6 item that one segment kept the inactive grey. The level-1 arm now names the indent box the same way as the others (`> .cm-hmd-list-indent > .cm-indent:nth-child(1)`).
+- **The cursor's level is marked on a level-5 parent's tree segment** in Live Preview. The tree line bridges five parent levels, but the active-guide rule covered only four, so with the cursor on a level-5 item that has children, its segment kept the inactive grey where every shallower level turns active (measured in Obsidian 1.14.4: 0.12 against 0.3 alpha). The level-1 arm now names the indent box the same way as the others (`> .cm-hmd-list-indent > .cm-indent:nth-child(1)`).
 - **A plugin's link keeps its own hover colour.** `a:hover` set the accent with `!important` on every anchor in the app, so a plugin's anchor styled as a button could not keep its own hover at any specificity, the failure `check-button-hover` exists to prevent for buttons. Interface anchors now get the accent hover without `!important`; note content (`.markdown-rendered`, `.markdown-preview-view`) keeps it with `!important`.
 - **A footnote reference no longer makes its line taller.** The `<sup>` was raised at the inherited line height; it now has `line-height: 0`, like the theme's other superscripts.
 - **Tag hover reads `--tag-color-hover`**, the token the theme already defines for it, so a snippet that retunes the token now takes effect in both modes.

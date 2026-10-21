@@ -2248,6 +2248,23 @@ a.tag {
   border-bottom: 2px solid var(--interactive-accent) !important;
 }
 
+/* A phone's settings search and command palette field are one rule on the
+   ground like every other field (SEARCH), not Obsidian's raised pill: fill,
+   blur, shadow, 44px radius, and a full border on the palette's input.
+   Through Obsidian's lever: the raised look reads var(--raised, …), and
+   --raised: none turns all of it off, the iOS mask included. Same
+   specificity as Obsidian's phone rules, later. See docs/notes/phone-search-fields.md. */
+.is-phone .search-input-container.mod-raised,
+.is-phone .prompt-input-container.mod-raised {
+  --raised: none;
+  border-radius: 0;
+}
+
+.is-phone .prompt-input[type=text] {
+  border: none;
+  border-radius: 0;
+}
+
 .prompt-results {
   background-color: var(--background-primary);
 }

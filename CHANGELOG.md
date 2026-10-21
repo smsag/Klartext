@@ -7,25 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] — 2026-10-21
+
 ### Changed
 
 - **Every settings heading starts on the cards' outer edge.** Obsidian pads a heading row like a card, so headings hung inside the cards they head: 52px against cards at 32px in Obsidian's own grouped tabs, 48px in a plugin's ungrouped tab, while a plugin's navigation and intro lines start on the edge (measured in Obsidian 1.14.4). One rule now takes the heading's side padding away in every settings tab, grouped or not, Obsidian's or a plugin's. This replaces the earlier rule that aligned a grouped heading with the names inside its cards; `check-settings-heading` and `verify.mjs settings` now hold the outer edge (measured: 0px off in every tab, light and dark, desktop and phone classes; 40 contexts off before).
-
-### Fixed
-
-- **On a phone, the settings search and the command palette's field look like every other field**: one rule on the ground, no box. Obsidian raised both into a floating pill: a translucent fill, a blur, a drop shadow and a 44px radius, plus a full border around the palette's input (measured in Obsidian 1.14.4 with the phone classes). The theme turns the raised look off through Obsidian's own `--raised` variable and takes the radius and the extra border away; the 1px `--klartext-field-rule` and the 2px accent on focus are the theme's, as elsewhere. See `docs/notes/phone-search-fields.md`.
-
-- **A callout's content starts right under its title**, on the second line as it does while the source shows. Obsidian's paragraph margin (`--p-spacing`, 1.2em) put a blank line between the title and the first paragraph, so a one-line callout grew from 38.4px to 52.9px when rendered (measured in Obsidian 1.14.4, Live Preview and Reading view). `.callout-content > :first-child` now has no top margin, as its last child already had no bottom margin.
-- **A wrapped line no longer starts with a space** in Live Preview. CodeMirror wraps with `white-space: break-spaces`, and Obsidian's Chromium then moves a space that does not fit onto the next line; in the monospace body that happened whenever a word ended on the right edge, so a quote's, list item's or paragraph's continuation started one cell in (measured in Obsidian 1.14.4: a quote's third line read " by following"). The editor's wrapping content now uses `pre-wrap`, which hangs the space at the end of its line, as Reading view does.
-- **The cursor's level is marked on a level-5 parent's tree segment** in Live Preview. The tree line bridges five parent levels, but the active-guide rule covered only four, so with the cursor on a level-5 item that has children, its segment kept the inactive grey where every shallower level turns active (measured in Obsidian 1.14.4: 0.12 against 0.3 alpha). The level-1 arm now names the indent box the same way as the others (`> .cm-hmd-list-indent > .cm-indent:nth-child(1)`).
-- **A plugin's link keeps its own hover colour.** `a:hover` set the accent with `!important` on every anchor in the app, so a plugin's anchor styled as a button could not keep its own hover at any specificity, the failure `check-button-hover` exists to prevent for buttons. Interface anchors now get the accent hover without `!important`; note content (`.markdown-rendered`, `.markdown-preview-view`) keeps it with `!important`.
-- **A footnote reference no longer makes its line taller.** The `<sup>` was raised at the inherited line height; it now has `line-height: 0`, like the theme's other superscripts.
-- **Tag hover reads `--tag-color-hover`**, the token the theme already defines for it, so a snippet that retunes the token now takes effect in both modes.
-- **The edit-block `</>` icon scales with the text**, like every other mark: `0.875 × --klartext-font-size`, 14px at a 16px body as before.
-- **The Line Height option says what it does.** It was the one Style Settings entry without a description; it now names what follows it (both modes, the paragraph gap) and what does not (tables).
-
-### Changed
-
 - **The Minimal task markers set their glyph and colour as two tokens on the item** (`--klartext-task-glyph`, `--klartext-task-color`), read once by the box rule, instead of eighteen rules that each restated the full three-arm selector. Same rendering.
 - The copy button in a code block is placed by `inset-inline-end` alone, not `right` as well; the drawer's option-list reserve drops a nested `calc()`.
 - Comments that told how a rule had behaved before are in the present tense, as README asks; the history stays here.
@@ -35,6 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The scrollbar's width is one token**, `--klartext-scrollbar-size`, read by the scrollbar and by the view-header scrim that stops short of it; the two were linked by `6px` and a comment.
 - **The tag chip's fill is declared once**, on `body, body.is-mobile.theme-dark`, instead of in the typography block and again for a phone in dark mode.
 - The tab-switcher comment points to WORKSPACE & LAYOUT, not to a "TABS" section that does not exist.
+
+### Fixed
+
+- **On a phone, the settings search and the command palette's field look like every other field**: one rule on the ground, no box. Obsidian raised both into a floating pill: a translucent fill, a blur, a drop shadow and a 44px radius, plus a full border around the palette's input (measured in Obsidian 1.14.4 with the phone classes). The theme turns the raised look off through Obsidian's own `--raised` variable and takes the radius and the extra border away; the 1px `--klartext-field-rule` and the 2px accent on focus are the theme's, as elsewhere. See `docs/notes/phone-search-fields.md`.
+- **A callout's content starts right under its title**, on the second line as it does while the source shows. Obsidian's paragraph margin (`--p-spacing`, 1.2em) put a blank line between the title and the first paragraph, so a one-line callout grew from 38.4px to 52.9px when rendered (measured in Obsidian 1.14.4, Live Preview and Reading view). `.callout-content > :first-child` now has no top margin, as its last child already had no bottom margin.
+- **A wrapped line no longer starts with a space** in Live Preview. CodeMirror wraps with `white-space: break-spaces`, and Obsidian's Chromium then moves a space that does not fit onto the next line; in the monospace body that happened whenever a word ended on the right edge, so a quote's, list item's or paragraph's continuation started one cell in (measured in Obsidian 1.14.4: a quote's third line read " by following"). The editor's wrapping content now uses `pre-wrap`, which hangs the space at the end of its line, as Reading view does.
+- **The cursor's level is marked on a level-5 parent's tree segment** in Live Preview. The tree line bridges five parent levels, but the active-guide rule covered only four, so with the cursor on a level-5 item that has children, its segment kept the inactive grey where every shallower level turns active (measured in Obsidian 1.14.4: 0.12 against 0.3 alpha). The level-1 arm now names the indent box the same way as the others (`> .cm-hmd-list-indent > .cm-indent:nth-child(1)`).
+- **A plugin's link keeps its own hover colour.** `a:hover` set the accent with `!important` on every anchor in the app, so a plugin's anchor styled as a button could not keep its own hover at any specificity, the failure `check-button-hover` exists to prevent for buttons. Interface anchors now get the accent hover without `!important`; note content (`.markdown-rendered`, `.markdown-preview-view`) keeps it with `!important`.
+- **A footnote reference no longer makes its line taller.** The `<sup>` was raised at the inherited line height; it now has `line-height: 0`, like the theme's other superscripts.
+- **Tag hover reads `--tag-color-hover`**, the token the theme already defines for it, so a snippet that retunes the token now takes effect in both modes.
+- **The edit-block `</>` icon scales with the text**, like every other mark: `0.875 × --klartext-font-size`, 14px at a 16px body as before.
+- **The Line Height option says what it does.** It was the one Style Settings entry without a description; it now names what follows it (both modes, the paragraph gap) and what does not (tables).
 
 ### Security
 

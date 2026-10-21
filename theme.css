@@ -1628,8 +1628,8 @@ a.tag {
   font-family: var(--font-interface);
 }
 
-.setting-group > .setting-item.setting-item-heading {
-  padding-inline: var(--setting-items-padding-x);
+.vertical-tab-content .setting-item.setting-item-heading {
+  padding-inline: 0;
 }
 
 .vertical-tab-nav-item        { font-size: var(--klartext-ui-md); }

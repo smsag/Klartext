@@ -2282,13 +2282,13 @@ a.tag {
   font-family: var(--font-interface);
 }
 
-/* A settings heading starts where the names of its rows start. Obsidian
-   pads a grouped heading --size-4-4 but its rows --setting-items-padding-x,
-   4px further in (measured in Obsidian 1.13.7). The heading takes the rows'
-   variable so it follows any change of it; ungrouped rows already match.
-   Checked by `node tools/verify.mjs settings`. */
-.setting-group > .setting-item.setting-item-heading {
-  padding-inline: var(--setting-items-padding-x);
+/* A settings heading starts on the tab's one left edge: the outer edge of
+   the cards below it, where a plugin's navigation and intro lines start too.
+   Obsidian pads a heading row like a card (16px, 20px in a group), which hung
+   every heading inside the cards it heads. Every tab, grouped or not, Obsidian's
+   or a plugin's. Checked by `node tools/verify.mjs settings`. */
+.vertical-tab-content .setting-item.setting-item-heading {
+  padding-inline: 0;
 }
 
 /* font-family inherited from .modal-content */

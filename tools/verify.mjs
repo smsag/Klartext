@@ -20,8 +20,8 @@
 //   node tools/verify.mjs teardown              close the tab and move the check note to the trash
 //   node tools/verify.mjs eval "<js>"           run an expression
 //   node tools/verify.mjs settings [tab ...]     open Settings and measure, for every heading in each
-//                                      tab, the left edge of its name against the name of the
-//                                      row below it (light/dark × desktop/mobile body classes);
+//                                      tab, the left edge of its name against the tab's outer card
+//                                      edge, its leftmost card (light/dark × desktop/mobile classes);
 //                                      default tabs: editor, appearance and every plugin tab;
 //                                      a tab id Obsidian does not know is reported, not measured
 // diff and settings exit 1 when they find something, so either can gate a script.
@@ -140,6 +140,10 @@ try {
       const orig = body.className;
       const rows = [];
       const nameLeft = el => el.querySelector('.setting-item-name')?.getBoundingClientRect().left;
+      // The card a row sits on: a group's .setting-items, or the row itself.
+      // The tab's edge is its leftmost card: a plugin may indent the rows of a
+      // fold-out deliberately, and those are no edge to put a heading on.
+      const cardLeft = el => (el.closest('.setting-items') ?? el).getBoundingClientRect().left;
       try {
       for (const id of ids) {
         app.setting.openTabById(id); await wait(500);
@@ -154,10 +158,11 @@ try {
           const root = app.setting.modalEl.querySelector('.vertical-tab-content');
           const items = [...root.querySelectorAll('.setting-item')].filter(e => e.getClientRects().length);
           let worst = 0, n = 0;
-          items.forEach((h, i) => {
+          const rowsLeft = items.filter(e => !e.classList.contains('setting-item-heading')).map(cardLeft);
+          const edge = rowsLeft.length ? Math.min(...rowsLeft) : undefined;
+          items.forEach((h) => {
             if (!h.classList.contains('setting-item-heading')) return;
-            const row = items.slice(i + 1).find(e => !e.classList.contains('setting-item-heading'));
-            const hl = nameLeft(h), rl = row && nameLeft(row);
+            const hl = nameLeft(h), rl = edge;
             if (hl === undefined || rl === undefined) return;   // a custom row without a name element
             const d = hl - rl;
             n++; if (Math.abs(d) > Math.abs(worst)) worst = d;
@@ -175,7 +180,7 @@ try {
     const unknown = out.filter((l) => l.endsWith("no such settings tab"));
     const off = out.filter((l) => !unknown.includes(l) && !/worst offset -?0px$/.test(l));
     if (unknown.length) console.log(unknown.length + " tab ids not found");
-    console.log(off.length ? off.length + " contexts with a heading off its rows" : "EVERY HEADING FLUSH WITH ITS ROWS");
+    console.log(off.length ? off.length + " contexts with a heading off the cards' edge" : "EVERY HEADING ON THE CARDS' EDGE");
     if (off.length || unknown.length) process.exitCode = 1;
   } else if (cmd === "eval") {
     console.log(JSON.stringify(await ev(a1), null, 1));

@@ -8,9 +8,9 @@
 // changed one is a changed pen, so it is stated here as well as in the rule.
 //
 //     node tools/check-highlight.mjs
-import { readFileSync } from "node:fs";
+import { readSource } from "./lib/stylesheet.mjs";
 
-const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
+const css = readSource().replace(/\r\n/g, "\n");
 
 const from = css.indexOf("mark,\n.markdown-preview-view mark,\n.cm-highlight,\n.cm-highlight-color-widget {");
 if (from < 0) {
@@ -40,7 +40,7 @@ const FORBIDDEN = [
 
 const problems = [];
 for (const [name, value] of GEOMETRY) {
-  const m = new RegExp(`${name}:\\s*([^;]+);`).exec(rule);
+  const m = new RegExp(`(?:^|[;{\\s])${name}:\\s*([^;]+);`).exec(rule);
   if (!m) problems.push(`${name} is gone from the stroke`);
   else if (m[1].trim() !== value) problems.push(`${name} is ${m[1].trim()}, was ${value}`);
 }

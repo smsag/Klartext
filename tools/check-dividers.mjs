@@ -9,41 +9,27 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-dividers.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-
-// Strip comments so a selector quoted in prose cannot fail the check.
-const bare = flatten(css);
+// Comments are stripped, so a selector quoted in prose cannot fail the check.
+const bare = readStylesheet();
 
 // Selectors for the sidebar/editor seam. The handle is exempt: it is the one
 // element allowed to paint the line.
 const SEAM = /\.workspace-split\.mod-(left|right)-split(?![\w-])/;
 const HANDLE = /workspace-leaf-resize-handle/;
-const BORDER = /(^|[;{\s])border(-(left|right|inline-start|inline-end))?(-(width|style|color))?\s*:/;
+// `border-inline` is the logical shorthand for both side borders at once.
+const BORDER = /(^|[;{\s])border(-(left|right|inline|inline-start|inline-end))?(-(width|style|color))?\s*:/;
 
 const failures = [];
-let line = 1;
-for (const block of bare.split("}")) {
-  const startLine = line;
-  line += (block.match(/\n/g) || []).length;
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const selector = block.slice(0, brace);
-  const body = block.slice(brace + 1);
+for (const { selector, body, line } of rules(bare)) {
   if (!SEAM.test(selector) || HANDLE.test(selector)) continue;
   for (const decl of body.split(";")) {
     if (!BORDER.test(";" + decl)) continue;
     const value = decl.split(":").slice(1).join(":").trim();
     // A border explicitly switched off is the point of the rule, not a relapse.
     if (/^(none|0|0px|transparent)$/.test(value)) continue;
-    failures.push({
-      line: startLine + (block.slice(0, brace + 1 + body.indexOf(decl)).match(/\n/g) || []).length,
-      selector: selector.trim().replace(/\s+/g, " "),
-      decl: decl.trim(),
-    });
+    failures.push({ line, selector, decl: decl.trim() });
   }
 }
 

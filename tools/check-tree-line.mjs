@@ -26,12 +26,9 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-tree-line.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = flatten(css);
+const bare = readStylesheet();
 
 /** The declarations of the rule a selector opens. */
 function ruleBody(selector) {
@@ -103,11 +100,21 @@ if (bare.includes(".cm-indent::before {") && /\.cm-indent::before\s*\{[^}]*borde
 // only ever joins the next level down.
 const BRIDGE = /\.cm-line\.HyperMD-list-line-(\d+):has\(\+ \.HyperMD-list-line-(\d+)/g;
 let bridges = 0;
+const bridged = new Set();
 for (const m of bare.matchAll(BRIDGE)) {
   bridges += 1;
+  bridged.add(Number(m[1]));
   if (Number(m[2]) !== Number(m[1]) + 1) {
     failures.push(`level ${m[1]} bridges to level ${m[2]}: a segment only ever joins the next level down`);
   }
+}
+
+// Every bridged parent also marks the cursor's level on its segment, or one
+// depth keeps the inactive colour while every other depth shows the active one.
+const ACTIVE = /\.cm-line\.HyperMD-list-line-(\d+):has\(\+ \.HyperMD-list-line-\d+[^{,]*?\.cm-active-indent\)::after/g;
+const active = new Set([...bare.matchAll(ACTIVE)].map((m) => Number(m[1])));
+for (const level of [...bridged].sort()) {
+  if (!active.has(level)) failures.push(`level ${level} bridges to its children but has no rule marking the cursor's level on its segment`);
 }
 const MIN_BRIDGES = 10;
 if (bridges < MIN_BRIDGES) {

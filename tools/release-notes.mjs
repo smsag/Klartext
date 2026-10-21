@@ -16,7 +16,7 @@ if (!/^\d+\.\d+\.\d+$/.test(version ?? "")) {
   process.exit(1);
 }
 
-const lines = readFileSync(new URL("../CHANGELOG.md", import.meta.url), "utf8").split("\n");
+const lines = readFileSync(new URL("../CHANGELOG.md", import.meta.url), "utf8").split(/\r?\n/);
 const start = lines.findIndex((l) => l.startsWith(`## [${version}]`));
 if (start === -1) {
   console.error(`CHANGELOG.md has no "## [${version}]" section. Rename "## [Unreleased]" to it first.`);

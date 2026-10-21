@@ -9,19 +9,11 @@
 // is never taller or shorter than the padding it covers.
 //
 //     node tools/check-drawer-band.mjs
-import { readStylesheet } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const bare = readStylesheet();
 const PADDING = "max(var(--size-4-2), var(--safe-area-inset-top))";
 
-let rule = null;
-for (const block of bare.split("}")) {
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const selector = block.slice(0, brace).replace(/\s+/g, " ").trim();
-  if (selector.split(",").some((a) => a.trim() === "body.is-phone .workspace-drawer-inner")) rule = block.slice(brace + 1);
-}
+const rule = rules(readStylesheet()).findLast(({ arms }) => arms.includes("body.is-phone .workspace-drawer-inner"))?.body ?? null;
 
 const failures = [];
 if (rule === null) failures.push("no rule paints the drawer's top band (body.is-phone .workspace-drawer-inner)");

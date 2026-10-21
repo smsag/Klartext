@@ -16,17 +16,10 @@
 // `::selection`, from the day it was written.
 //
 //     node tools/check-hidden-marks.mjs
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
-const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
-const bare = flatten(css);
-
-/** Every rule as [selectorArms, body]. Flat enough for this stylesheet's selection rules. */
-const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [
-  m[1].split(",").map((s) => s.trim()).filter(Boolean),
-  m[2],
-]);
+/** Every rule as [selectorArms, body]. */
+const rules = parse(readStylesheet()).map((r) => [r.arms, r.body]);
 
 /** The marks the theme hides by colour, by the class each one carries. */
 const HIDDEN = [".cm-formatting-header", ".cm-formatting-quote"];
@@ -50,9 +43,4 @@ for (const mark of HIDDEN) {
   }
 }
 
-if (problems.length > 0) {
-  console.error("src/theme.css: a hidden mark reappears under selection");
-  for (const p of problems) console.error(`  - ${p}`);
-  process.exit(1);
-}
-console.log(`check-hidden-marks: ${HIDDEN.length} hidden marks stay hidden under selection.`);
+report("a hidden mark reappears under selection", problems, `check-hidden-marks: ${HIDDEN.length} hidden marks stay hidden under selection.`);

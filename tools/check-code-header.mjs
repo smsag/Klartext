@@ -18,15 +18,9 @@
 // indent that hides "language-".
 //
 //     node tools/check-code-header.mjs
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
-const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
-const bare = flatten(css);
-const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
-  arms: m[1].split(",").map((s) => s.trim()).filter(Boolean),
-  body: m[2],
-}));
+const rules = parse(readStylesheet());
 
 const failures = [];
 
@@ -53,9 +47,4 @@ else {
     failures.push("the label is drawn on a <pre> with more than one class, whose class string is not a language");
 }
 
-if (failures.length > 0) {
-  console.error("src/theme.css: code block header");
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("code block header: drawn in notes only, the language read from the block.");
+report("code block header", failures, "code block header: drawn in notes only, the language read from the block.");

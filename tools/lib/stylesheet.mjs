@@ -10,6 +10,9 @@
 // here is a position in src/theme.css.
 import { readFileSync } from "node:fs";
 
+/** The path every guard names in its messages, relative to the repository. */
+export const FILE = "src/theme.css";
+
 const WRAPPERS = /^@(media|supports|container|layer|document)\b/;
 
 export function flatten(css) {
@@ -34,6 +37,53 @@ export function flatten(css) {
   return out.join("");
 }
 
-export function readStylesheet(file = new URL("../../src/theme.css", import.meta.url)) {
-  return flatten(readFileSync(file, "utf8"));
+/** src/theme.css, read from the repository whatever the working directory. */
+export function readSource(file = new URL("../../src/theme.css", import.meta.url)) {
+  return readFileSync(file, "utf8");
+}
+
+export function readStylesheet(file) {
+  return flatten(readSource(file));
+}
+
+/** Every rule of a flattened stylesheet, with the line its selector starts on.
+ *
+ *  `line` is the selector's own line, not the line after the previous `}`:
+ *  counting from there put every reported position on the blank line or the
+ *  comment above the rule. */
+export function rules(bare) {
+  const found = [];
+  let line = 1;
+  for (const block of bare.split("}")) {
+    const brace = block.indexOf("{");
+    if (brace !== -1) {
+      const selector = block.slice(0, brace);
+      const lead = selector.length - selector.trimStart().length;
+      found.push({
+        selector: selector.trim().replace(/\s+/g, " "),
+        arms: selector.split(",").map((a) => a.trim().replace(/\s+/g, " ")).filter(Boolean),
+        body: block.slice(brace + 1),
+        line: line + lineAt(selector, lead) - 1,
+      });
+    }
+    line += lineAt(block, block.length) - 1;
+  }
+  return found;
+}
+
+/** The 1-based line of a character offset. */
+export function lineAt(text, offset) {
+  let line = 1;
+  for (let i = 0; i < offset && i < text.length; i++) if (text.charCodeAt(i) === 10) line++;
+  return line;
+}
+
+/** Print a guard's failures and exit non-zero; the one shape every guard reports in. */
+export function report(title, failures, ok) {
+  if (failures.length > 0) {
+    console.error(`${FILE}: ${title}`);
+    for (const f of failures) console.error(`  - ${f}`);
+    process.exit(1);
+  }
+  console.log(ok);
 }

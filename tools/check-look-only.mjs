@@ -22,12 +22,11 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-look-only.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
+import { flatten, readSource, report } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
+const css = readSource();
 const settings = /\/\* @settings([\s\S]*?)\*\//.exec(css)?.[1] ?? "";
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = flatten(css);
 
 const failures = [];
 
@@ -46,9 +45,4 @@ if (/--traffic-lights-offset-[xy]\s*:/.test(bare)) {
   failures.push("the theme sets --traffic-lights-offset-*: placing the window buttons is the plugin's job");
 }
 
-if (failures.length > 0) {
-  console.error(`${FILE}: the theme is doing the plugin's job`);
-  for (const f of [...new Set(failures)]) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("look only: no furniture switches and no window behaviour in the theme.");
+report("the theme is doing the plugin's job", [...new Set(failures)], "look only: no furniture switches and no window behaviour in the theme.");

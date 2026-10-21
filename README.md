@@ -137,7 +137,8 @@ re-reads the file. Switching theme away and back, or restarting Obsidian, refres
 
 A few things are deliberately not settings. The page is white. Nested lists step in by exactly one
 marker column, so nested marks land on the parent's text edge; the interface
-size follows the body size (a snippet can set `--klartext-ui-font-size` outright); the paragraph gap
+size follows the body size (a snippet can set `--klartext-ui-font-size` outright, on `body` for the
+desktop and on `body.is-mobile` for a phone or tablet); the paragraph gap
 is what keeps Live Preview and Reading view in step; Mermaid labels sit at 0.9 of
 the body size; diagrams are centred; the scroll edge under the header is soft.
 Each still has a token, so a CSS snippet can change it:
@@ -187,6 +188,10 @@ what keeps the caret visible and the layout the same in every state.
 Measured values were taken in the running Obsidian over Chromium's debugging port
 (`open -a Obsidian --args --remote-debugging-port=9222`), where the caret position,
 the inline hanging indent and screenshots of the real editor can be read directly.
+**While that port is open, any process on the machine can run code inside Obsidian**,
+with the vault and the file system in reach: open it only for a check, and quit and
+restart Obsidian normally afterwards. `tools/verify.mjs` talks to `127.0.0.1` only
+and refuses a debugger socket on any other host or port.
 `tools/verify.mjs` uses the same port to check that a change alters nothing it
 should not: it opens `tools/check-note.md`, records the computed style of every
 element in Live Preview and Reading view, light and dark, with and without the
@@ -195,13 +200,19 @@ the sequence; a refactor is done when the diff is empty. `node tools/verify.mjs
 settings` opens Settings and measures every heading's name against the name of
 the row below it, in each tab, light and dark, desktop and mobile; it prints
 the worst offset per context and ends with `EVERY HEADING FLUSH WITH ITS ROWS`.
+`diff` and `settings` exit with status 1 when they find something, so either can
+gate a script; `teardown` moves the check note to the system trash.
 
 `.stylelintrc.json` catches duplicate selectors, duplicate or shorthand-overridden
 declarations and empty blocks (`npx stylelint src/theme.css`). Its
 descending-specificity rule is off on purpose: restating a selector at Obsidian's
 own specificity, later in the cascade, is how this theme wins ties.
-`git config core.hooksPath .githooks` runs the check before any commit that
-touches the stylesheet.
+The `tools/check-*.mjs` guards are static checks of `src/theme.css` that run without
+Obsidian, from any directory; what they share (reading and flattening the stylesheet,
+splitting it into rules with their line numbers) is in `tools/lib/stylesheet.mjs`.
+`git config core.hooksPath .githooks` runs what CI runs before any commit that
+touches the stylesheet, the build or the guards: stylelint, every guard, and a
+rebuild that stops the commit if the staged `theme.css` is stale.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.

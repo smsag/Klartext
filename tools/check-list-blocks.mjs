@@ -14,12 +14,9 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-list-blocks.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = flatten(css);
+const bare = readStylesheet();
 
 const fail = (...msg) => {
   console.error(`${FILE}: ${msg.join("\n  ")}`);
@@ -37,15 +34,29 @@ const VERTICAL_MARGIN =
 const found = {};
 for (const b of BLOCKS) found[b.name] = { prose: [], item: [] };
 
-let line = 1;
-for (const block of bare.split("}")) {
-  const startLine = line;
-  line += (block.match(/\n/g) || []).length;
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const selector = block.slice(0, brace);
-  const body = block.slice(brace + 1);
+/** Is every vertical component of this margin zero? `margin: a b c d` reads
+ *  top and bottom from the first and third value, `a b c` likewise, and
+ *  `a b` / `a` from the first; a longhand is the value itself. */
+const ZERO = /^(0|0px|0em|0rem)$/;
+/** A value's space-separated components, keeping `calc(a + b)` whole. */
+function components(value) {
+  const out = [""];
+  let depth = 0;
+  for (const c of value.replace(/!important/, "").trim()) {
+    if (c === "(") depth++;
+    else if (c === ")") depth--;
+    if (/\s/.test(c) && depth === 0) { if (out[out.length - 1]) out.push(""); }
+    else out[out.length - 1] += c;
+  }
+  return out.filter(Boolean);
+}
+function verticalZero(prop, value) {
+  const v = components(value);
+  if (prop) return v.every((x) => ZERO.test(x));   // margin-block takes one or two values, both vertical
+  return ZERO.test(v[0]) && ZERO.test(v.length >= 3 ? v[2] : v[0]);
+}
 
+for (const { selector, body, line: startLine } of rules(bare)) {
   for (const b of BLOCKS) {
     if (!b.base.test(selector)) continue;
     const inItem = b.item.test(selector);
@@ -53,15 +64,11 @@ for (const block of bare.split("}")) {
       const m = VERTICAL_MARGIN.exec(";" + decl);
       if (!m) continue;
       const prop = m[2] || "";
-      const value = m[3].trim();
-      // `margin: a b c d` and `margin: a b` both carry a vertical component;
       // `margin-inline*`/`margin-left|right` never reach this regex.
-      const zero = /^(0|0px|0em)(\s+(0|0px|0em|auto|[\w.%-]+))*$/.test(value) &&
-        /^(0|0px|0em)/.test(value);
-      if (zero && !prop) continue;
+      if (verticalZero(prop, m[3])) continue;
       (inItem ? found[b.name].item : found[b.name].prose).push({
         line: startLine,
-        selector: selector.trim().replace(/\s+/g, " ").slice(0, 70),
+        selector: selector.slice(0, 70),
         important: /!important/.test(decl),
       });
     }

@@ -645,6 +645,16 @@ body.is-mobile {
   color: var(--text-normal);
 }
 
+/* A wrapped line never starts with a space. CodeMirror wraps with
+   `white-space: break-spaces`, and Obsidian's Chromium then moves a space
+   that does not fit onto the next line. In the monospace body every word
+   that ends on the right edge does that, so a quote's, list item's or
+   paragraph's continuation started one cell in. `pre-wrap` hangs the space
+   at the end of the line it follows, as Reading view does. */
+.markdown-source-view.mod-cm6 .cm-content.cm-lineWrapping {
+  white-space: pre-wrap;
+}
+
 /* NESTED editors — a Live Preview table cell mounts a second CodeMirror
    editor; `.cm-editor .cm-editor` matches only that one. Without this it
    inherits the main editor's background, font, padding and top padding.

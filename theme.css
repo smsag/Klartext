@@ -446,6 +446,10 @@ body.is-mobile {
   color: var(--text-normal);
 }
 
+.markdown-source-view.mod-cm6 .cm-content.cm-lineWrapping {
+  white-space: pre-wrap;
+}
+
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-scroller,
 .markdown-source-view.mod-cm6 .cm-editor .cm-editor .cm-content {

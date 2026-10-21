@@ -2033,6 +2033,10 @@ body.is-mobile .mobile-toolbar-floating-options {
   margin-bottom: 0 !important;
 }
 
+.callout-content > :first-child {
+  margin-top: 0 !important;
+}
+
 .edit-block-button {
   color: var(--text-faint) !important;
 }

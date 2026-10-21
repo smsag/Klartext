@@ -2874,6 +2874,12 @@ body.is-mobile .mobile-toolbar-floating-options {
 .callout-content > :last-child {
   margin-bottom: 0 !important;   /* the block family's bottom gap is !important too (READING VIEW); a callout ending in a quote or a code block kept 36px at its foot */
 }
+/* The first block sits right under the title, on the line it has while the
+   source shows: Obsidian's `.markdown-rendered p` margin (--p-spacing) would
+   put a blank line between them. */
+.callout-content > :first-child {
+  margin-top: 0 !important;
+}
 
 /* ------------------------------------------------------------------
    EDIT-BLOCK ( </> ) BUTTON

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Every settings heading starts on the cards' outer edge.** Obsidian pads a heading row like a card, so headings hung inside the cards they head: 52px against cards at 32px in Obsidian's own grouped tabs, 48px in a plugin's ungrouped tab, while a plugin's navigation and intro lines start on the edge (measured in Obsidian 1.14.4). One rule now takes the heading's side padding away in every settings tab, grouped or not, Obsidian's or a plugin's. This replaces the earlier rule that aligned a grouped heading with the names inside its cards; `check-settings-heading` and `verify.mjs settings` now hold the outer edge (measured: 0px off in every tab, light and dark, desktop and phone classes; 40 contexts off before).
+
 ### Fixed
 
 - **A callout's content starts right under its title**, on the second line as it does while the source shows. Obsidian's paragraph margin (`--p-spacing`, 1.2em) put a blank line between the title and the first paragraph, so a one-line callout grew from 38.4px to 52.9px when rendered (measured in Obsidian 1.14.4, Live Preview and Reading view). `.callout-content > :first-child` now has no top margin, as its last child already had no bottom margin.

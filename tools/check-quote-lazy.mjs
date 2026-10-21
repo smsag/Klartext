@@ -14,11 +14,9 @@
 // has a lazy-line rule padding it by exactly that many columns.
 //
 //     node tools/check-quote-lazy.mjs
-import { readFileSync } from "node:fs";
+import { readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
-const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
-const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [m[1].split(",").map((s) => s.trim()), m[2]]);
+const rules = parse(readStylesheet()).map((r) => [r.arms, r.body]);
 
 const failures = [];
 for (const level of [1, 2, 3]) {
@@ -29,9 +27,4 @@ for (const level of [1, 2, 3]) {
     failures.push(`a lazy line at level ${level} is not padded by ${level} column(s) (${want})`);
 }
 
-if (failures.length > 0) {
-  console.error("src/theme.css: lazy quote lines");
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("quote lazy lines: each level starts on its quote's text edge.");
+report("lazy quote lines", failures, "quote lazy lines: each level starts on its quote's text edge.");

@@ -811,7 +811,6 @@ body {
 
 .markdown-rendered pre .copy-code-button {
   top: var(--klartext-code-inset);
-  right: 0;
   inset-inline-end: 0;
   width: var(--klartext-code-btn);
   height: var(--klartext-code-btn);
@@ -959,7 +958,10 @@ a,
   transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
-a:hover,
+a:hover {
+  color: var(--text-accent-hover);
+}
+.markdown-rendered a:hover,
 .markdown-preview-view a:hover {
   color: var(--text-accent-hover) !important;
 }
@@ -1326,10 +1328,11 @@ hr,
   pointer-events: none;
 }
 
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent.cm-active-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 > .cm-hmd-list-indent > .cm-indent:nth-child(1).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 > .cm-hmd-list-indent > .cm-indent:nth-child(2).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 > .cm-hmd-list-indent > .cm-indent:nth-child(3).cm-active-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-hmd-list-indent > .cm-indent:nth-child(4).cm-active-indent)::after {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-hmd-list-indent > .cm-indent:nth-child(4).cm-active-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-5:has(+ .HyperMD-list-line-6 > .cm-hmd-list-indent > .cm-indent:nth-child(5).cm-active-indent)::after {
   width: var(--indentation-guide-width-active);
   background-color: var(--indentation-guide-color-active);
 }
@@ -1459,10 +1462,10 @@ a.tag {
 }
 
 .tag:hover {
-  color: var(--interactive-accent) !important;
+  color: var(--tag-color-hover) !important;
 }
 .cm-hashtag { font-family: var(--font-interface); }
-.cm-hashtag:hover { color: var(--interactive-accent); }
+.cm-hashtag:hover { color: var(--tag-color-hover); }
 
 .embedded-backlinks,
 .backlink-pane,
@@ -1757,25 +1760,28 @@ body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-tas
   font-size: calc(var(--checkbox-size) * 0.75);
   font-weight: 700;
   line-height: 1;
+  content: var(--klartext-task-glyph);
+  color: var(--klartext-task-color);
 }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task=">"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task=">"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task=">"] .task-list-item-checkbox)::after { content: "→"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="<"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="<"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="<"] .task-list-item-checkbox)::after { content: "←"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="?"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="?"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="?"] .task-list-item-checkbox)::after { content: "?"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="!"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="!"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="!"] .task-list-item-checkbox)::after { content: "!"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="*"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="*"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="*"] .task-list-item-checkbox)::after { content: "★"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="\""] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="\""] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="\""] .task-list-item-checkbox)::after { content: "”"; color: var(--text-muted); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="l"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="l"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="l"] .task-list-item-checkbox)::after { content: "◎"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="b"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="b"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="b"] .task-list-item-checkbox)::after { content: "▮"; color: var(--color-orange); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="i"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="i"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="i"] .task-list-item-checkbox)::after { content: "i"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="S"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="S"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="S"] .task-list-item-checkbox)::after { content: "$"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="I"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="I"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="I"] .task-list-item-checkbox)::after { content: "✦"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="p"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="p"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="p"] .task-list-item-checkbox)::after { content: "+"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="c"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="c"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="c"] .task-list-item-checkbox)::after { content: "−"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="f"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="f"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="f"] .task-list-item-checkbox)::after { content: "▲"; color: var(--color-orange); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="k"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="k"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="k"] .task-list-item-checkbox)::after { content: "⚷"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="w"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="w"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="w"] .task-list-item-checkbox)::after { content: "♛"; color: var(--color-purple); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="u"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="u"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="u"] .task-list-item-checkbox)::after { content: "↑"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="d"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="d"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="d"] .task-list-item-checkbox)::after { content: "↓"; color: var(--color-red); }
+
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task=">"] { --klartext-task-glyph: "→"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="<"] { --klartext-task-glyph: "←"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="?"] { --klartext-task-glyph: "?"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="!"] { --klartext-task-glyph: "!"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="*"] { --klartext-task-glyph: "★"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="\""] { --klartext-task-glyph: "”"; --klartext-task-color: var(--text-muted); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="l"] { --klartext-task-glyph: "◎"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="b"] { --klartext-task-glyph: "▮"; --klartext-task-color: var(--color-orange); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="i"] { --klartext-task-glyph: "i"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="S"] { --klartext-task-glyph: "$"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="I"] { --klartext-task-glyph: "✦"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="p"] { --klartext-task-glyph: "+"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="c"] { --klartext-task-glyph: "−"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="f"] { --klartext-task-glyph: "▲"; --klartext-task-color: var(--color-orange); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="k"] { --klartext-task-glyph: "⚷"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="w"] { --klartext-task-glyph: "♛"; --klartext-task-color: var(--color-purple); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="u"] { --klartext-task-glyph: "↑"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="d"] { --klartext-task-glyph: "↓"; --klartext-task-color: var(--color-red); }
 
 ::-webkit-scrollbar               { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track         { background: transparent; }
@@ -1910,7 +1916,7 @@ body.is-mobile .workspace-drawer-header {
 }
 body.is-phone .workspace-drawer-tab-options-list {
 
-  padding-bottom: calc(max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85)) + var(--size-4-2));
+  padding-bottom: calc(max(var(--touch-size-l), var(--klartext-ui-font-size) * 2.85) + var(--size-4-2));
 }
 
 body.is-phone .menu-grabber {
@@ -2015,8 +2021,8 @@ body.is-mobile .mobile-toolbar-floating-options {
 
 .edit-block-button svg,
 .edit-block-button .svg-icon {
-  width: 14px !important;
-  height: 14px !important;
+  width: calc(var(--klartext-font-size) * 0.875) !important;
+  height: calc(var(--klartext-font-size) * 0.875) !important;
 }
 
 .callout                                          { --callout-color: rgb(115 113 108); }
@@ -2243,6 +2249,7 @@ mark code,
 .footnote-ref {
   color: var(--interactive-accent);
   font-size: 0.75em;
+  line-height: 0;
   vertical-align: super;
   text-decoration: none;
   border-bottom: none;

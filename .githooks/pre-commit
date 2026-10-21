@@ -1,15 +1,27 @@
 #!/bin/sh
-# Lint and guard the stylesheet before a commit that touches it. Enable once
-# per clone:
+# Lint, guard and rebuild before a commit that touches the stylesheet, the
+# build or the guards. Enable once per clone:
 #     git config core.hooksPath .githooks
-# Runs for a change to the stylesheet.
-# stylelint is skipped quietly when npx is not installed; every tools/check-*
-# guard is plain node with no dependencies, so they always run.
-if git diff --cached --name-only | grep -q '^src/theme\.css$'; then
-  if command -v npx >/dev/null 2>&1; then
-    npx --yes stylelint src/theme.css || { echo "stylelint failed; commit aborted"; exit 1; }
-  fi
-  for guard in tools/check-*.mjs; do
-    node "$guard" || { echo "$guard failed; commit aborted"; exit 1; }
-  done
+# The same checks as CI (.github/workflows/ci.yml), so a commit that passes
+# here passes there: stylelint at CI's pinned major (skipped quietly when npx
+# is not installed), every tools/check-* guard (plain node, no dependencies),
+# and a theme.css that is what fonts/embed.py builds from src/theme.css.
+if ! git diff --cached --name-only | grep -Eq '^(src/theme\.css|theme\.css|fonts/embed\.py|tools/)'; then
+  exit 0
+fi
+
+if command -v npx >/dev/null 2>&1; then
+  npx --yes stylelint@17 src/theme.css || { echo "stylelint failed; commit aborted"; exit 1; }
+fi
+
+status=0
+for guard in tools/check-*.mjs; do
+  node "$guard" || { echo "$guard failed"; status=1; }
+done
+[ "$status" -eq 0 ] || { echo "guards failed; commit aborted"; exit 1; }
+
+python3 fonts/embed.py >/dev/null || { echo "fonts/embed.py failed; commit aborted"; exit 1; }
+if ! git diff --quiet -- theme.css; then
+  echo "theme.css was stale and has been rebuilt; review it, git add theme.css, and commit again."
+  exit 1
 fi

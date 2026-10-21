@@ -12,23 +12,16 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-sidebar-tabs.mjs
 // The pre-commit hook and the release workflow run every tools/check-*.mjs.
-import { readStylesheet } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readStylesheet();
+const all = rules(readStylesheet());
 
 /** Every declaration of the rules whose selector list contains `selector`. */
 function declarations(selector) {
   const found = [];
-  for (const block of css.split("}")) {
-    const brace = block.indexOf("{");
-    if (brace === -1) continue;
-    const selectors = block
-      .slice(0, brace)
-      .split(",")
-      .map((s) => s.trim().replace(/\s+/g, " "));
-    if (!selectors.includes(selector)) continue;
-    for (const decl of block.slice(brace + 1).split(";")) {
+  for (const { arms, body } of all) {
+    if (!arms.includes(selector)) continue;
+    for (const decl of body.split(";")) {
       const colon = decl.indexOf(":");
       if (colon === -1) continue;
       found.push([decl.slice(0, colon).trim(), decl.slice(colon + 1).trim()]);

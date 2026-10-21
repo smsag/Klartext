@@ -15,11 +15,9 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-field-rule.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
+import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+const bare = readStylesheet();
 
 /** The declarations of the block a selector OPENS, comments already stripped.
  *
@@ -53,7 +51,7 @@ function rgb(hex) {
 
 const channel = (v) => {
   const c = v / 255;
-  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 };
 const luminance = ([r, g, b]) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 function contrast(a, b) {
@@ -145,8 +143,12 @@ for (const state of ["hover", "focus"]) {
     failures.push(`:${state} must be stated at Obsidian's own specificity (with :not(:disabled)), or it loses the boundary to app.css`);
   }
 }
+// A hover rule this cannot find is a failure, not a pass: grouped with another
+// selector it is no longer the block this reads, and the check would be skipped.
 const hover = block(".search-input-container input:not(:disabled):hover {");
-if (hover !== null && !/border-bottom-color:\s*var\(--klartext-field-rule\)/.test(hover)) {
+if (hover === null) {
+  failures.push("hover must be its own rule, `.search-input-container input:not(:disabled):hover { … }`, so this can read it");
+} else if (!/border-bottom-color:\s*var\(--klartext-field-rule\)/.test(hover)) {
   failures.push("hover must hold the boundary at --klartext-field-rule");
 }
 

@@ -18,12 +18,9 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-list-indent.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = flatten(css);
+const bare = readStylesheet();
 
 const fail = (...msg) => {
   console.error(`${FILE}: ${msg.join("\n  ")}`);

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The cursor's level is marked on a level-5 parent's tree segment** in Live Preview. The tree line bridges five parent levels, but the active-guide rule covered only four, so with the cursor on a level-6 item that one segment kept the inactive grey. The level-1 arm now names the indent box the same way as the others (`> .cm-hmd-list-indent > .cm-indent:nth-child(1)`).
+- **A plugin's link keeps its own hover colour.** `a:hover` set the accent with `!important` on every anchor in the app, so a plugin's anchor styled as a button could not keep its own hover at any specificity, the failure `check-button-hover` exists to prevent for buttons. Interface anchors now get the accent hover without `!important`; note content (`.markdown-rendered`, `.markdown-preview-view`) keeps it with `!important`.
+- **A footnote reference no longer makes its line taller.** The `<sup>` was raised at the inherited line height; it now has `line-height: 0`, like the theme's other superscripts.
+- **Tag hover reads `--tag-color-hover`**, the token the theme already defines for it, so a snippet that retunes the token now takes effect in both modes.
+- **The edit-block `</>` icon scales with the text**, like every other mark: `0.875 × --klartext-font-size`, 14px at a 16px body as before.
+
+### Changed
+
+- **The Minimal task markers set their glyph and colour as two tokens on the item** (`--klartext-task-glyph`, `--klartext-task-color`), read once by the box rule, instead of eighteen rules that each restated the full three-arm selector. Same rendering.
+- The copy button in a code block is placed by `inset-inline-end` alone, not `right` as well; the drawer's option-list reserve drops a nested `calc()`.
+- Comments that told how a rule had behaved before are in the present tense, as README asks; the history stays here.
+
+### Security
+
+- **`tools/verify.mjs` talks to the debugging port on `127.0.0.1` only** and refuses a debugger socket on any other host or port, so a `/json` answered by something else cannot hand it another host. Snapshot names are restricted to `[\w.-]` and passed into the page as JSON: a name with a quote in it broke out of a string in the code evaluated inside Obsidian. README and the script now say that while the port is open any local process can run code in Obsidian, and to restart it normally afterwards.
+
+### Tooling
+
+- **`verify.mjs diff` counts every difference it prints.** Element-count changes, elements only in the second snapshot, and properties only one side reported were listed but not counted, so a run could end in `NO DIFFERENCES` under a list of differences. A context or root that only one snapshot has is reported rather than crashing the comparison.
+- **`verify.mjs snapshot` and `settings` restore the window's body classes, view mode and tab even when they fail**, instead of leaving Obsidian in emulated dark or phone layout. `settings` skips a row without a name element rather than aborting.
+- `verify.mjs` checks its arguments and prints usage; reports a missing debugging port with the command to relaunch Obsidian; times out a CDP call after 60 seconds instead of hanging; refreshes the check note when `setup` finds an outdated copy, and says whether it created, refreshed or reused it; moves the note to the system trash on `teardown` instead of deleting it; accepts a window title of the form `Obsidian v1.x` and lists the page titles it saw when none matches; and exits with status 1 when `diff` or `settings` finds something.
+- **Every guard runs from any directory.** Eight read `src/theme.css` relative to the working directory and failed with `ENOENT` outside the repository root.
+- **Guards report the line a rule's selector is on.** They counted from the end of the previous rule, so every position pointed at the blank line or comment above.
+- **`tools/lib/stylesheet.mjs` holds what the guards share**: `readSource()`, `rules()` (each rule's selector, arms, body and line) and `report()`. All eighteen guards read the stylesheet through it, so a rule inside `@media` reads the same in each; check-fonts, check-quote-lazy, check-field-rule and check-heading-gutter stripped comments by hand and saw the `@media` prelude as part of the first rule's selector.
+- **`check-list-blocks` reads a `margin` shorthand's bottom value.** `margin: 0 0 1em` counted as zero because it started with 0, so the guard passed without the list-item override it exists to require. Components are split at the top level, so `calc(a + b)` stays one value.
+- **`check-field-rule` fails when it cannot find the hover rule** instead of skipping that check, and uses the sRGB threshold 0.04045 in its luminance formula.
+- **`check-tree-line` requires an active-guide rule for every bridged level**, the gap the level-5 fix above closes.
+- `check-dividers` also catches the `border-inline` shorthand; `check-image-align` prints a verdict when it passes; `check-highlight` matches a geometry token only at a declaration's start and ignores CRLF line endings; `release-notes.mjs` reads a CHANGELOG with CRLF line endings.
+- **The pre-commit hook runs what CI runs**: stylelint pinned to CI's major (`stylelint@17`), every guard (all of them, reporting each failure), and a rebuild that stops the commit when the staged `theme.css` is stale. It fires for changes to the stylesheet, `theme.css`, `fonts/embed.py` or `tools/`, not only `src/theme.css`.
+- **CI and the release workflow run every guard and report each failure** as an annotation, instead of stopping at the first.
+- **`fonts/embed.py` builds the same bytes on every platform**: it reads and writes UTF-8 with LF line endings, where it used the locale's encoding and Windows wrote CRLF. It replaces `theme.css` in one step, keeping the file's mode, so an interrupted build never leaves a truncated file; names a missing font file instead of raising a traceback; refuses unknown arguments with its usage; and its docstring no longer says it appends to `src/theme.css`.
+- `docs/notes/marker-column.md` describes the quote bars to six levels and lazy lines; `docs/notes/embedded-fonts.md` covers comment stripping and the Klartext Marks faces; README documents the guards' shared library, the hook, `verify.mjs`'s exit codes, and that a snippet sets `--klartext-ui-font-size` on `body.is-mobile` for a phone.
+
 ## [2.6.0] — 2026-10-10
 
 ### Added

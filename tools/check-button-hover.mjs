@@ -19,12 +19,9 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-button-hover.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
-import { flatten } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = flatten(css);
+const bare = readStylesheet();
 
 const fail = (...msg) => {
   console.error(`${FILE}: ${msg.join("\n  ")}`);
@@ -51,17 +48,10 @@ function requiresCta(selector) {
 }
 
 const offenders = [];
-let line = 1;
-for (const block of bare.split("}")) {
-  const startLine = line;
-  line += (block.match(/\n/g) || []).length;
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const selectorList = block.slice(0, brace);
-  const body = block.slice(brace + 1);
+for (const { arms, body, line: startLine } of rules(bare)) {
   if (!/!important/.test(body)) continue;
 
-  for (const selector of selectorList.split(",")) {
+  for (const selector of arms) {
     // The styled element is a bare `button`. `.mod-cta` is Obsidian's own
     // dialog chrome, which plugins opt into deliberately — exempt.
     if (!/^button(?![\w-])/.test(subject(selector))) continue;

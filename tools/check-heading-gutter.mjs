@@ -13,9 +13,11 @@
 // nothing showed it.
 //
 //     node tools/check-heading-gutter.mjs
-import { readFileSync } from "node:fs";
+import { readStylesheet, rules } from "./lib/stylesheet.mjs";
 
-const css = readFileSync(new URL("../src/theme.css", import.meta.url), "utf8");
+// Comments blanked and @media wrappers flattened, so a selector quoted in a
+// comment never counts as a rule and a rule inside @media reads like any other.
+const css = readStylesheet();
 
 /** The rules that build the column, by a selector fragment each one carries. */
 const GUTTER = [
@@ -33,8 +35,6 @@ for (const fragment of GUTTER) {
     const open = css.indexOf("{", at);
     const close = css.indexOf("}", open);
     if (open < 0 || close < 0) continue;
-    // Only the rule this selector OPENS, never a comment mentioning it.
-    if (css.slice(at, open).includes("*/")) continue;
     found += 1;
     const body = css.slice(open + 1, close);
     for (const m of body.matchAll(BAD_UNIT)) {
@@ -49,7 +49,7 @@ for (const fragment of GUTTER) {
 // Hide Heading Level Marks takes the badge and the chevron's shift away and
 // nothing else: the column stays, or every block edge moves with the switch.
 const HIDE = "body.klartext-no-heading-marks";
-const hideRules = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].includes(HIDE));
+const hideRules = rules(css).filter((r) => r.selector.includes(HIDE)).map((r) => [null, r.selector, r.body]);
 if (!hideRules.some((m) => m[1].includes("HyperMD-header::before") && /content:\s*none/.test(m[2]))) {
   problems.push(`${HIDE}\n      no rule removes the badge`);
 }

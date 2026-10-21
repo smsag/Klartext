@@ -12,9 +12,8 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-image-align.mjs
-import { readStylesheet } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules as parse } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
 const bare = readStylesheet();
 const WORDS = ["left", "center", "right"];
 const spellings = (w) => [
@@ -27,14 +26,7 @@ const spellings = (w) => [
 ];
 
 const failures = [];
-const rules = [];
-for (const block of bare.split("}")) {
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const selector = block.slice(0, brace).replace(/\s+/g, " ").trim();
-  if (!/\.image-embed:is\(/.test(selector) || !/\[alt/.test(selector)) continue;
-  rules.push({ selector, body: block.slice(brace + 1) });
-}
+const rules = parse(bare).filter(({ selector }) => /\.image-embed:is\(/.test(selector) && /\[alt/.test(selector));
 
 if (rules.length === 0) failures.push("no image-alignment rule found");
 
@@ -60,3 +52,4 @@ if (failures.length) {
   for (const f of failures) console.error(`  ${f}`);
   process.exit(1);
 }
+console.log(`image alignment: ${rules.length} rules, every word in all six spellings, no block display in Live Preview.`);

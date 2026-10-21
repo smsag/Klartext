@@ -23,25 +23,20 @@
 // Static, so it runs without Obsidian:
 //     node tools/check-fonts.mjs
 // The pre-commit hook runs it for any commit touching src/theme.css.
-import { readFileSync } from "node:fs";
+import { lineAt, readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const css = readFileSync(FILE, "utf8");
-const bare = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
-const lineOf = (i) => bare.slice(0, i).split("\n").length;
+const bare = readStylesheet();
+const all = rules(bare);
 
 const failures = [];
 
 for (const m of bare.matchAll(/var\(\s*--font-(interface|monospace)-theme\s*\)/g)) {
   const combined = `--font-${m[1]}`;
-  failures.push(`line ${lineOf(m.index)}: reads ${combined}-theme, which skips the user's own ${m[1]} font — read var(${combined})`);
+  failures.push(`line ${lineAt(bare, m.index)}: reads ${combined}-theme, which skips the user's own ${m[1]} font — read var(${combined})`);
 }
 
 // The body face: the editor and reading view both read it, the marks' stack ends in it.
-const reads = (selector, value) =>
-  [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].some(
-    ([, sel, body]) => sel.split(",").some((s) => s.trim() === selector) && body.includes(value),
-  );
+const reads = (selector, value) => all.some(({ arms, body }) => arms.includes(selector) && body.includes(value));
 for (const sel of [".cm-content", ".markdown-preview-view"]) {
   if (!reads(sel, "var(--font-text-theme)")) {
     failures.push(`${sel} no longer reads --font-text-theme: the marks are laid out on that face's cell`);
@@ -62,18 +57,13 @@ for (const sel of [".callout-title", ".embed-title"]) {
 if (!reads("body.klartext-title-sans", "--inline-title-font: var(--klartext-heading-font)")) {
   failures.push("the sans note title does not read --klartext-heading-font: it would follow the interface font, not the headings below it");
 }
-for (const [, sel, body] of bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-  if (/\.cm-header\b|\bh[1-6]\b|inline-title/.test(sel) && /var\(--font-interface\)/.test(body)) {
-    failures.push(`${sel.trim().split(/\s*,\s*/)[0]}…: a heading reads --font-interface`);
+for (const { arms, body, line } of all) {
+  if (arms.some((a) => /\.cm-header\b|\bh[1-6]\b|inline-title/.test(a)) && /var\(--font-interface\)/.test(body)) {
+    failures.push(`line ${line}: ${arms[0]}…: a heading reads --font-interface`);
   }
 }
 if (!/--klartext-mark-font:\s*'Klartext Marks',\s*var\(--font-text-theme\)/.test(bare)) {
   failures.push("--klartext-mark-font no longer falls back to the body face: its digits must sit on the body's cell");
 }
 
-if (failures.length > 0) {
-  console.error(`${FILE}: fonts`);
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("fonts: the interface and code fonts follow Obsidian's setting; the body keeps its face.");
+report("fonts", failures, "fonts: the interface and code fonts follow Obsidian's setting; the body keeps its face.");

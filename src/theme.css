@@ -184,10 +184,9 @@ body.theme-dark {
   --border:                #2e2e2e;
   --border-subtle:         #262626;
   /* Same rule, measured on the dark grounds: 3.65 / 3.34 / 3.01 to 1, against
-     --border's 1.28 / 1.17 / 1.06. In dark the old number was not merely low:
-     Obsidian sets --background-modifier-form-field to #2e2e2e as well, so a
-     field drawn as fill-plus-border had its border at exactly 1.00:1 — no
-     edge at all. */
+     --border's 1.28 / 1.17 / 1.06. --border is no edge at all here: Obsidian
+     sets --background-modifier-form-field to #2e2e2e too, so a fill-plus-
+     border field drawn with it measures 1.00:1. */
   --klartext-field-rule:   #73736e;
 
   --code-bg:               #222222;
@@ -399,8 +398,8 @@ body {
 
   /* Rendered blocks (Mermaid, code previews, images, math) — no grey hover
      box. Obsidian draws it from this token on .cm-embed-block:hover; the
-     </> edit action is a separate rule and still appears. Callouts and
-     tables were already excluded. */
+     </> edit action is a separate rule and still appears. Obsidian already
+     leaves callouts and tables out. */
   --embed-block-shadow-hover:        none;
 
   /* Done tasks: one grey for both modes (editor lines and rendered items). */
@@ -684,10 +683,10 @@ body.is-mobile {
   min-height: 0 !important;
 }
 
-/* Same LINE BOX in both states. `inherit` on the nested editor was not enough:
-   Obsidian gives .cm-line its own line-height, so edited text ran at the
-   editor's line-height while static cell text ran at the table's — the row
-   grew by that delta per line. One explicit token on the static cell content
+/* Same LINE BOX in both states. `inherit` on the nested editor is not enough:
+   Obsidian gives .cm-line its own line-height, so edited text would run at
+   the editor's line-height and static cell text at the table's, growing the
+   row by that delta per line. One explicit token on the static cell content
    AND on every layer of the nested editor (incl. .cm-line), both modes. */
 .markdown-source-view.mod-cm6 th,
 .markdown-source-view.mod-cm6 td,
@@ -1190,7 +1189,6 @@ body {
    with the glyph inside it, rather than Obsidian's text-button padding. */
 .markdown-rendered pre .copy-code-button {
   top: var(--klartext-code-inset);
-  right: 0;
   inset-inline-end: 0;
   width: var(--klartext-code-btn);
   height: var(--klartext-code-btn);
@@ -1361,10 +1359,10 @@ body.is-mobile .markdown-rendered .copy-code-button {
    BOLD, ITALIC, LINKS
    ------------------------------------------------------------------ */
 /* Bold and italic change the weight and the slant and nothing else: they take
-   the colour of what they stand in. A fixed text colour here turned emphasis
-   dark inside everything the theme mutes — a Reading-view quote, a footnote,
-   an h6, a done or cancelled task — while Live Preview kept the quote's grey,
-   so the two modes disagreed. */
+   the colour of what they stand in. A fixed text colour here would turn
+   emphasis dark inside everything the theme mutes — a Reading-view quote, a
+   footnote, an h6, a done or cancelled task — while Live Preview keeps the
+   quote's grey, so the two modes would disagree. */
 strong, .cm-strong { font-weight: 700; color: inherit; }   /* real 700 — JetBrains Mono is embedded as a 400–700 variable face */
 em,     .cm-em     { font-style: italic; color: inherit; }
 del,    .cm-strikethrough { text-decoration: line-through; color: var(--text-subtle); }
@@ -1378,7 +1376,13 @@ a,
   transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
-a:hover,
+/* A hover for links that do not bring their own, NOT !important: a plugin's
+   anchor styled as a button keeps its own hover. Note content keeps the
+   accent hover against Obsidian's stronger link rules. */
+a:hover {
+  color: var(--text-accent-hover);
+}
+.markdown-rendered a:hover,
 .markdown-preview-view a:hover {
   color: var(--text-accent-hover) !important;
 }
@@ -1882,12 +1886,13 @@ hr,
 /* The cursor's own level, where Obsidian marks it. Only reachable while its
    setting is on, which is why the active guide above is left painting.
    Obsidian puts every level's .cm-indent inside ONE .cm-hmd-list-indent
-   wrapper, so the n-th level is `.cm-hmd-list-indent > .cm-indent:nth-child(n)`;
-   written as a child of the line, levels 2 to 4 never matched. */
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 .cm-indent.cm-active-indent)::after,
+   wrapper, so the n-th level is `.cm-hmd-list-indent > .cm-indent:nth-child(n)`,
+   not a child of the line. One arm per bridged level above. */
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-1:has(+ .HyperMD-list-line-2 > .cm-hmd-list-indent > .cm-indent:nth-child(1).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-2:has(+ .HyperMD-list-line-3 > .cm-hmd-list-indent > .cm-indent:nth-child(2).cm-active-indent)::after,
 .markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-3:has(+ .HyperMD-list-line-4 > .cm-hmd-list-indent > .cm-indent:nth-child(3).cm-active-indent)::after,
-.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-hmd-list-indent > .cm-indent:nth-child(4).cm-active-indent)::after {
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-4:has(+ .HyperMD-list-line-5 > .cm-hmd-list-indent > .cm-indent:nth-child(4).cm-active-indent)::after,
+.markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line-5:has(+ .HyperMD-list-line-6 > .cm-hmd-list-indent > .cm-indent:nth-child(5).cm-active-indent)::after {
   width: var(--indentation-guide-width-active);
   background-color: var(--indentation-guide-color-active);
 }
@@ -2050,10 +2055,10 @@ body {
    TAGS
    ------------------------------------------------------------------ */
 /* Obsidian restates --tag-background under `.is-mobile.theme-dark` (0,2,0),
-   which outranks the theme's own `body` block (0,0,1) — so on a phone in dark
-   mode the chip came from Obsidian, not from here, and would drift from the
-   rest of the theme if Obsidian ever changed that value. Restated at (0,2,1)
-   so one declaration governs all four combinations of platform and mode. */
+   which outranks the theme's own `body` block (0,0,1): on a phone in dark
+   mode the chip would come from Obsidian and drift from the rest of the
+   theme if Obsidian changed that value. Restated at (0,2,1) so one
+   declaration governs all four combinations of platform and mode. */
 body.is-mobile.theme-dark {
   --tag-background:       hsla(var(--interactive-accent-hsl), 0.2);
   --tag-background-hover: hsla(var(--interactive-accent-hsl), 0.3);
@@ -2075,10 +2080,10 @@ a.tag {
 }
 
 .tag:hover {
-  color: var(--interactive-accent) !important;
+  color: var(--tag-color-hover) !important;
 }
 .cm-hashtag { font-family: var(--font-interface); }
-.cm-hashtag:hover { color: var(--interactive-accent); }
+.cm-hashtag:hover { color: var(--tag-color-hover); }
 
 /* ------------------------------------------------------------------
    BACKLINKS & EMBEDDED BACKLINKS
@@ -2207,8 +2212,8 @@ a.tag {
 }
 
 /* Already the right silhouette — no box, the panel's own ground, one rule.
-   What it lacked was an edge anybody could see (--border is 1.2:1 here) and
-   any focus state at all. !important throughout because Obsidian's own rule
+   It takes an edge anybody can see (--border is 1.2:1 here) and a focus
+   state. !important throughout because Obsidian's own rule
    for this input is a strong one. */
 .prompt-input {
   background-color: var(--background-primary) !important;
@@ -2448,25 +2453,29 @@ body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-tas
   font-size: calc(var(--checkbox-size) * 0.75);
   font-weight: 700;
   line-height: 1;
+  content: var(--klartext-task-glyph);
+  color: var(--klartext-task-color);
 }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task=">"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task=">"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task=">"] .task-list-item-checkbox)::after { content: "→"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="<"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="<"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="<"] .task-list-item-checkbox)::after { content: "←"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="?"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="?"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="?"] .task-list-item-checkbox)::after { content: "?"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="!"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="!"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="!"] .task-list-item-checkbox)::after { content: "!"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="*"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="*"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="*"] .task-list-item-checkbox)::after { content: "★"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="\""] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="\""] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="\""] .task-list-item-checkbox)::after { content: "”"; color: var(--text-muted); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="l"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="l"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="l"] .task-list-item-checkbox)::after { content: "◎"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="b"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="b"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="b"] .task-list-item-checkbox)::after { content: "▮"; color: var(--color-orange); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="i"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="i"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="i"] .task-list-item-checkbox)::after { content: "i"; color: var(--color-blue); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="S"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="S"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="S"] .task-list-item-checkbox)::after { content: "$"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="I"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="I"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="I"] .task-list-item-checkbox)::after { content: "✦"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="p"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="p"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="p"] .task-list-item-checkbox)::after { content: "+"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="c"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="c"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="c"] .task-list-item-checkbox)::after { content: "−"; color: var(--color-red); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="f"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="f"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="f"] .task-list-item-checkbox)::after { content: "▲"; color: var(--color-orange); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="k"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="k"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="k"] .task-list-item-checkbox)::after { content: "⚷"; color: var(--color-yellow); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="w"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="w"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="w"] .task-list-item-checkbox)::after { content: "♛"; color: var(--color-purple); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="u"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="u"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="u"] .task-list-item-checkbox)::after { content: "↑"; color: var(--color-green); }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item[data-task="d"] > .task-list-item-checkbox, .markdown-rendered li.task-list-item[data-task="d"] > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line[data-task="d"] .task-list-item-checkbox)::after { content: "↓"; color: var(--color-red); }
+/* Each marker's glyph and colour, as two tokens on its item, read by the box
+   rule above: one place per marker, whatever the mode. */
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task=">"] { --klartext-task-glyph: "→"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="<"] { --klartext-task-glyph: "←"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="?"] { --klartext-task-glyph: "?"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="!"] { --klartext-task-glyph: "!"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="*"] { --klartext-task-glyph: "★"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="\""] { --klartext-task-glyph: "”"; --klartext-task-color: var(--text-muted); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="l"] { --klartext-task-glyph: "◎"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="b"] { --klartext-task-glyph: "▮"; --klartext-task-color: var(--color-orange); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="i"] { --klartext-task-glyph: "i"; --klartext-task-color: var(--color-blue); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="S"] { --klartext-task-glyph: "$"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="I"] { --klartext-task-glyph: "✦"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="p"] { --klartext-task-glyph: "+"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="c"] { --klartext-task-glyph: "−"; --klartext-task-color: var(--color-red); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="f"] { --klartext-task-glyph: "▲"; --klartext-task-color: var(--color-orange); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="k"] { --klartext-task-glyph: "⚷"; --klartext-task-color: var(--color-yellow); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="w"] { --klartext-task-glyph: "♛"; --klartext-task-color: var(--color-purple); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="u"] { --klartext-task-glyph: "↑"; --klartext-task-color: var(--color-green); }
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line)[data-task="d"] { --klartext-task-glyph: "↓"; --klartext-task-color: var(--color-red); }
 
 /* ------------------------------------------------------------------
    SCROLLBARS
@@ -2639,7 +2648,7 @@ body.is-mobile .workspace-drawer {
   background-color: var(--background-secondary) !important;
   /* Nothing paints outside the drawer. A row wider than the panel — a
      selection band drawn full-bleed by a list view, which sizes itself
-     against the window rather than against the drawer — was painted across
+     against the window rather than against the drawer — would paint across
      the note beside it. `clip` rather than `hidden`: it establishes no
      scroll container, so the drawer's own scrolling and the sticky headers
      inside it are untouched, and only the horizontal axis is clipped. */
@@ -2683,10 +2692,9 @@ body.is-mobile .workspace-drawer-tab-select .workspace-tab-header-inner-icon {
 }
 
 /* The collapsed selector keeps Obsidian's fill: a pill in --interactive-
-   normal over the list, the shape the drawer is designed around. 1.6.1 gave
-   it the surround colour and a hairline above, to make a 4px slab read less
-   like a button; with the pill back, the hairline would draw a straight line
-   over a rounded corner, and the fill is what makes the pill a pill. */
+   normal over the list, the shape the drawer is designed around. No hairline
+   above it: a straight line over a rounded corner, and the fill is what
+   makes the pill a pill. */
 
 /* Slack below the selector: the drawer footer sits 8px under it, and the
    OPEN panel's bottom reserve follows the interface scale but never falls
@@ -2702,7 +2710,7 @@ body.is-phone .workspace-drawer-tab-options-list {
      exactly on the selector's top (measured: 0px in both themes), where its
      pill highlight hides the seam. Eight pixels — the card's own top
      padding — make the seam a gap instead, whatever the highlight's shape. */
-  padding-bottom: calc(max(var(--touch-size-l), calc(var(--klartext-ui-font-size) * 2.85)) + var(--size-4-2));
+  padding-bottom: calc(max(var(--touch-size-l), var(--klartext-ui-font-size) * 2.85) + var(--size-4-2));
 }
 
 /* NO bottom reserve for the VIEW the drawer is showing: the collapsed
@@ -2842,7 +2850,8 @@ body.is-mobile .mobile-toolbar-floating-options {
 /* ------------------------------------------------------------------
    EDIT-BLOCK ( </> ) BUTTON
    Shared by callouts, code blocks, tables, math in reading view.
-   Pin to one small size so the callout icon matches the code block.
+   One small size so the callout icon matches the code block, in body units
+   so it scales with the text like every other mark (14px at a 16px body).
    ------------------------------------------------------------------ */
 .edit-block-button {
   color: var(--text-faint) !important;
@@ -2850,8 +2859,8 @@ body.is-mobile .mobile-toolbar-floating-options {
 
 .edit-block-button svg,
 .edit-block-button .svg-icon {
-  width: 14px !important;
-  height: 14px !important;
+  width: calc(var(--klartext-font-size) * 0.875) !important;
+  height: calc(var(--klartext-font-size) * 0.875) !important;
 }
 
 /* ------------------------------------------------------------------
@@ -2970,8 +2979,8 @@ body.is-mobile .mobile-toolbar-floating-options {
 
 /* An embed's first block needs no rule to drop its top margin: Obsidian's own
    `.markdown-preview-pusher + div:not(.mod-ui) > :first-child` does it (an
-   embedded note opening with a heading measured 0px). The theme's rule for it
-   named `div:first-child`, which is the empty pusher, and matched nothing. */
+   embedded note opening with a heading measured 0px). Not `div:first-child`:
+   that is the empty pusher. */
 
 .markdown-embed-link {
   color: var(--text-faint);
@@ -3130,6 +3139,7 @@ mark code,
 .footnote-ref {   /* Obsidian's <sup>; the link inside it is a.footnote-link */
   color: var(--interactive-accent);
   font-size: 0.75em;
+  line-height: 0;   /* raised without stretching its line, like sub and sup */
   vertical-align: super;
   text-decoration: none;
   border-bottom: none;

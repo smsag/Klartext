@@ -11,15 +11,18 @@ resolve against the theme folder — local font files can't be referenced by
 path. The only way to ship fonts inside a theme is to embed them as base64
 data URIs. This script generates that block from the .woff2 files in this
 folder (latin + latin-ext subsets, matching the unicode-range split Google
-Fonts uses) and appends it to src/theme.css.
+Fonts uses) and writes the root theme.css: the stripped src/theme.css with
+the block appended. src/theme.css itself is never modified.
 
 Usage (from the theme folder):
     python3 fonts/embed.py            # writes theme.css
     python3 fonts/embed.py --fonts    # prints only the @font-face block
 """
 import base64
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -44,7 +47,10 @@ FACES = [
 
 
 def face(family, style, weight, filename, unicode_range):
-    data = base64.b64encode((HERE / filename).read_bytes()).decode("ascii")
+    path = HERE / filename
+    if not path.is_file():
+        sys.exit(f"embed.py: {path.relative_to(ROOT)} is missing; it is listed in FACES (or built by make-marks.py)")
+    data = base64.b64encode(path.read_bytes()).decode("ascii")
     return (
         "@font-face {\n"
         f"  font-family: '{family}'; font-style: {style}; font-weight: {weight}; font-display: swap;\n"
@@ -101,10 +107,31 @@ out.append(face("Klartext Marks", "normal", "400", "KlartextMarks.woff2",
 # …and the variant for a callout's header token, which blanks only the ">".
 out.append(face("Klartext Marks Quote", "normal", "400", "KlartextMarksQuote.woff2", "U+003E"))
 
+def write_atomically(path, text):
+    """Replace path in one step, so an interrupted build never leaves a
+    truncated theme.css for Obsidian to load. UTF-8 and LF whatever the
+    platform, so the build is byte-identical everywhere and CI's staleness
+    check compares like with like."""
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        # mkstemp creates the file 0600; keep the mode the old file had.
+        os.chmod(tmp, path.stat().st_mode & 0o777 if path.exists() else 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        os.unlink(tmp)
+        raise
+
+
+args = sys.argv[1:]
+if args not in ([], ["--fonts"]):
+    sys.exit(__doc__.split("Usage", 1)[1].strip().replace("(from the theme folder):", "usage:"))
+
 fonts_css = "".join(out)
-if "--fonts" in sys.argv[1:]:
-    print(fonts_css, end="")
+if args == ["--fonts"]:
+    sys.stdout.write(fonts_css)
 else:
-    src = HEADER + strip_comments((ROOT / "src" / "theme.css").read_text())
-    (ROOT / "theme.css").write_text(src + fonts_css)
+    src = HEADER + strip_comments((ROOT / "src" / "theme.css").read_text(encoding="utf-8"))
+    write_atomically(ROOT / "theme.css", src + fonts_css)
     print(f"theme.css: {len(src)} bytes of stylesheet + {len(fonts_css)} bytes of fonts")

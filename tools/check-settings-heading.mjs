@@ -18,19 +18,12 @@
 //     the theme aligns Obsidian's settings, not one plugin's.
 //
 //     node tools/check-settings-heading.mjs
-import { readStylesheet } from "./lib/stylesheet.mjs";
+import { FILE, readStylesheet, rules as parse } from "./lib/stylesheet.mjs";
 
-const FILE = "src/theme.css";
-const bare = readStylesheet();
 const ROW_PADDING = "var(--setting-items-padding-x)";
 
-const rules = [];
-for (const block of bare.split("}")) {
-  const brace = block.indexOf("{");
-  if (brace === -1) continue;
-  const arms = block.slice(0, brace).split(",").map((a) => a.replace(/\s+/g, " ").trim()).filter(Boolean);
-  const decls = block
-    .slice(brace + 1)
+const rules = parse(readStylesheet()).map(({ arms, body }) => {
+  const decls = body
     .split(";")
     .map((d) => d.trim())
     .filter(Boolean)
@@ -38,8 +31,8 @@ for (const block of bare.split("}")) {
       const colon = d.indexOf(":");
       return { prop: d.slice(0, colon).trim(), value: d.slice(colon + 1).trim() };
     });
-  rules.push({ arms, decls });
-}
+  return { arms, decls };
+});
 
 const failures = [];
 const isHeading = (arm) => /\.setting-item-heading\b(?![\w-])(?!\s*\S)/.test(arm) || /\.setting-item-heading(\s*>\s*|\s+)\.setting-item-(info|name)\s*$/.test(arm);

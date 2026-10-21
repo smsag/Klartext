@@ -13,62 +13,50 @@
 // nothing showed it.
 //
 //     node tools/check-heading-gutter.mjs
-import { readStylesheet, rules } from "./lib/stylesheet.mjs";
+import { readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
-// Comments blanked and @media wrappers flattened, so a selector quoted in a
-// comment never counts as a rule and a rule inside @media reads like any other.
-const css = readStylesheet();
+const all = rules(readStylesheet());
 
 /** The rules that build the column, by a selector fragment each one carries. */
 const GUTTER = [
-  '.cm-line.HyperMD-header::before',
-  '.cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator'
+  ".cm-line.HyperMD-header::before",
+  ".cm-line.HyperMD-header .cm-fold-indicator .collapse-indicator",
 ];
 
-/** A length is body-relative when it is a var(), a px, or a plain multiplier. */
-const BAD_UNIT = /(^|[\s(*+\-/,])(\d*\.?\d+)(em|rem|ch|ex|lh)\b/g;
+/** A length is body-relative when it is a var(), a px, or a plain multiplier.
+ *  A unit straight after the colon counts too: `margin:0.5em` is as wrong as
+ *  `margin: 0.5em`. */
+const BAD_UNIT = /(^|[\s(*+\-/,:])(\d*\.?\d+)(em|rem|ch|ex|lh)\b/g;
 
 const problems = [];
 for (const fragment of GUTTER) {
-  let found = 0;
-  for (let at = css.indexOf(fragment); at !== -1; at = css.indexOf(fragment, at + 1)) {
-    const open = css.indexOf("{", at);
-    const close = css.indexOf("}", open);
-    if (open < 0 || close < 0) continue;
-    found += 1;
-    const body = css.slice(open + 1, close);
+  const found = all.filter((r) => r.arms.some((a) => a.includes(fragment)));
+  if (found.length === 0) problems.push(`no rule carries ${fragment} any more; update this guard`);
+  for (const { body, line } of found) {
     for (const m of body.matchAll(BAD_UNIT)) {
-      problems.push(`${fragment}\n      ${m[2]}${m[3]} — heading-relative; use a body unit`);
+      problems.push(`line ${line}: ${m[2]}${m[3]} in ${fragment} is heading-relative; use --klartext-font-size, --klartext-cell or --klartext-marker-width`);
     }
-  }
-  if (found === 0) {
-    problems.push(`${fragment}\n      no rule with this selector any more; update this guard`);
   }
 }
 
 // Hide Heading Level Marks takes the badge and the chevron's shift away and
 // nothing else: the column stays, or every block edge moves with the switch.
 const HIDE = "body.klartext-no-heading-marks";
-const hideRules = rules(css).filter((r) => r.selector.includes(HIDE)).map((r) => [null, r.selector, r.body]);
-if (!hideRules.some((m) => m[1].includes("HyperMD-header::before") && /content:\s*none/.test(m[2]))) {
-  problems.push(`${HIDE}\n      no rule removes the badge`);
+const hideRules = all.filter((r) => r.selector.includes(HIDE));
+if (!hideRules.some((r) => r.selector.includes("HyperMD-header::before") && /content:\s*none/.test(r.body))) {
+  problems.push(`${HIDE}: no rule removes the badge`);
 }
-if (!hideRules.some((m) => m[1].includes(".collapse-indicator") && /margin-inline-end:\s*0/.test(m[2]))) {
-  problems.push(`${HIDE}\n      no rule returns the fold chevron to Obsidian's place`);
+if (!hideRules.some((r) => r.selector.includes(".collapse-indicator") && /margin-inline-end:\s*0/.test(r.body))) {
+  problems.push(`${HIDE}: no rule returns the fold chevron to Obsidian's place`);
 }
-for (const m of hideRules) {
-  if (/padding|--klartext-heading-prefix/.test(m[2])) {
-    problems.push(`${HIDE}\n      touches the prefix column; the column must stay so no block edge moves`);
+for (const { body, line } of hideRules) {
+  if (/padding|--klartext-heading-prefix/.test(body)) {
+    problems.push(`line ${line}: ${HIDE} touches the prefix column; the column must stay so no block edge moves`);
   }
 }
 
-if (problems.length) {
-  console.error("check-heading-gutter: a length in the gutter is not body-relative.\n");
-  for (const p of problems) console.error(`  - ${p}`);
-  console.error(
-    "\nThe column must be one width at every heading level. Reach for\n" +
-      "--klartext-font-size, --klartext-cell or --klartext-marker-width."
-  );
-  process.exit(1);
-}
-console.log("check-heading-gutter: every length in the gutter is body-relative.");
+report(
+  "the heading gutter is not one width at every level",
+  problems,
+  "heading gutter: every length is body-relative, and hiding the marks keeps the column.",
+);

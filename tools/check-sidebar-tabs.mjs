@@ -11,24 +11,14 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-sidebar-tabs.mjs
-// The pre-commit hook and the release workflow run every tools/check-*.mjs.
-import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { declarations as parse, readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 const all = rules(readStylesheet());
 
 /** Every declaration of the rules whose selector list contains `selector`. */
-function declarations(selector) {
-  const found = [];
-  for (const { arms, body } of all) {
-    if (!arms.includes(selector)) continue;
-    for (const decl of body.split(";")) {
-      const colon = decl.indexOf(":");
-      if (colon === -1) continue;
-      found.push([decl.slice(0, colon).trim(), decl.slice(colon + 1).trim()]);
-    }
-  }
-  return found;
-}
+const declarations = (selector) =>
+  all.filter(({ arms }) => arms.includes(selector)).flatMap(({ body }) => parse(body).map((d) => [d.prop, d.value]));
 
 const value = (decls, property) => decls.filter(([p]) => p === property).map(([, v]) => v).pop();
 
@@ -57,9 +47,4 @@ if (value(icon, "color") !== "var(--text-normal)") {
   failures.push("the active tab's icon is not in the text colour");
 }
 
-if (failures.length) {
-  console.error(`${FILE}: the sidebar tab strip lost its ground or its marker.`);
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("sidebar tabs: the strip is on the panel's ground, and the active tab carries its rule.");
+report("the sidebar tab strip lost its ground or its marker", failures, "sidebar tabs: the strip is on the panel's ground, and the active tab carries its rule.");

@@ -3,11 +3,15 @@
 # (2.1.0, not v2.1.0), and the release carries theme.css and manifest.json.
 #
 # It refuses, before anything is published, unless:
+#   - every check CI runs passes (this calls .github/workflows/ci.yml): the
+#     guards, stylelint, and a theme.css that fonts/embed.py builds unchanged;
 #   - it runs on the default branch;
 #   - the version is x.y.z, equals manifest.json's, and has no tag yet;
-#   - every tools/check-*.mjs guard and stylelint pass;
-#   - theme.css is what fonts/embed.py builds from src/theme.css;
 #   - CHANGELOG.md has a non-empty "## [x.y.z]" section, which becomes the notes.
+#
+# Only the publishing job can write to the repository, and it runs no
+# third-party package: the checks, which fetch stylelint from npm, run with a
+# read-only token.
 name: Release
 
 on:
@@ -19,22 +23,28 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
   release:
+    needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     env:
       VERSION: ${{ inputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
@@ -60,26 +70,6 @@ jobs:
           fi
           if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null; then
             echo "::error::Tag $VERSION already exists."
-            exit 1
-          fi
-
-      - name: Guards
-        # Every guard runs, so one push shows every failure, not only the first.
-        run: |
-          status=0
-          for guard in tools/check-*.mjs; do
-            node "$guard" || { echo "::error file=$guard::$guard failed"; status=1; }
-          done
-          exit "$status"
-
-      - name: Stylelint
-        run: npx --yes stylelint@17 src/theme.css
-
-      - name: theme.css is built from src/theme.css
-        run: |
-          python3 fonts/embed.py
-          if ! git diff --quiet -- theme.css; then
-            echo "::error::theme.css is stale. Run python3 fonts/embed.py and commit it."
             exit 1
           fi
 

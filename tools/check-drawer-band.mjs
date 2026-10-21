@@ -9,7 +9,7 @@
 // is never taller or shorter than the padding it covers.
 //
 //     node tools/check-drawer-band.mjs
-import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
+import { readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 const PADDING = "max(var(--size-4-2), var(--safe-area-inset-top))";
 
@@ -26,9 +26,4 @@ else {
   if (/background-color/.test(rule)) failures.push("the rule repaints the whole drawer, not its top band");
 }
 
-if (failures.length) {
-  console.error(`${FILE}: the band above an open phone drawer does not match its leaf.`);
-  for (const f of failures) console.error(`  ${f}`);
-  process.exit(1);
-}
-console.log("drawer band: the safe area above an open drawer is the leaf's ground.");
+report("the band above an open phone drawer does not match its leaf", failures, "drawer band: the safe area above an open drawer is the leaf's ground.");

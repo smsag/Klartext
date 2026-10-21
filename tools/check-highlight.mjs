@@ -8,16 +8,18 @@
 // changed one is a changed pen, so it is stated here as well as in the rule.
 //
 //     node tools/check-highlight.mjs
-import { readSource } from "./lib/stylesheet.mjs";
+import { declarations, readStylesheet, report, rules, rulesFor } from "./lib/stylesheet.mjs";
 
-const css = readSource().replace(/\r\n/g, "\n");
-
-const from = css.indexOf("mark,\n.markdown-preview-view mark,\n.cm-highlight,\n.cm-highlight-color-widget {");
-if (from < 0) {
-  console.error("check-highlight: the HIGHLIGHT / MARK rule is not where it was; update this guard.");
-  process.exit(1);
+// Read from the flattened stylesheet, comments blanked: a commented-out
+// `text-shadow: none;` above a live halo must not pass for the real thing.
+// Found by its selector list, however it is wrapped.
+const STROKE = ["mark", ".markdown-preview-view mark", ".cm-highlight", ".cm-highlight-color-widget"];
+const found = rulesFor(rules(readStylesheet()), ...STROKE);
+if (found.length !== 1) {
+  report("the stroke changed", [`expected one rule for ${STROKE.join(", ")}, found ${found.length}; update this guard`], "");
 }
-const rule = css.slice(from, css.indexOf("}", from));
+/** The value each property ends with, as the cascade would leave it. */
+const stated = new Map(declarations(found[0].body).map((d) => [d.prop, d.value]));
 
 const GEOMETRY = [
   ["--hl-angle", "104deg"],
@@ -29,9 +31,9 @@ const GEOMETRY = [
   ["--hl-pad-x", "0.42em"]
 ];
 // The rule states these itself, as `none` / `0`. The guard reads the VALUE
-// rather than looking for the property's absence: `\s*(?!none)` passes on
-// `text-shadow: none` by backtracking to zero spaces, which is how a guard
-// that looks right fails open.
+// rather than looking for the property's absence: a negative lookahead such
+// as `\s*(?!none)` passes on `text-shadow: none` by backtracking to zero
+// spaces, which is how a guard that looks right fails open.
 const FORBIDDEN = [
   ["text-shadow", "none", "a text-shadow halo"],
   ["box-shadow", "none", "a box-shadow"],
@@ -40,20 +42,16 @@ const FORBIDDEN = [
 
 const problems = [];
 for (const [name, value] of GEOMETRY) {
-  const m = new RegExp(`(?:^|[;{\\s])${name}:\\s*([^;]+);`).exec(rule);
-  if (!m) problems.push(`${name} is gone from the stroke`);
-  else if (m[1].trim() !== value) problems.push(`${name} is ${m[1].trim()}, was ${value}`);
+  if (!stated.has(name)) problems.push(`${name} is gone from the stroke`);
+  else if (stated.get(name) !== value) problems.push(`${name} is ${stated.get(name)}, was ${value}`);
 }
 for (const [prop, ok, what] of FORBIDDEN) {
-  const m = new RegExp(`(?:^|[;{\\s])${prop}:\\s*([^;]+);`).exec(rule);
-  if (!m) problems.push(`${prop} is no longer stated; the stroke must say ${ok}`);
-  else if (m[1].trim() !== ok) problems.push(`${what} is back in the stroke (${prop}: ${m[1].trim()})`);
+  if (!stated.has(prop)) problems.push(`${prop} is no longer stated; the stroke must say ${ok}`);
+  else if (stated.get(prop) !== ok) problems.push(`${what} is back in the stroke (${prop}: ${stated.get(prop)})`);
 }
 
-if (problems.length) {
-  console.error("check-highlight: the stroke changed.\n");
-  for (const p of problems) console.error(`  - ${p}`);
-  console.error("\nIf the change is wanted, update this guard in the same commit and say why.");
-  process.exit(1);
-}
-console.log("check-highlight: the stroke is intact.");
+report(
+  "the stroke changed; if the change is wanted, update this guard in the same commit and say why",
+  problems,
+  "highlight: the stroke is intact.",
+);

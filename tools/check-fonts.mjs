@@ -22,7 +22,7 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-fonts.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
+// tools/guards.mjs runs it with every other guard.
 import { lineAt, readStylesheet, report, rules } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();

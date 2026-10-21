@@ -45,6 +45,7 @@ settings:
     format: px
   - id: klartext-line-height
     title: Line Height
+    description: Body leading, as a multiple of the text size, in Live Preview and Reading view alike. The paragraph gap and every derived spacing follow it; tables keep their own tighter leading
     type: variable-number-slider
     default: 1.6
     min: 1.3
@@ -164,17 +165,20 @@ body.theme-dark {
   --klartext-hl-purple-strong:  #cbbcf8;
   /* Panel shadow — modals, popovers, menus (dark palette: deeper) */
   --klartext-shadow-panel:      0 6px 24px rgba(0, 0, 0, 0.12);
+  /* The halo round a selected canvas card, outside its accent border */
+  --klartext-ring-selected:     rgba(0, 0, 0, 0.08);
 }
 
 /* ------------------------------------------------------------------
    CSS VARIABLES — DARK MODE  (screen only — see the light block)
    ------------------------------------------------------------------ */
 @media screen {
+/* Colours only. The aliases built from them (--hr-color: var(--border), …)
+   are declared once, in the light block, which body.theme-dark also matches. */
 body.theme-dark {
   --background-primary:       #1a1a1a;
   --background-secondary:     #222222;
   --background-secondary-alt: #2a2a2a;
-  --background-primary-alt:   var(--background-secondary);
 
   --text-normal:           #d4d4d0;
   --text-muted:            #a6a6a0;
@@ -192,15 +196,11 @@ body.theme-dark {
   --code-bg:               #222222;
   --code-text:             #d4d4d0;
   --code-border:           #3a3a3a;   /* a soft line: greyscale diagrams outline their nodes with it */
-  --table-header-bg:       var(--surface-muted);
   --table-stripe-bg:       rgba(255,255,255,0.03);   /* zebra rows — a hair lighter than the page */
   --klartext-dot-color:    rgba(255,255,255,0.045);   /* paper dot-grid — faint */
 
-  --background-modifier-border:      var(--border);
   --background-modifier-hover:       rgba(255,255,255,0.04);
   --background-modifier-active-hover:rgba(255,255,255,0.08);
-  --hr-color:                        var(--border);
-  --table-border-color:              var(--border);
   --scrollbar-thumb-bg:              #333333;
 
   --selection-bg:          rgba(255,255,255,0.12);
@@ -225,6 +225,7 @@ body.theme-dark {
   --klartext-hl-purple:         #332d43;
   --klartext-hl-purple-strong:  #3d3453;
   --klartext-shadow-panel:   0 6px 24px rgba(0, 0, 0, 0.5);
+  --klartext-ring-selected:  rgba(255, 255, 255, 0.12);
 }
 }
 
@@ -411,9 +412,7 @@ body {
      follows the user's accent. The .tag rule in TAGS keeps the UI font. */
   --tag-color:              var(--text-muted);   /* one step down from the text; the subtle grey is unreadable inline */
   --tag-color-hover:        var(--interactive-accent);
-  --tag-background:         hsla(var(--interactive-accent-hsl), 0.2);
-  --tag-border-width:       0px;
-  --tag-background-hover:   hsla(var(--interactive-accent-hsl), 0.3);
+  --tag-border-width:       0px;   /* the fills are in TAGS, stated once for every platform */
   --tag-radius:             var(--klartext-radius-chip);
   --tag-size:               1em;                     /* body size; a smaller chip is unreadable beside the monospace */
   --tag-weight:             500;                     /* sans beside monospace needs the weight */
@@ -810,9 +809,18 @@ body {
    it. Without this the paragraph's own bottom margin wins the collapse.
      Read off Obsidian's block wrappers (.el-p, .el-h2, …), which is how its
    own heading rules find a heading. The argument of :has() decides what
-   Chromium re-checks when the page changes, and `+ div > h2` named every div
-   in the document; `+ .el-h2` names only a heading's wrapper. */
-.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > :is(p, ul, ol, blockquote, pre, table, .callout, .markdown-embed, .math-block, .mermaid) {
+   Chromium re-checks when the page changes: `+ .el-h2` names only a heading's
+   wrapper. One arm per block, each ending on it, as for headings. */
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > p,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > ul,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > ol,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > blockquote,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > pre,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > table,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > .callout,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > .markdown-embed,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > .math-block,
+.markdown-preview-view :is(.el-p, .el-ul, .el-ol, .el-blockquote, .el-pre, .el-table, .el-div):has(+ :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6)) > .mermaid {
   margin-bottom: 0 !important;
 }
 .cm-header-6, .markdown-preview-view h6 { color: var(--text-muted); }
@@ -2054,11 +2062,11 @@ body {
 /* ------------------------------------------------------------------
    TAGS
    ------------------------------------------------------------------ */
-/* Obsidian restates --tag-background under `.is-mobile.theme-dark` (0,2,0),
-   which outranks the theme's own `body` block (0,0,1): on a phone in dark
-   mode the chip would come from Obsidian and drift from the rest of the
-   theme if Obsidian changed that value. Restated at (0,2,1) so one
-   declaration governs all four combinations of platform and mode. */
+/* The chip's fill, from the accent. Obsidian restates --tag-background under
+   `.is-mobile.theme-dark` (0,2,0), which outranks `body` (0,0,1), so the
+   list also names that pair at (0,2,1): one declaration governs all four
+   combinations of platform and mode. */
+body,
 body.is-mobile.theme-dark {
   --tag-background:       hsla(var(--interactive-accent-hsl), 0.2);
   --tag-background-hover: hsla(var(--interactive-accent-hsl), 0.3);
@@ -2422,23 +2430,27 @@ input[type="checkbox"] { accent-color: var(--interactive-accent); }
   content: none;
 }
 
-/* Theme task markers (`[>]`, `[?]`, `[!]` and the rest of the Minimal set),
-   drawn only while the Klartext plugin's "Draw the theme's task markers" sets
-   body.klartext-task-markers; without it they keep Obsidian's done look.
-   Each is open work, so the item resets the done tokens as `[/]` does, and
-   the box shows the marker's glyph in its colour instead of a checkmark. */
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-source-view.mod-cm6 .HyperMD-task-line):is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) {
+/* Theme task markers (`[>]`, `[?]`, `[!]`, the rest of the Minimal set), drawn
+   while the Klartext plugin sets body.klartext-task-markers; without it they
+   keep Obsidian's done look. Each is open work: the item resets the done
+   tokens as `[/]` does, and the box shows the marker's glyph in its colour.
+   Each selector ends on a class, not on `:is()`, so Chromium tries it only on
+   those elements. tools/check-task-markers.mjs keeps the lists in step. */
+body.klartext-task-markers .markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]),
+body.klartext-task-markers .markdown-source-view.mod-cm6 .HyperMD-task-line:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) {
   --checklist-done-color: var(--text-normal);
   --checklist-done-decoration: none;
   color: var(--text-normal) !important;
   text-decoration: none !important;
 }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > .task-list-item-checkbox, .markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) .task-list-item-checkbox) {
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]), .markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > p) > .task-list-item-checkbox,
+body.klartext-task-markers .markdown-source-view.mod-cm6 .HyperMD-task-line:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) .task-list-item-checkbox {
   position: relative;
   background-color: var(--background-primary) !important;
   border-color: var(--klartext-field-rule) !important;
 }
-body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > .task-list-item-checkbox, .markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > p > .task-list-item-checkbox, .markdown-source-view.mod-cm6 .HyperMD-task-line:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) .task-list-item-checkbox)::after {
+body.klartext-task-markers :is(.markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]), .markdown-rendered li.task-list-item:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) > p) > .task-list-item-checkbox::after,
+body.klartext-task-markers .markdown-source-view.mod-cm6 .HyperMD-task-line:is([data-task=">"], [data-task="<"], [data-task="?"], [data-task="!"], [data-task="*"], [data-task="\""], [data-task="l"], [data-task="b"], [data-task="i"], [data-task="S"], [data-task="I"], [data-task="p"], [data-task="c"], [data-task="f"], [data-task="k"], [data-task="w"], [data-task="u"], [data-task="d"]) .task-list-item-checkbox::after {
   position: absolute;
   inset: 0;
   display: flex;
@@ -2480,7 +2492,13 @@ body.klartext-task-markers :is(.markdown-rendered li.task-list-item, .markdown-s
 /* ------------------------------------------------------------------
    SCROLLBARS
    ------------------------------------------------------------------ */
-::-webkit-scrollbar               { width: 5px; height: 5px; }
+/* One width, read by the view-header scrim too, which stops short of the
+   bar (see VIEW HEADER). The fallback serves the root, which is outside body. */
+/* stylelint-disable-next-line no-duplicate-selectors */
+body {
+  --klartext-scrollbar-size: 5px;
+}
+::-webkit-scrollbar               { width: var(--klartext-scrollbar-size, 5px); height: var(--klartext-scrollbar-size, 5px); }
 ::-webkit-scrollbar-track         { background: transparent; }
 ::-webkit-scrollbar-thumb         { background: var(--scrollbar-thumb-bg); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover   { background: var(--text-faint); }
@@ -2582,7 +2600,7 @@ body .workspace-leaf-content[data-type="markdown"] .view-content::before {
   position: absolute;
   top: 0;
   left: 0;
-  right: 6px;                                   /* spare the 5px scrollbar */
+  right: calc(var(--klartext-scrollbar-size, 5px) + 1px);   /* spare the scrollbar */
   height: calc(var(--klartext-font-size) * 2.2);
   background: linear-gradient(to bottom,
               var(--background-primary) 0%,
@@ -2676,8 +2694,8 @@ body.is-phone .workspace-drawer-inner {
    Leave the row's PADDING alone: it sets the row's height, and the row is a
    thumb target. The `body.is-mobile` prefix clears Obsidian's (0,2,0). */
 /* The switcher's rows are `.workspace-tab-header` too, so the desktop tab
-   bar's active rule (TABS) would paint a page-coloured box behind each
-   active row's pill. The row paints nothing; the pill
+   bar's active rule (see WORKSPACE & LAYOUT) would paint a page-coloured
+   box behind each active row's pill. The row paints nothing; the pill
    (`.workspace-tab-header-inner`) carries the highlight, as in Obsidian.
    `!important` against `!important`: (0,4,1) beats (0,2,0). */
 body.is-mobile .workspace-drawer-tab-options .workspace-tab-header,
@@ -3177,14 +3195,7 @@ mark code,
 .canvas-node.is-focused,
 .canvas-node.is-selected {
   border-color: var(--interactive-accent) !important;
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.08) !important;
-}
-
-@media screen {   /* like every dark rule: a dark-mode print is light (see the light block) */
-.theme-dark .canvas-node.is-focused,
-.theme-dark .canvas-node.is-selected {
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.12) !important;
-}
+  box-shadow: 0 0 0 2px var(--klartext-ring-selected) !important;
 }
 
 .canvas-node-container {

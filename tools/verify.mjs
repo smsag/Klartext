@@ -17,12 +17,13 @@
 //                                      (LP + Reading × light/dark × desktop/mobile body classes)
 //   node tools/verify.mjs diff <a> <b>          compare two stored snapshots, print differences
 //   node tools/verify.mjs reload                app.customCss.requestLoadTheme()
-//   node tools/verify.mjs teardown              close the tab and delete the check note
+//   node tools/verify.mjs teardown              close the tab and move the check note to the trash
 //   node tools/verify.mjs eval "<js>"           run an expression
 //   node tools/verify.mjs settings [tab ...]     open Settings and measure, for every heading in each
 //                                      tab, the left edge of its name against the name of the
 //                                      row below it (light/dark × desktop/mobile body classes);
-//                                      default tabs: editor, appearance and every plugin tab
+//                                      default tabs: editor, appearance and every plugin tab;
+//                                      a tab id Obsidian does not know is reported, not measured
 // diff and settings exit 1 when they find something, so either can gate a script.
 //
 // SECURITY: while Obsidian runs with the debugging port open, any process on
@@ -35,6 +36,7 @@ const NOTE = "_klartext-check.md";
 const PORT = 9222;
 const HOST = "127.0.0.1";
 const TIMEOUT_MS = 60_000;   // one CDP call; a snapshot walks ~8 contexts and takes ~20s
+const CONNECT_MS = 5_000;    // the /json listing, and opening the socket it names
 
 const USAGE = `usage:
   node tools/verify.mjs setup <note.md>
@@ -56,16 +58,22 @@ for (const name of cmd === "snapshot" ? [a1] : cmd === "diff" ? [a1, a2] : []) {
   }
 }
 
-let targets;
+let res;
 try {
-  const res = await fetch(`http://${HOST}:${PORT}/json`, { signal: AbortSignal.timeout(5000) });
-  targets = await res.json();
+  res = await fetch(`http://${HOST}:${PORT}/json`, { signal: AbortSignal.timeout(CONNECT_MS) });
 } catch (e) {
   console.error(`No debugging port on ${HOST}:${PORT} (${e.cause?.code ?? e.name}). Relaunch Obsidian with:\n  open -a Obsidian --args --remote-debugging-port=${PORT}`);
   process.exit(2);
 }
+// Something answers on the port, but not necessarily Chromium: say so rather
+// than telling the user to relaunch an Obsidian that may not be the listener.
+const targets = await res.json().catch(() => null);
+if (!Array.isArray(targets)) {
+  console.error(`${HOST}:${PORT} answered /json with HTTP ${res.status} and no target list; is another program using the port?`);
+  process.exit(2);
+}
 const pages = targets.filter(t => t.type === "page");
-const page = pages.find(t => /Obsidian v?1\./.test(t.title));
+const page = pages.find(t => /\bObsidian v?\d+\.\d+/.test(t.title));
 if (!page) throw new Error("no Obsidian page target among: " + (pages.map(t => JSON.stringify(t.title)).join(", ") || "none"));
 // Only a socket on this machine, on the port asked for: a /json answered by
 // something else must not be able to hand this script another host.
@@ -74,7 +82,11 @@ if (wsUrl.protocol !== "ws:" || !["127.0.0.1", "localhost", "[::1]"].includes(ws
   throw new Error(`refusing debugger socket ${wsUrl.origin}: not ${HOST}:${PORT}`);
 }
 const ws = new WebSocket(wsUrl);
-await new Promise((r, j) => { ws.onopen = r; ws.onerror = () => j(new Error("could not open the debugger socket")); });
+await new Promise((r, j) => {
+  const timer = setTimeout(() => { ws.close(); j(new Error(`the debugger socket did not open within ${CONNECT_MS / 1000}s`)); }, CONNECT_MS);
+  ws.onopen = () => { clearTimeout(timer); r(); };
+  ws.onerror = () => { clearTimeout(timer); j(new Error("could not open the debugger socket")); };
+});
 let id = 0; const pending = new Map();
 ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } };
 ws.onclose = e => { for (const [, res] of pending) res({ error: "socket closed " + e.code }); pending.clear(); };
@@ -131,6 +143,10 @@ try {
       try {
       for (const id of ids) {
         app.setting.openTabById(id); await wait(500);
+        // openTabById ignores an id it does not know and leaves the last tab
+        // open, which would be measured under this id. (activeTab is
+        // internal; without it the check is skipped rather than failing all.)
+        if (app.setting.activeTab && app.setting.activeTab.id !== id) { rows.push(id.padEnd(16) + 'no such settings tab'); continue; }
         for (const dark of [false, true]) for (const mobile of [false, true]) {
           body.classList.toggle('theme-dark', dark); body.classList.toggle('theme-light', !dark);
           for (const c of ['is-mobile', 'is-phone']) body.classList.toggle(c, mobile);
@@ -151,13 +167,16 @@ try {
       }
       } finally {
         body.className = orig;
+        app.setting.close();
       }
       return rows;
     })()`);
     console.log(out.join("\n"));
-    const off = out.filter((l) => !/worst offset -?0px$/.test(l));
+    const unknown = out.filter((l) => l.endsWith("no such settings tab"));
+    const off = out.filter((l) => !unknown.includes(l) && !/worst offset -?0px$/.test(l));
+    if (unknown.length) console.log(unknown.length + " tab ids not found");
     console.log(off.length ? off.length + " contexts with a heading off its rows" : "EVERY HEADING FLUSH WITH ITS ROWS");
-    if (off.length) process.exitCode = 1;
+    if (off.length || unknown.length) process.exitCode = 1;
   } else if (cmd === "eval") {
     console.log(JSON.stringify(await ev(a1), null, 1));
   } else if (cmd === "snapshot") {
@@ -172,6 +191,7 @@ try {
       // computed length reads as auto. Reveal it for the snapshot and hand the
       // previously active tab back afterwards.
       const prevLeaf = app.workspace.activeLeaf;
+      const prevState = leaf.getViewState();   // the mode it was in, restored at the end
       app.workspace.revealLeaf(leaf); await wait(500);
       if (!leaf.view.containerEl.getClientRects().length) throw new Error('check note leaf is hidden');
       const setMode = async mode => { const vs = leaf.getViewState(); vs.state = { ...vs.state, mode, source: false }; await leaf.setViewState(vs); await wait(700); };
@@ -228,7 +248,7 @@ try {
         // Whatever happened above, the user's window gets its own classes,
         // mode and tab back rather than staying in the emulated state.
         body.className = origClasses;
-        try { await setMode('source'); } catch (e) {}
+        try { await leaf.setViewState(prevState); await wait(300); } catch (e) {}
         if (prevLeaf && prevLeaf !== leaf) { try { app.workspace.revealLeaf(prevLeaf); } catch (e) {} }
       }
       window.__kxSnaps = window.__kxSnaps || {};
@@ -283,6 +303,7 @@ try {
       return { total, lines };
     })()`);
     console.log(out.lines.join("\n"));
+    if (out.total > out.lines.length) console.log(`… ${out.total - out.lines.length} more not shown (the first ${out.lines.length} are above)`);
     console.log(out.total === 0 ? "NO DIFFERENCES" : out.total + " differences");
     if (out.total) process.exitCode = 1;
   }

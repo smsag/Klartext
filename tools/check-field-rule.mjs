@@ -14,32 +14,27 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-field-rule.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { FILE, readStylesheet, report, rules, rulesFor } from "./lib/stylesheet.mjs";
 
-const bare = readStylesheet();
+const all = rules(readStylesheet());
 
-/** The declarations of the block a selector OPENS, comments already stripped.
- *
- *  A selector that also ends a grouped one would otherwise match that block
- *  instead: `body.theme-dark {` is the tail of the light palette's
- *  `body.theme-light,\nbody.theme-dark {` as well as a block of its own, and
- *  reading the light palette while believing it is the dark one is a guard
- *  that passes without checking anything. So a match whose selector continues
- *  to the left past a comma is skipped. */
-function block(selector) {
-  for (let at = bare.indexOf(selector); at !== -1; at = bare.indexOf(selector, at + 1)) {
-    if (bare.slice(0, at).trimEnd().endsWith(",")) continue;
-    const open = bare.indexOf("{", at);
-    return bare.slice(open + 1, bare.indexOf("}", open));
-  }
-  return null;
+/** The declarations of the rules whose selector list is exactly `arms`,
+ *  joined; null when there is none. Matched on the whole list, so the light
+ *  palette (`body.theme-light, body.theme-dark`) is never read as the dark
+ *  one (`body.theme-dark`), however either is wrapped. */
+function block(...arms) {
+  const found = rulesFor(all, ...arms);
+  return found.length ? found.map((r) => r.body).join(";") : null;
 }
 
-/** A custom property's value inside a block. */
+/** The bodies of every rule whose selector list includes `arm`. */
+const including = (arm) => all.filter((r) => r.arms.includes(arm)).map((r) => r.body).join(";");
+
+/** A custom property's value inside a block: the last one stated wins. */
 function prop(body, name) {
-  const m = new RegExp(`(^|[;\\s])${name}\\s*:\\s*([^;]+);`).exec(body);
-  return m ? m[2].trim() : null;
+  const found = [...body.matchAll(new RegExp(`(^|[;\\s])${name}\\s*:\\s*([^;]+);`, "g"))];
+  return found.length ? found[found.length - 1][2].trim() : null;
 }
 
 function rgb(hex) {
@@ -62,8 +57,8 @@ function contrast(a, b) {
 
 // The light palette is declared for BOTH body classes (so a dark-mode PDF
 // export falls back to it); the dark block restates its own further down.
-const LIGHT = "body.theme-light,\nbody.theme-dark {";
-const DARK = "body.theme-dark {";
+const LIGHT = ["body.theme-light", "body.theme-dark"];
+const DARK = ["body.theme-dark"];
 
 /** Every ground a search field can sit on: a pane, a sidebar, a modal. */
 const GROUNDS = ["--background-primary", "--background-secondary", "--background-secondary-alt"];
@@ -74,7 +69,7 @@ const MIN_CONTRAST = 3;
 const failures = [];
 
 for (const [theme, selector] of [["light", LIGHT], ["dark", DARK]]) {
-  const body = block(selector);
+  const body = block(...selector);
   if (body === null) {
     failures.push(`the ${theme} palette block is missing from ${FILE}`);
     continue;
@@ -111,7 +106,7 @@ for (const [theme, selector] of [["light", LIGHT], ["dark", DARK]]) {
 // The field must not go back to being a box with an invisible edge — at any
 // size. Obsidian already draws it box-less on a phone; only the desktop had
 // the box, and a rule that exempted the phone would be re-adding one there.
-const searchField = block(".search-input-container input {");
+const searchField = block(".search-input-container input");
 if (searchField === null) {
   failures.push("the search-field rule is missing from src/theme.css");
 } else {
@@ -124,11 +119,11 @@ if (searchField === null) {
 }
 
 for (const [label, selector] of [
-  ["the search field", ".search-input-container input:not(:disabled):focus,"],
-  ["the command palette", ".prompt-input:focus,"],
+  ["the search field", ".search-input-container input:not(:disabled):focus"],
+  ["the command palette", ".prompt-input:focus"],
 ]) {
-  const focus = block(selector);
-  if (focus === null || !/border-bottom:[^;]*var\(--interactive-accent\)/.test(focus)) {
+  const focus = including(selector);
+  if (!/border-bottom:[^;]*var\(--interactive-accent\)/.test(focus)) {
     failures.push(`${label} must say focus with the accent on its rule`);
   }
 }
@@ -139,22 +134,17 @@ for (const [label, selector] of [
 // which is how the 3:1 boundary was lost the first time this shipped. The
 // `:not(:disabled)` is what carries the third class-level component.
 for (const state of ["hover", "focus"]) {
-  if (!bare.includes(`.search-input-container input:not(:disabled):${state}`)) {
+  if (!all.some((r) => r.arms.includes(`.search-input-container input:not(:disabled):${state}`))) {
     failures.push(`:${state} must be stated at Obsidian's own specificity (with :not(:disabled)), or it loses the boundary to app.css`);
   }
 }
 // A hover rule this cannot find is a failure, not a pass: grouped with another
 // selector it is no longer the block this reads, and the check would be skipped.
-const hover = block(".search-input-container input:not(:disabled):hover {");
+const hover = block(".search-input-container input:not(:disabled):hover");
 if (hover === null) {
   failures.push("hover must be its own rule, `.search-input-container input:not(:disabled):hover { … }`, so this can read it");
 } else if (!/border-bottom-color:\s*var\(--klartext-field-rule\)/.test(hover)) {
   failures.push("hover must hold the boundary at --klartext-field-rule");
 }
 
-if (failures.length > 0) {
-  console.error(`${FILE}: the search field's boundary is not what it claims to be`);
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log("search field: every boundary clears 3:1, and focus is the accent.");
+report("the search field's boundary is not what it claims to be", failures, "search field: every boundary clears 3:1, and focus is the accent.");

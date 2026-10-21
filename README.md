@@ -72,7 +72,7 @@ one file and follow Obsidian's own light/dark setting.
   the app version, so `minAppVersion` cannot express them. Obsidian updates the app
   and the installer separately; if the marker column or the quote bar sits wrong on a
   very old installation, reinstall from the download page. Developed and measured
-  against Obsidian 1.13.7.
+  against Obsidian 1.13.7 and 1.14.4.
 - [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) for the
   options below. The theme works without it, at the defaults.
 - No font installation. JetBrains Mono ships inside the stylesheet as a 400–700
@@ -204,15 +204,20 @@ the worst offset per context and ends with `EVERY HEADING FLUSH WITH ITS ROWS`.
 gate a script; `teardown` moves the check note to the system trash.
 
 `.stylelintrc.json` catches duplicate selectors, duplicate or shorthand-overridden
-declarations and empty blocks (`npx stylelint src/theme.css`). Its
+declarations and empty blocks (`npx stylelint@17.16.0 src/theme.css`, the version CI pins). Its
 descending-specificity rule is off on purpose: restating a selector at Obsidian's
 own specificity, later in the cascade, is how this theme wins ties.
 The `tools/check-*.mjs` guards are static checks of `src/theme.css` that run without
 Obsidian, from any directory; what they share (reading and flattening the stylesheet,
-splitting it into rules with their line numbers) is in `tools/lib/stylesheet.mjs`.
-`git config core.hooksPath .githooks` runs what CI runs before any commit that
-touches the stylesheet, the build or the guards: stylelint, every guard, and a
-rebuild that stops the commit if the staged `theme.css` is stale.
+splitting it into rules with their line numbers and top-level selector arms) is in
+`tools/lib/stylesheet.mjs`, which `tools/lib/stylesheet.test.mjs` tests.
+`node tools/guards.mjs` runs the tests and every guard, reports each failure and ends
+with a count; CI, the release and the hook all run it, so a new `check-*.mjs` is
+picked up by its name alone. `git config core.hooksPath .githooks` runs what CI runs
+before any commit that touches the stylesheet, the fonts, the build, the guards or the
+hook: stylelint, the guards, and a rebuild that stops the commit if `theme.css` is
+stale. The hook checks the staged files, exported to a scratch folder, so what it
+passes is what is committed.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 records the mechanism behind each change, not just the outcome.
@@ -220,8 +225,8 @@ records the mechanism behind each change, not just the outcome.
 What the repository holds, and why: `theme.css` and `manifest.json` are what
 Obsidian installs; the theme store also reads this README and the screenshots.
 `src/theme.css` is the stylesheet as written, without the fonts. `fonts/` is
-source, not shipped: the subsetted `.woff2` files that `fonts/embed.py` appends
-to `src/theme.css` as base64 to produce `theme.css`, the two licence texts, and
+source, not shipped: the subsetted `.woff2` files that `fonts/embed.py` embeds
+as base64 after the stripped stylesheet to produce `theme.css`, the two licence texts, and
 `fonts/make-marks.py`, which builds the Klartext Marks faces. They stay in the
 repository so the embedded fonts can be rebuilt or re-subsetted without hunting
 for the originals. Nothing else belongs here; backups of earlier versions are
@@ -236,9 +241,10 @@ workflow, on `main`, with the version). Before that, on `main`:
 2. rename `## [Unreleased]` in `CHANGELOG.md` to `## [x.y.z] — date`.
 
 The workflow refuses, before anything is published, if the version is not
-`x.y.z`, differs from `manifest.json` or is already tagged; if a guard or
-stylelint fails; or if `theme.css` is not what `fonts/embed.py` builds from
-`src/theme.css`. Otherwise it tags the commit with the bare version, as
+`x.y.z`, differs from `manifest.json` or is already tagged; or if CI fails
+on the commit, which it runs first: a guard, stylelint, or a `theme.css` that
+is not what `fonts/embed.py` builds from `src/theme.css`. Only the publishing
+step can write to the repository, and it runs no package from npm. Otherwise it tags the commit with the bare version, as
 Obsidian expects, attaches `theme.css` and `manifest.json`, and uses the
 version's CHANGELOG section as the notes (`node tools/release-notes.mjs x.y.z`
 prints them locally).

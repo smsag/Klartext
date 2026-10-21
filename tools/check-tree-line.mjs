@@ -25,24 +25,21 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-tree-line.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { readStylesheet, report, rules, rulesFor } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();
+const all = rules(bare);
 
-/** The declarations of the rule a selector opens. */
+/** The declarations of the rule whose selector list is exactly `selector`. */
 function ruleBody(selector) {
-  for (let at = bare.indexOf(selector); at !== -1; at = bare.indexOf(selector, at + 1)) {
-    if (bare.slice(0, at).trimEnd().endsWith(",")) continue;
-    const open = bare.indexOf("{", at);
-    return bare.slice(open + 1, bare.indexOf("}", open));
-  }
-  return null;
+  const found = rulesFor(all, selector);
+  return found.length ? found.map((r) => r.body).join(";") : null;
 }
 
 const failures = [];
 
-const LINE = ".markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line {";
+const LINE = ".markdown-source-view.mod-cm6.is-live-preview .cm-line.HyperMD-list-line";
 const columns = ruleBody(LINE);
 if (columns === null) {
   failures.push("the ancestor-column rule is missing from the stylesheet");
@@ -66,9 +63,9 @@ if (columns === null) {
 
 // Both painters share the x, or they drift by a pixel. The segment is a filled
 // band rather than a border for exactly that reason.
-const segment = bare
-  .split("}")
-  .find((b) => b.includes("HyperMD-list-line-5)::after") && b.includes("inset-inline-start"));
+const segment = all.find(
+  (r) => r.arms.some((a) => a.includes("HyperMD-list-line-5:has(+ .HyperMD-list-line-6)::after")) && r.body.includes("inset-inline-start"),
+)?.body;
 if (segment === undefined) {
   failures.push("the parent's segment rule is missing from the stylesheet");
 } else {
@@ -92,7 +89,7 @@ const aside = ruleBody(stepAside);
 if (aside === null || !/border-inline-end-color:\s*transparent/.test(aside)) {
   failures.push("Obsidian's own inactive guide must step aside, or the line is painted twice");
 }
-if (bare.includes(".cm-indent::before {") && /\.cm-indent::before\s*\{[^}]*border-inline-end-color:\s*transparent/.test(bare)) {
+if (all.some((r) => r.arms.some((a) => /\.cm-indent::before$/.test(a)) && /border-inline-end-color:\s*transparent/.test(r.body))) {
   failures.push("suppressing .cm-indent::before unconditionally also removes the active guide, which marks the cursor's level");
 }
 
@@ -113,7 +110,7 @@ for (const m of bare.matchAll(BRIDGE)) {
 // depth keeps the inactive colour while every other depth shows the active one.
 const ACTIVE = /\.cm-line\.HyperMD-list-line-(\d+):has\(\+ \.HyperMD-list-line-\d+[^{,]*?\.cm-active-indent\)::after/g;
 const active = new Set([...bare.matchAll(ACTIVE)].map((m) => Number(m[1])));
-for (const level of [...bridged].sort()) {
+for (const level of [...bridged].sort((x, y) => x - y)) {
   if (!active.has(level)) failures.push(`level ${level} bridges to its children but has no rule marking the cursor's level on its segment`);
 }
 const MIN_BRIDGES = 10;
@@ -126,9 +123,4 @@ if (cols < 5) {
   failures.push(`only ${cols} levels declare an ancestor-column count, expected at least 5`);
 }
 
-if (failures.length > 0) {
-  console.error(`${FILE}: the list tree line is not drawn the way it claims to be`);
-  for (const f of failures) console.error(`  - ${f}`);
-  process.exit(1);
-}
-console.log(`list tree line: ${cols} levels of columns, ${bridges} bridge selectors, one x for both painters.`);
+report("the list tree line is not drawn the way it claims to be", failures, `list tree line: ${cols} levels of columns, ${bridges} bridge selectors, one x for both painters.`);

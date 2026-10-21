@@ -18,65 +18,63 @@
 //
 // Static, so it runs without Obsidian:
 //     node tools/check-button-hover.mjs
-// The pre-commit hook runs it for any commit touching src/theme.css.
-import { FILE, readStylesheet, rules } from "./lib/stylesheet.mjs";
+// tools/guards.mjs runs it with every other guard.
+import { readStylesheet, report, rules, splitTop } from "./lib/stylesheet.mjs";
 
 const bare = readStylesheet();
 
-const fail = (...msg) => {
-  console.error(`${FILE}: ${msg.join("\n  ")}`);
-  process.exit(1);
-};
+/** The last compound of a selector: the element it styles. */
+function lastCompound(selector) {
+  let depth = 0;
+  for (let i = selector.length - 1; i >= 0; i--) {
+    const c = selector[i];
+    if (c === ")" || c === "]") depth++;
+    else if (c === "(" || c === "[") depth--;
+    else if (depth === 0 && /[\s>+~]/.test(c)) return selector.slice(i + 1);
+  }
+  return selector;
+}
 
-/** The element a selector actually styles: its last compound. */
-function subject(selector) {
-  // Strip functional pseudo-class arguments — `:has(> button)` names a
-  // condition, not the styled element, and the rule lands on the flair label.
+/** Does this selector style a bare `button`? `:has(> button)` and
+ *  `:not(button)` are conditions, not the styled element, so they are dropped;
+ *  `:is(button, .x)` offers `button` as the element itself, so each of its
+ *  alternatives is asked in turn. */
+function stylesButton(selector) {
   let flat = selector;
   for (let prev = ""; prev !== flat; ) {
     prev = flat;
-    flat = flat.replace(/:(?:has|not|is|where|matches)\([^()]*\)/g, "\u0000");
+    flat = flat.replace(/:(?:has|not)\([^()]*\)/g, "");
   }
-  const parts = flat.split(/[>+~\s]+/).filter(Boolean);
-  return parts.length ? parts[parts.length - 1] : "";
+  const last = lastCompound(flat.trim());
+  if (/^button(?![\w-])/.test(last)) return true;
+  return [...last.matchAll(/:(?:is|where|matches)\(/g)].some((m) => {
+    let depth = 1, end = m.index + m[0].length;
+    for (; end < last.length && depth > 0; end++) depth += last[end] === "(" ? 1 : last[end] === ")" ? -1 : 0;
+    return splitTop(last.slice(m.index + m[0].length, end - 1)).some((alt) => stylesButton(alt.trim()));
+  });
 }
 
 /** Does this compound REQUIRE .mod-cta? `button:not(.mod-cta)` does not. */
 function requiresCta(selector) {
-  const last = selector.split(/[>+~\s]+/).filter(Boolean).pop() || "";
-  return /\.mod-cta(?![\w-])/.test(last.replace(/:not\([^)]*\)/g, ""));
+  return /\.mod-cta(?![\w-])/.test(lastCompound(selector).replace(/:not\([^)]*\)/g, ""));
 }
 
-const offenders = [];
+const failures = [];
 for (const { arms, body, line: startLine } of rules(bare)) {
   if (!/!important/.test(body)) continue;
 
   for (const selector of arms) {
     // The styled element is a bare `button`. `.mod-cta` is Obsidian's own
     // dialog chrome, which plugins opt into deliberately — exempt.
-    if (!/^button(?![\w-])/.test(subject(selector))) continue;
+    if (!stylesButton(selector)) continue;
     if (requiresCta(selector)) continue;
     for (const decl of body.split(";")) {
       if (!/!important/.test(decl)) continue;
-      offenders.push({
-        line: startLine,
-        selector: selector.trim().replace(/\s+/g, " ").slice(0, 64),
-        prop: decl.split(":")[0].trim(),
-      });
+      const prop = decl.split(":")[0].trim();
+      failures.push(`line ${startLine}: ${selector.slice(0, 64)} { ${prop}: … !important } — a plugin cannot out-rank !important at any specificity, so this overrides a button it has styled; the selector's own specificity already beats Obsidian's`);
     }
     break;   // one report per rule is enough
   }
 }
 
-if (offenders.length) {
-  fail(
-    "an !important rule reaches a plugin's <button>:",
-    ...offenders.map((o) => `  ${FILE}:${o.line}  ${o.selector} { ${o.prop}: … !important }`),
-    "",
-    "A plugin cannot out-rank !important at any specificity, so this overrides",
-    "a button it has deliberately styled. Drop the !important: the selector's",
-    "own specificity already beats Obsidian's, which is all the theme needs.",
-  );
-}
-
-console.log(`${FILE}: no !important reaches a plugin's button — ok`);
+report("an !important rule reaches a plugin's <button>", failures, "button hover: no !important reaches a plugin's button.");

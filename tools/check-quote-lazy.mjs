@@ -10,9 +10,15 @@
 // that way from the day the marker column was built: the check note had no
 // lazy line, and a line after a lone ">" or a footnote under a quote is one.
 //
+// Obsidian also marks a quote line nested under a list item lazy, though it
+// has its own "> " token. Padded too, it measured its hanging indent with
+// the padding in place, then the indent Obsidian wrote replaced it: wrapped
+// lines hung one column further in than the first.
+//
 // This guard fails unless each quote level the theme draws a bar for — one
 // to five by name, six and deeper through the catch-all rule that excludes
-// the five — has a lazy-line rule padding it by exactly that many columns.
+// the five — has a lazy-line rule padding it by exactly that many columns,
+// and only on a line without a quote token.
 //
 //     node tools/check-quote-lazy.mjs
 // tools/guards.mjs runs it with every other guard.
@@ -20,11 +26,12 @@ import { readStylesheet, report, rules as parse } from "./lib/stylesheet.mjs";
 
 const rules = parse(readStylesheet()).map((r) => [r.arms, r.body]);
 const NAMED = [1, 2, 3, 4, 5];
-const DEEPER = `.HyperMD-quote-lazy${NAMED.map((n) => `:not(.HyperMD-quote-${n})`).join("")}`;
+const TOKENLESS = ":not(:has(> .cm-formatting-quote))";
+const DEEPER = `.HyperMD-quote-lazy${NAMED.map((n) => `:not(.HyperMD-quote-${n})`).join("")}${TOKENLESS}`;
 
 const failures = [];
 for (const level of [...NAMED, NAMED.length + 1]) {
-  const fragment = level > NAMED.length ? DEEPER : `.HyperMD-quote-${level}.HyperMD-quote-lazy`;
+  const fragment = level > NAMED.length ? DEEPER : `.HyperMD-quote-${level}.HyperMD-quote-lazy${TOKENLESS}`;
   const want = level === 1 ? "var(--klartext-col)" : `calc(${level} * var(--klartext-col))`;
   const found = rules.find(([arms]) => arms.some((a) => a.endsWith(fragment) && a.includes(".is-live-preview")));
   const name = level > NAMED.length ? `${level} and deeper` : level;

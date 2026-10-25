@@ -1608,23 +1608,24 @@ blockquote,
    counts as part of the quote. Obsidian marks it .HyperMD-quote-lazy but
    writes no hanging indent (no "> " token to measure), so the bar would run
    through its first letter. One column per level puts it on the quote's
-   text edge, where Reading view has it. */
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy {
+   text edge, where Reading view has it. Never on a line with its own "> ",
+   which a quote under a list item is (see docs/notes/marker-column.md). */
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: var(--klartext-col);
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(2 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(3 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(4 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(5 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-lazy:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5) {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-lazy:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5):not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(6 * var(--klartext-col));
 }
 

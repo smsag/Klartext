@@ -1133,22 +1133,22 @@ blockquote,
               calc(4 * var(--klartext-col)) 0 0 0 var(--blockquote-border-color);
 }
 
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-1.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: var(--klartext-col);
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-2.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(2 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-3.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(3 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-4.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(4 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5.HyperMD-quote-lazy {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-5.HyperMD-quote-lazy:not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(5 * var(--klartext-col));
 }
-.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-lazy:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5) {
+.markdown-source-view.mod-cm6.is-live-preview .HyperMD-quote-lazy:not(.HyperMD-quote-1):not(.HyperMD-quote-2):not(.HyperMD-quote-3):not(.HyperMD-quote-4):not(.HyperMD-quote-5):not(:has(> .cm-formatting-quote)) {
   padding-inline-start: calc(6 * var(--klartext-col));
 }
 

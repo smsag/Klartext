@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A collapsed heading keeps its gap to the next heading** in Live Preview. Obsidian folds a section up to the line before the next heading, including the blank line that separated them, so the two headings sat with no gap between them. A collapsed heading that is followed by another heading now takes one blank line's height (`--klartext-blank-line`) as bottom padding, which is the gap it had while expanded.
+
 ## [2.7.0] — 2026-10-21
 
 ### Changed

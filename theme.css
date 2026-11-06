@@ -1211,13 +1211,9 @@ hr,
 .markdown-rendered li.task-list-item > .task-list-item-checkbox,
 .markdown-rendered li.task-list-item > p > .task-list-item-checkbox {
   top: 0;
-  vertical-align: var(--klartext-checkbox-align);
-}
-
-.markdown-rendered li.task-list-item > .task-list-item-checkbox,
-.markdown-rendered li.task-list-item > p > .task-list-item-checkbox {
   margin-inline-start: calc(-1 * (var(--klartext-cell) + var(--checkbox-size)));
   margin-inline-end: var(--klartext-cell);
+  vertical-align: var(--klartext-checkbox-align);
 }
 
 .markdown-rendered ol > li.task-list-item {

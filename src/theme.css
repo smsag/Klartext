@@ -1723,12 +1723,33 @@ hr,
   top: 0;
   vertical-align: var(--klartext-checkbox-align);
 }
-/* In a bulleted list the box takes the mark's place: it ends on the gap cell
-   like every other mark. A numbered item keeps its number there. */
-.markdown-rendered ul > li.task-list-item > .task-list-item-checkbox,
-.markdown-rendered ul > li.task-list-item > p > .task-list-item-checkbox {
+/* The box hangs in the column before the text and ends on its gap cell, like
+   every other mark. */
+.markdown-rendered li.task-list-item > .task-list-item-checkbox,
+.markdown-rendered li.task-list-item > p > .task-list-item-checkbox {
   margin-inline-start: calc(-1 * (var(--klartext-cell) + var(--checkbox-size)));
   margin-inline-end: var(--klartext-cell);
+}
+/* A numbered task has two marks, as in Live Preview: the number in the item's
+   column, the box in a second column, the text (and its wrapped lines) on the
+   edge after both. The item hangs one more column for the box and the number
+   moves out over it. A list nested in the item takes the column back: in Live
+   Preview it nests one column in from the number, not from the box. */
+.markdown-rendered ol > li.task-list-item {
+  padding-inline-start: var(--klartext-col);
+}
+.markdown-rendered ol > li.task-list-item::before {
+  margin-inline-start: calc(-2 * var(--klartext-col));
+}
+/* The fold chevron is placed from the item's content edge, so it moved with
+   the text; `translate` takes the column back on top of Obsidian's own
+   offset, to where it sits beside any other number. */
+.markdown-rendered ol > li.task-list-item > .list-collapse-indicator {
+  translate: calc(-1 * var(--klartext-col)) 0;
+}
+.markdown-rendered ol > li.task-list-item > ul,
+.markdown-rendered ol > li.task-list-item > ol {
+  margin-inline-start: calc(-1 * var(--klartext-col));
 }
 
 /* LIVE PREVIEW MARKERS — the marker column model (see --klartext-col).

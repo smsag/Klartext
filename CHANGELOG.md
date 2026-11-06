@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A collapsed heading keeps its gap to the next heading** in Live Preview. Obsidian folds a section up to the line before the next heading, including the blank line that separated them, so the two headings sat with no gap between them. A collapsed heading that is followed by another heading now takes one blank line's height (`--klartext-blank-line`) as bottom padding, which is the gap it had while expanded.
+- **A task's box lines up with its number and its text.** Obsidian nudges the checkbox with `position: relative` and a `top` of its own (−1/12 em in Live Preview, +1/6 em in Reading view), on top of the theme's cap-height centring, so the box sat 1–2px above the number and the text in Live Preview and 1–3px below them in Reading view (measured from the glyph ink in Obsidian 1.14.5, desktop and phone classes). The theme now sets `top: 0`, and Reading view centres the box on the cap height in a numbered list too, not only in a bulleted one. Box, number and text are now within 1px of each other in both modes.
+- **A numbered task reads the same in Reading view as in Live Preview**: the number in the item's column, the box in a second column, the text on the edge after both, and its wrapped lines back on that edge. Reading view put the box in the text column with Obsidian's 8px gap after it, so the text started 1.6px right of Live Preview and wrapped lines went back under the box (measured in Obsidian 1.14.5: wrap at 19.2px against 38.4px at a 16px body). The item now hangs a second column; a list nested in it and the item's fold chevron take that column back, so they stay where they are beside any other number. Number, box, text and wrap edge now match Live Preview to the pixel, nested items included, on desktop and phone classes.
+
 ## [2.7.0] — 2026-10-21
 
 ### Changed

@@ -1713,14 +1713,22 @@ hr,
      from the axis itself, not from the editor token's minus-one-pixel. */
   --indentation-guide-reading-indent: calc(var(--klartext-marker-axis) - var(--klartext-col));
 }
-/* Task items: the box ends on the gap cell like every other mark, and is
-   centred on the cap height (see --klartext-checkbox-align) rather than sat
-   on the baseline. */
+/* Task items: the box is centred on the cap height (see
+   --klartext-checkbox-align) rather than sat on the baseline, in a bulleted
+   and a numbered list alike, so it lines up with the number and the text.
+   `top: 0` cancels Obsidian's relative nudge (+1/6 em), which would put the
+   box ~2px below that centre. */
+.markdown-rendered li.task-list-item > .task-list-item-checkbox,
+.markdown-rendered li.task-list-item > p > .task-list-item-checkbox {
+  top: 0;
+  vertical-align: var(--klartext-checkbox-align);
+}
+/* In a bulleted list the box takes the mark's place: it ends on the gap cell
+   like every other mark. A numbered item keeps its number there. */
 .markdown-rendered ul > li.task-list-item > .task-list-item-checkbox,
 .markdown-rendered ul > li.task-list-item > p > .task-list-item-checkbox {
   margin-inline-start: calc(-1 * (var(--klartext-cell) + var(--checkbox-size)));
   margin-inline-end: var(--klartext-cell);
-  vertical-align: var(--klartext-checkbox-align);
 }
 
 /* LIVE PREVIEW MARKERS — the marker column model (see --klartext-col).
@@ -1787,8 +1795,12 @@ hr,
   /* The label is exactly the box's height, so it takes the box's place. */
   vertical-align: var(--klartext-checkbox-align);
 }
+/* `top: 0` cancels Obsidian's relative nudge (−1/12 em): the label already
+   puts the box on the cap-height centre, and the nudge lifted it ~1.5px above
+   the number and the text. */
 .markdown-source-view.mod-cm6.is-live-preview .HyperMD-task-line .task-list-label .task-list-item-checkbox {
   margin: 0;
+  top: 0;
 }
 
 /* Item spacing: none of the theme's own, in either mode. Live Preview spaces
